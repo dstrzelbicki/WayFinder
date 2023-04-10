@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "ol": "^7.3.0"
+  },
+  "devDependencies": {
+    "html-webpack-plugin": "^5.5.0",
+    "webpack-dev-server": "^4.13.2"
+  }
+}
