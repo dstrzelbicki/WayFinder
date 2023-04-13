@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import "./SearchBar.css";
+import React, { useState } from "react"
+import "./SearchBar.css"
 
 const SearchBar = ({ placeholder, onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("")
 
   const handleChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
+    setSearchTerm(event.target.value)
+  }
 
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
-      onSearch(searchTerm);
+      onSearch(searchTerm)
     }
-  };
+  }
 
   return (
     <input
@@ -21,9 +21,9 @@ const SearchBar = ({ placeholder, onSearch }) => {
       placeholder={placeholder}
       value={searchTerm}
       onChange={handleChange}
-      onKeyPress={handleKeyPress}
+      onKeyDown={handleKeyPress}
     />
-  );
-};
+  )
+}
 
-export default SearchBar;
+export default SearchBar
