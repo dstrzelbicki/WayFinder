@@ -1,3 +1,5 @@
+import axios from "axios"
+
 const nominatimBaseUrl = "https://nominatim.openstreetmap.org/search"
 
 export const geocode = async (searchTerm) => {
@@ -9,6 +11,23 @@ export const geocode = async (searchTerm) => {
     return data
   } catch (error) {
     console.error("Error fetching geocoding data:", error)
+    return null
+  }
+}
+
+const API_KEY = process.env.REACT_APP_OPENROUTESERVICE_API_KEY
+
+export const getRoute = async (start, end) => {
+  const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${API_KEY}&start=${start.join(
+    ","
+  )}&end=${end.join(",")}`
+
+  try {
+    const response = await axios.get(url)
+    const route = response.data.features[0].geometry.coordinates
+    return route.map((coord) => fromLonLat(coord))
+  } catch (error) {
+    console.error("Error fetching route: ", error)
     return null
   }
 }
