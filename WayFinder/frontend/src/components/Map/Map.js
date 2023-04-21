@@ -8,12 +8,14 @@ import Point from "ol/geom/Point"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
 import {Icon, Style} from "ol/style"
-import {fromLonLat} from "ol/proj"
+import {fromLonLat, toLonLat} from "ol/proj"
 import markerIcon from "../../assets/img/marker-icon.png"
+import {reverseGeocode} from "../../services/mapServices"
 
 const OLMap = ({marker1, marker2}) => {
   const mapRef = useRef()
   const [map, setMap] = useState(null)
+  const [popupData, setPopupData] = useState(null)
 
   useEffect(() => {
     // create an OSM base layer
@@ -34,12 +36,14 @@ const OLMap = ({marker1, marker2}) => {
       }),
     })
 
+    initialMap.on("click", handleMapClick)
     setMap(initialMap)
 
     // clean up on component unmount
     return () => {
-      if (initialMap) {
-        initialMap.setTarget(null)
+      if (map) {
+        map.setTarget(null)
+        map.un("click", handleMapClick)
       }
     }
   }, [])
@@ -82,6 +86,22 @@ const OLMap = ({marker1, marker2}) => {
       markerSource.removeFeature(existingMarker)
     }
     markerSource.addFeature(marker)
+  }
+
+  const handleMapClick = async (event) => {
+    const coordinates = event.coordinate
+    const lonLat = toLonLat(coordinates)
+  
+    // reverse geocode the clicked point to get the place name
+    const placeData = await reverseGeocode(lonLat)
+  
+    if (placeData) {
+      setPopupData({
+        coordinates,
+        lonLat,
+        name: placeData.name,
+      })
+    }
   }
 
   return <div ref={mapRef} style={{ width: "75%", height: "700px", float: "right" }} />

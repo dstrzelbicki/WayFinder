@@ -31,3 +31,16 @@ export const getRoute = async (start, end) => {
     return null
   }
 }
+
+export const reverseGeocode = async (coordinates) => {
+  const [lon, lat] = coordinates
+  const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+
+  try {
+    const response = await axios.get(url)
+    return response.data
+  } catch (error) {
+    console.error("Error reverse geocoding: ", error)
+    return null
+  }
+}
