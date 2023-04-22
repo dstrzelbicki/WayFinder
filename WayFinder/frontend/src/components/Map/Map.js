@@ -12,7 +12,19 @@ import {fromLonLat, toLonLat} from "ol/proj"
 import markerIcon from "../../assets/img/marker-icon.png"
 import {reverseGeocode} from "../../services/mapServices"
 
-const OLMap = ({marker1, marker2}) => {
+// this popup card appears when user clicks on a map, card displays name of location
+// and coordinates and renders a button by which user can select location as marker2
+const PopupCard = ({data, onSelect}) => {
+  return (
+    <div className="popup-card">
+      <h4>{data.name}</h4>
+      <p>Coordinates: {data.lonLat.join(", ")}</p>
+      <button onClick={() => onSelect(data)}>Use as Marker2</button>
+    </div>
+  )
+}
+
+const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
   const mapRef = useRef()
   const [map, setMap] = useState(null)
   const [popupData, setPopupData] = useState(null)
@@ -104,7 +116,16 @@ const OLMap = ({marker1, marker2}) => {
     }
   }
 
-  return <div ref={mapRef} style={{ width: "75%", height: "700px", float: "right" }} />
+  return (
+    <div ref={mapRef} style={{width: "75%", height: "700px", float: "right"}}>
+      {popupData && (
+        <PopupCard data={popupData} onSelect={(data) => {
+          addOrUpdateMarker(data.lonLat, "marker2")
+          onMarker2NameUpdate(data.name)
+        }} />
+      )}
+    </div>
+  )
 }
 
 export default OLMap

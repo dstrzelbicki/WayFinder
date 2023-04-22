@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import "./SearchBar.css"
 
-const SearchBar = ({ placeholder, onSearch }) => {
+const SearchBar = ({placeholder, onSearch}) => {
   const [searchTerm, setSearchTerm] = useState("")
 
   const handleChange = (event) => {
