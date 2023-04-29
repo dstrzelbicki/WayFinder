@@ -117,7 +117,7 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
   }
 
   return (
-    <div ref={mapRef} style={{width: "75%", height: "700px", float: "right"}}>
+    <div ref={mapRef} className="map-container">
       {popupData && (
         <PopupCard data={popupData} onSelect={(data) => {
           addOrUpdateMarker(data.lonLat, "marker2")

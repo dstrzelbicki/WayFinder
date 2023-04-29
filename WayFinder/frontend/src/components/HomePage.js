@@ -8,12 +8,19 @@ import {
 } from "react-router-dom"
 import OLMap from "./Map/Map"
 import SearchBar from "./SearchBar/SearchBar"
-import { geocode } from "../services/mapServices"
+import {geocode} from "../services/mapServices"
+import Sidebar from "./Sidebar/Sidebar"
+import "./HomePage.css"
 
 const HomePage = () => {
   const [marker1, setMarker1] = useState(null)
   const [marker2, setMarker2] = useState(null)
   const [marker2Name, setMarker2Name] = useState("")
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed)
+  }
 
   const handleSearch = async (searchTerm, searchBarId) => {
     const data = await geocode(searchTerm)
@@ -46,21 +53,23 @@ const HomePage = () => {
 
   return (
     <Router>
-      <div>
-        <h1>Home Page</h1>
-        <SearchBar
-          placeholder="Search first location"
-          onSearch={(searchTerm) => handleSearch(searchTerm, 1)}
-        />
-        <br />
-        <SearchBar
-          placeholder={marker2Name || "Search second location"}
-          onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
-        />
+      <div className="full-height-container">
+        <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
+        <div className="search-container">
+          <SearchBar
+            placeholder="Search first location"
+            onSearch={(searchTerm) => handleSearch(searchTerm, 1)}
+          />
+          <br />
+          <SearchBar
+            placeholder={marker2Name || "Search second location"}
+            onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
+          />
+        </div>
         <OLMap marker1={marker1} marker2={marker2} onMarker2NameUpdate={updateMarker2Name} />
       </div>
       <Routes>
-        <Route exact path="/" element={<p>This is the home page</p>} />
+        <Route exact path="/" />
       </Routes>
     </Router>
   )
