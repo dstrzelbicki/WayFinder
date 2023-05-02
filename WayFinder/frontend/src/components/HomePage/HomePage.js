@@ -6,10 +6,10 @@ import {
   Link,
   Redirect,
 } from "react-router-dom"
-import OLMap from "./Map/Map"
-import SearchBar from "./SearchBar/SearchBar"
-import {geocode} from "../services/mapServices"
-import Sidebar from "./Sidebar/Sidebar"
+import OLMap from "../Map/Map"
+import SearchBar from "../SearchBar/SearchBar"
+import {geocode} from "../../services/mapServices"
+import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
 
 const HomePage = () => {

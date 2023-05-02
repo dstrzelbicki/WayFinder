@@ -39,3 +39,14 @@ body {
   padding: 5px 10px;
   cursor: pointer;
 }
+
+.map-button {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 1000;
+  background-color: white;
+  padding: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}

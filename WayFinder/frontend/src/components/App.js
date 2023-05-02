@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import HomePage from "./HomePage"
+import HomePage from "./HomePage/HomePage"
 import { createRoot } from "react-dom/client"
 
 export default class App extends Component {
