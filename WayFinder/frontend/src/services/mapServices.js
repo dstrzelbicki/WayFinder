@@ -1,4 +1,5 @@
 import axios from "axios"
+import {fromLonLat} from "ol/proj"
 
 const nominatimBaseUrl = "https://nominatim.openstreetmap.org/search"
 

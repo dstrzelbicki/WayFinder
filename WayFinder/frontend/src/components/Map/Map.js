@@ -152,6 +152,13 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
       const layers = trafficLayerGroup.getLayers().getArray()
       const visible = !layers[0].getVisible()
       layers.forEach((layer) => layer.setVisible(visible))
+
+      const copyrightCaption = document.getElementById("copyright-caption")
+      if (visible) {
+        copyrightCaption.style.display = "block"
+      } else {
+        copyrightCaption.style.display = "none"
+      }
     }
   }
 
@@ -164,6 +171,7 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
           onMarker2NameUpdate(data.name)
         }} />
       )}
+      <div className="copyright-caption" id="copyright-caption">©TomTom</div>
     </div>
   )
 }
