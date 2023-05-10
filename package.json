@@ -1,6 +1,8 @@
 {
   "dependencies": {
-    "ol": "^7.3.0"
+    "@userfront/core": "^0.5.8",
+    "ol": "^7.3.0",
+    "react-bootstrap": "^2.7.4"
   },
   "devDependencies": {
     "html-webpack-plugin": "^5.5.0",

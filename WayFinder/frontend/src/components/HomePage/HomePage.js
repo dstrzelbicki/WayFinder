@@ -11,6 +11,8 @@ import SearchBar from "../SearchBar/SearchBar"
 import {geocode} from "../../services/mapServices"
 import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
+import LoginPage from "../LoginPage/LoginPage"
+import RegisterPage from "../RegisterPage/RegisterPage";
 
 const HomePage = () => {
   const [marker1, setMarker1] = useState(null)
@@ -51,27 +53,30 @@ const HomePage = () => {
     setMarker2Name(name)
   }
 
+  // Use 'ctrl + /' to display specific part of the project
   return (
-    <Router>
-      <div className="full-height-container">
-        <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
-        <div className="search-container">
-          <SearchBar
-            placeholder="Search first location"
-            onSearch={(searchTerm) => handleSearch(searchTerm, 1)}
-          />
-          <br />
-          <SearchBar
-            placeholder={marker2Name || "Search second location"}
-            onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
-          />
+      // <LoginPage></LoginPage>
+      // <RegisterPage></RegisterPage>
+      <Router>
+        <div className="full-height-container">
+          <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
+          <div className="search-container">
+            <SearchBar
+              placeholder="Search first location"
+              onSearch={(searchTerm) => handleSearch(searchTerm, 1)}
+            />
+            <br />
+            <SearchBar
+              placeholder={marker2Name || "Search second location"}
+              onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
+            />
+          </div>
+          <OLMap marker1={marker1} marker2={marker2} onMarker2NameUpdate={updateMarker2Name} />
         </div>
-        <OLMap marker1={marker1} marker2={marker2} onMarker2NameUpdate={updateMarker2Name} />
-      </div>
-      <Routes>
-        <Route exact path="/" />
-      </Routes>
-    </Router>
+        <Routes>
+          <Route exact path="/" />
+        </Routes>
+      </Router>
   )
 }
 
