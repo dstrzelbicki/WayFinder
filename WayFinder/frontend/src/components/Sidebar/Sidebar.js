@@ -3,19 +3,19 @@ import "./Sidebar.css"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faBars, faTimes, faHistory} from "@fortawesome/free-solid-svg-icons"
 
-const Sidebar = ({isCollapsed, toggleSidebar, onSearchHistoryClick}) => {
+const Sidebar = ({isNotCollapsed, toggleSidebar, onSearchHistoryClick}) => {
   return (
-    <div className={`sidebar${isCollapsed ? " active" : ""}`}>
-        <div className="toggle-button" onClick={toggleSidebar}>
-          <FontAwesomeIcon icon={isCollapsed ? faTimes: faBars} />
+    <div className={`sidebar${isNotCollapsed ? " active" : ""}`}>
+        <div className="toggle-button" onClick={toggleSidebar} role="button" aria-label="toggle sidebar">
+          <FontAwesomeIcon icon={isNotCollapsed ? faTimes: faBars} />
         </div>
         <h2>WayFinder</h2>
-        <div className={`search-history-text${isCollapsed ? " active" : " none"}`}
+        <div className={`search-history-text${isNotCollapsed ? " active" : " none"}`}
           onClick={onSearchHistoryClick}>
           <p>Search history</p>
         </div>
-        <div className={`search-history-icon${isCollapsed ? " none" : " active"}`}
-          onClick={onSearchHistoryClick}>
+        <div className={`search-history-icon${isNotCollapsed ? " none" : " active"}`}
+          onClick={onSearchHistoryClick} role="button" aria-label="history icon">
           <FontAwesomeIcon icon={faHistory} />
         </div>
     </div>

@@ -18,11 +18,11 @@ const HomePage = () => {
   const [marker1, setMarker1] = useState(null)
   const [marker2, setMarker2] = useState(null)
   const [marker2Name, setMarker2Name] = useState("")
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
   const [showSearchHistory, setShowSearchHistory] = useState(false)
 
   const toggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed)
+    setIsSidebarNotCollapsed(!isSidebarNotCollapsed)
   }
 
   const handleSearch = async (searchTerm, searchBarId) => {
@@ -63,11 +63,11 @@ const HomePage = () => {
     <Router>
       <div className="full-height-container">
         <Sidebar
-          isCollapsed={isSidebarCollapsed}
+          isNotCollapsed={isSidebarNotCollapsed}
           toggleSidebar={toggleSidebar}
           onSearchHistoryClick={() => {
             setShowSearchHistory(true)
-            setIsSidebarCollapsed(false)
+            setIsSidebarNotCollapsed(false)
           }}
         />
         <div className="search-container">

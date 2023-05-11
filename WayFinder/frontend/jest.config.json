@@ -1,5 +1,9 @@
 {
     "transformIgnorePatterns": [
       "node_modules/(?!(ol)/)"
-    ]
+    ],
+    "moduleNameMapper": {
+      "\\.(css)$": "<rootDir>/__mocks__/styleMock.js",
+      "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/__mocks__/fileMock.js"
+    }
 }
