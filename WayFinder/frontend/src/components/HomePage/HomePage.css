@@ -1,0 +1,11 @@
+.search-container {
+  display: inline-block;
+  margin-left: 80px;
+  margin-top: 10px;
+  vertical-align: top;
+}
+
+.full-height-container {
+  height: 100vh;
+  position: relative;
+}
