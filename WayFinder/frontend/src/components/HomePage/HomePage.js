@@ -13,6 +13,9 @@ import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faTimes, faArrowCircleRight} from "@fortawesome/free-solid-svg-icons"
+import LoginPage from "../LoginPage/LoginPage"
+import RegisterPage from "../RegisterPage/RegisterPage";
+import ForgottenPassword from "../ForgottenPasswordPage/ForgottenPassword";
 
 const HomePage = () => {
   const [marker1, setMarker1] = useState(null)
@@ -59,58 +62,63 @@ const HomePage = () => {
     setMarker2Name(name)
   }
 
+  //Use 'ctrl + /' to display different pages
+
   return (
-    <Router>
-      <div className="full-height-container">
-        <Sidebar
-          isNotCollapsed={isSidebarNotCollapsed}
-          toggleSidebar={toggleSidebar}
-          onSearchHistoryClick={() => {
-            setShowSearchHistory(true)
-            setIsSidebarNotCollapsed(false)
-          }}
-        />
-        <div className="search-container">
-        {showSearchHistory ? (
-        <div className="search-history-container">
-          <div className="search-history-close" onClick={() => setShowSearchHistory(!showSearchHistory)}>
-            <p>Close search history &nbsp;<FontAwesomeIcon icon={faTimes} /></p>
-          </div>
-          <div className="search-history-list">
-            {JSON.parse(localStorage.getItem("searchHistory")) &&
-              JSON.parse(localStorage.getItem("searchHistory")).map((item, index) => (
-                <div key={index} className="search-history-item" onClick={() => {
-                  setShowSearchHistory(false)
-                  updateMarker2Name(item.searchTerm)
-                  handleSearch(item.searchTerm, 2)}}
-                >
-                  <span>
-                    {item.searchTerm}&nbsp;&nbsp;<FontAwesomeIcon icon={faArrowCircleRight} />
-                  </span>
-                </div>
-            ))}
-          </div>
-        </div>
-        ) : (
-        <>
-          <SearchBar
-            placeholder="Search first location"
-            onSearch={(searchTerm) => handleSearch(searchTerm, 1)}
+      // <LoginPage></LoginPage>
+      // <RegisterPage></RegisterPage>
+      // <ForgottenPassword></ForgottenPassword>
+      <Router>
+        <div className="full-height-container">
+          <Sidebar
+            isNotCollapsed={isSidebarNotCollapsed}
+            toggleSidebar={toggleSidebar}
+            onSearchHistoryClick={() => {
+              setShowSearchHistory(true)
+              setIsSidebarNotCollapsed(false)
+            }}
           />
-          <br />
-          <SearchBar
-            placeholder={marker2Name || "Search second location"}
-            onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
-          />
-        </>
-        )}
+          <div className="search-container">
+          {showSearchHistory ? (
+          <div className="search-history-container">
+            <div className="search-history-close" onClick={() => setShowSearchHistory(!showSearchHistory)}>
+              <p>Close search history &nbsp;<FontAwesomeIcon icon={faTimes} /></p>
+            </div>
+            <div className="search-history-list">
+              {JSON.parse(localStorage.getItem("searchHistory")) &&
+                JSON.parse(localStorage.getItem("searchHistory")).map((item, index) => (
+                  <div key={index} className="search-history-item" onClick={() => {
+                    setShowSearchHistory(false)
+                    updateMarker2Name(item.searchTerm)
+                    handleSearch(item.searchTerm, 2)}}
+                  >
+                    <span>
+                      {item.searchTerm}&nbsp;&nbsp;<FontAwesomeIcon icon={faArrowCircleRight} />
+                    </span>
+                  </div>
+              ))}
+            </div>
+          </div>
+          ) : (
+          <>
+            <SearchBar
+              placeholder="Search first location"
+              onSearch={(searchTerm) => handleSearch(searchTerm, 1)}
+            />
+            <br />
+            <SearchBar
+              placeholder={marker2Name || "Search second location"}
+              onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
+            />
+          </>
+          )}
+          </div>
+          <OLMap marker1={marker1} marker2={marker2} onMarker2NameUpdate={updateMarker2Name} />
         </div>
-        <OLMap marker1={marker1} marker2={marker2} onMarker2NameUpdate={updateMarker2Name} />
-      </div>
-      <Routes>
-        <Route exact path="/" />
-      </Routes>
-    </Router>
+        <Routes>
+          <Route exact path="/" />
+        </Routes>
+      </Router>
   )
 }
 
