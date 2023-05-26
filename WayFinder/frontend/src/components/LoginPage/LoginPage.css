@@ -70,3 +70,16 @@ button[type="submit"]:hover {
 .register-link:hover {
   color: #0056b3;
 }
+
+.forgot-password-link {
+  display: block;
+  font-size: 1.2rem;
+  color: #007bff;
+  text-decoration: none;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.forgot-password-link:hover {
+  color: #0056b3;
+}

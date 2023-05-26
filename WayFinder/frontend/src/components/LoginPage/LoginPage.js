@@ -27,6 +27,7 @@ function LoginPage() {
             </button>
           </div>
         </form>
+        <a href="/forgot-password" className="forgot-password-link">Forgotten Password?</a>
       </div>
     </div>
   )
