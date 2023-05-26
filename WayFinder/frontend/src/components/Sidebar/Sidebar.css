@@ -8,6 +8,7 @@
     overflow-y: auto;
     transition: all 0.3s;
     transform: translateX(-70%);
+    z-index: 1001;
 }
 
 .sidebar.active {
@@ -27,4 +28,33 @@
 h2 {
     margin-top: 10px;
     margin-left: 10px;
+}
+
+.search-history-icon.active {
+    position: absolute;
+    top: 50px;
+    right: 30px;
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.search-history-icon.none {
+    display: none;
+}
+
+.search-history-text.active {
+    margin-top: 1rem;
+    margin-left: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.search-history-text.none {
+    display: none;
+}
+
+.search-history-text.active:hover {
+    color: #0096ff;
 }
