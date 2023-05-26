@@ -5,7 +5,7 @@ function LoginPage() {
   return (
     <div
       className="LoginPage"
-      style={{ backgroundImage: `url(${require("./img/worldmap.png")})` }}
+      style={{ backgroundImage: `url(${require("../../assets/img/worldmap.png")})` }}
     >
       <div className="login-form-container">
         <h1>WayFinder</h1>

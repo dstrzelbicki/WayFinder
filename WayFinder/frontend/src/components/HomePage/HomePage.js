@@ -13,6 +13,7 @@ import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
 import LoginPage from "../LoginPage/LoginPage"
 import RegisterPage from "../RegisterPage/RegisterPage";
+import ForgottenPassword from "../ForgottenPasswordPage/ForgottenPassword";
 
 const HomePage = () => {
   const [marker1, setMarker1] = useState(null)
@@ -57,6 +58,7 @@ const HomePage = () => {
   return (
       // <LoginPage></LoginPage>
       // <RegisterPage></RegisterPage>
+      // <ForgottenPassword></ForgottenPassword>
       <Router>
         <div className="full-height-container">
           <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />

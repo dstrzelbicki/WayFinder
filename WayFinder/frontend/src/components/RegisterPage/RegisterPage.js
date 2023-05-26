@@ -5,7 +5,7 @@ function RegisterPage() {
   return (
     <div
       className="RegisterPage"
-      style={{ backgroundImage: `url(${require("../LoginPage/img/worldmap.png")})` }}
+      style={{ backgroundImage: `url(${require("../../assets/img/worldmap.png")})` }}
     >
       <div className="register-form-container">
         <h1>WayFinder</h1>
@@ -34,7 +34,7 @@ function RegisterPage() {
           <button type="submit">Register</button>
         </form>
         <a href="/login" className="login-link">
-          Login
+          Back to Login
         </a>
       </div>
     </div>
