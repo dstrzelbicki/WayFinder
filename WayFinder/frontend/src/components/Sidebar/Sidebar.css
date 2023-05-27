@@ -1,0 +1,60 @@
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100%;
+    background-color: #f8f9fa;
+    overflow-y: auto;
+    transition: all 0.3s;
+    transform: translateX(-70%);
+    z-index: 1001;
+}
+
+.sidebar.active {
+    transform: translateX(0);
+}
+
+.toggle-button {
+    position: absolute;
+    top: 10px;
+    right: 30px;
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+h2 {
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.search-history-icon.active {
+    position: absolute;
+    top: 50px;
+    right: 30px;
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.search-history-icon.none {
+    display: none;
+}
+
+.search-history-text.active {
+    margin-top: 1rem;
+    margin-left: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.search-history-text.none {
+    display: none;
+}
+
+.search-history-text.active:hover {
+    color: #0096ff;
+}

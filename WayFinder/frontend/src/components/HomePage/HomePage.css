@@ -1,0 +1,40 @@
+.search-container {
+  display: inline-block;
+  margin-left: 80px;
+  margin-top: 10px;
+  vertical-align: top;
+}
+
+.full-height-container {
+  height: 100vh;
+  position: relative;
+}
+
+.search-history-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: absolute;
+  top: 10px;
+  left: 120px;
+}
+
+.search-history-close {
+  background-color: #f8f9fa;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 0px 8px;
+  cursor: pointer;
+}
+
+.search-history-list {
+  margin-top: 20px;
+}
+
+.search-history-item {
+  padding: 10px 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+}

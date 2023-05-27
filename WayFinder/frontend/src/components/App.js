@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import { render } from "react-dom";
-import HomePage from "./HomePage";
+import React, { Component } from "react"
+import HomePage from "./HomePage/HomePage"
+import { createRoot } from "react-dom/client"
 
 export default class App extends Component {
   constructor(props) {
-    super(props);
+    super(props)
   }
 
   render() {
@@ -12,9 +12,10 @@ export default class App extends Component {
       <div>
         <HomePage />
       </div>
-    );
+    )
   }
 }
 
-const appDiv = document.getElementById("app");
-render(<App />, appDiv);
+const container = document.getElementById("root")
+const root = createRoot(container)
+root.render(<App />)
