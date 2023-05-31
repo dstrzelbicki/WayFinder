@@ -1,0 +1,47 @@
+.user-dashboard {
+    color: black;
+    background-color: white;
+    height: 100%;
+    width: 100%;
+}
+
+.user-dashboard .dashboard-sidebar {
+    color: black;
+    background-color: #CCCCCC;
+    height: 100%;
+    width: 20%;
+    overflow: auto;
+}
+
+.user-dashboard .dashboard-sidebar ul li a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.centered-list {
+    list-style-type: none;
+    text-align: center;
+    padding: 10px;
+}
+
+.centered-list li {
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.centered-list li:hover {
+    background-color: #BBBBBB;
+}
+
+h2 {
+    text-align: center;
+}
+
+.user-dashboard .dashboard-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}

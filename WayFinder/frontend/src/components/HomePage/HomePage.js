@@ -68,57 +68,52 @@ const HomePage = () => {
       // <LoginPage></LoginPage>
       // <RegisterPage></RegisterPage>
       // <ForgottenPassword></ForgottenPassword>
-      <Router>
-        <div className="full-height-container">
-          <Sidebar
-            isNotCollapsed={isSidebarNotCollapsed}
-            toggleSidebar={toggleSidebar}
-            onSearchHistoryClick={() => {
-              setShowSearchHistory(true)
-              setIsSidebarNotCollapsed(false)
-            }}
-          />
-          <div className="search-container">
-          {showSearchHistory ? (
-          <div className="search-history-container">
-            <div className="search-history-close" onClick={() => setShowSearchHistory(!showSearchHistory)}>
-              <p>Close search history &nbsp;<FontAwesomeIcon icon={faTimes} /></p>
-            </div>
-            <div className="search-history-list">
-              {JSON.parse(localStorage.getItem("searchHistory")) &&
-                JSON.parse(localStorage.getItem("searchHistory")).map((item, index) => (
-                  <div key={index} className="search-history-item" onClick={() => {
-                    setShowSearchHistory(false)
-                    updateMarker2Name(item.searchTerm)
-                    handleSearch(item.searchTerm, 2)}}
-                  >
-                    <span>
-                      {item.searchTerm}&nbsp;&nbsp;<FontAwesomeIcon icon={faArrowCircleRight} />
-                    </span>
-                  </div>
-              ))}
-            </div>
+      <div className="full-height-container">
+        <Sidebar
+          isNotCollapsed={isSidebarNotCollapsed}
+          toggleSidebar={toggleSidebar}
+          onSearchHistoryClick={() => {
+            setShowSearchHistory(true)
+            setIsSidebarNotCollapsed(false)
+          }}
+        />
+        <div className="search-container">
+        {showSearchHistory ? (
+        <div className="search-history-container">
+          <div className="search-history-close" onClick={() => setShowSearchHistory(!showSearchHistory)}>
+            <p>Close search history &nbsp;<FontAwesomeIcon icon={faTimes} /></p>
           </div>
-          ) : (
-          <>
-            <SearchBar
-              placeholder="Search first location"
-              onSearch={(searchTerm) => handleSearch(searchTerm, 1)}
-            />
-            <br />
-            <SearchBar
-              placeholder={marker2Name || "Search second location"}
-              onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
-            />
-          </>
-          )}
+          <div className="search-history-list">
+            {JSON.parse(localStorage.getItem("searchHistory")) &&
+              JSON.parse(localStorage.getItem("searchHistory")).map((item, index) => (
+                <div key={index} className="search-history-item" onClick={() => {
+                  setShowSearchHistory(false)
+                  updateMarker2Name(item.searchTerm)
+                  handleSearch(item.searchTerm, 2)}}
+                >
+                  <span>
+                    {item.searchTerm}&nbsp;&nbsp;<FontAwesomeIcon icon={faArrowCircleRight} />
+                  </span>
+                </div>
+            ))}
           </div>
-          <OLMap marker1={marker1} marker2={marker2} onMarker2NameUpdate={updateMarker2Name} />
         </div>
-        <Routes>
-          <Route exact path="/" />
-        </Routes>
-      </Router>
+        ) : (
+        <>
+          <SearchBar
+            placeholder="Search first location"
+            onSearch={(searchTerm) => handleSearch(searchTerm, 1)}
+          />
+          <br />
+          <SearchBar
+            placeholder={marker2Name || "Search second location"}
+            onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
+          />
+        </>
+        )}
+        </div>
+        <OLMap marker1={marker1} marker2={marker2} onMarker2NameUpdate={updateMarker2Name} />
+      </div>
   )
 }
 
