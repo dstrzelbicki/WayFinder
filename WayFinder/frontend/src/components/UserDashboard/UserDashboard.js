@@ -2,6 +2,7 @@ import React, {useState} from "react"
 import {Link, useParams} from "react-router-dom"
 import "./UserDashboard.css"
 import {useCurrentUser} from "../../auth/hooks"
+import {apiProfileDataChange} from "../../lookup/backendLookup"
 
 const Notifications = () => <div>Notifications</div>
 const Shared = () => <div>Shared</div>

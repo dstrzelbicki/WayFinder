@@ -42,6 +42,12 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+]
+
+CSRF_COOKIE_DOMAIN = '.localhost'
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
 
 # Application definition
 
