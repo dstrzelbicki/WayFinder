@@ -1,8 +1,8 @@
 import React, {useState} from "react"
 import {Link, useParams} from "react-router-dom"
 import "./UserDashboard.css"
+import {useCurrentUser} from "../../auth/hooks"
 
-const Profile = () => <div>Profile</div>
 const Notifications = () => <div>Notifications</div>
 const Shared = () => <div>Shared</div>
 const Places = () => <div>Saved places</div>
@@ -11,13 +11,16 @@ const Timeline = () => <div>Timeline</div>
 const History = () => <div>History</div>
 const Settings = () => <div>Settings</div>
 
+const Profile = ({currentUser}) => {}
+
 export function UserDashboard() {
     const {content} = useParams()
+    const {currentUser, isLoading} = useCurrentUser()
 
     const renderContent = () => {
         switch (content) {
             case "profile":
-                return <Profile />
+                return <Profile currentUser={currentUser} />
             case "notifications":
                 return <Notifications />
             case "shared":
@@ -38,7 +41,7 @@ export function UserDashboard() {
     }
 
     return (
-        <div className="user-dashboard">
+        !isLoading ? <div className="user-dashboard">
             <div className="dashboard-sidebar">
                 <h2>Your account</h2>
                 <ul className="centered-list">
@@ -52,10 +55,12 @@ export function UserDashboard() {
                     <li><Link to="/user-dashboard/settings">Settings</Link></li>
                 </ul>
             </div>
-            <div className="content">
-                {renderContent()}
+            <div className="content-container">
+                <div className="content">
+                    {renderContent()}
+                </div>
             </div>
-        </div>
+        </div> : <div>Loading...</div>
     )
 }
 

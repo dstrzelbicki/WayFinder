@@ -3,6 +3,8 @@
     background-color: white;
     height: 100%;
     width: 100%;
+    display: flex;
+    flex-direction: row;
 }
 
 .user-dashboard .dashboard-sidebar {
@@ -35,13 +37,24 @@
     background-color: #BBBBBB;
 }
 
+p {
+    margin-top: 15%;
+}
+
 h2 {
     text-align: center;
 }
 
-.user-dashboard .dashboard-content {
+.user-dashboard .content-container {
+    flex: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
+}
+
+.user-dashboard .content {
+    display: flex;
+    margin-left: 30%;
+    margin-top: 3%;
     height: 100%;
+    width: 80%;
 }
