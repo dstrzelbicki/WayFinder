@@ -1,8 +1,8 @@
-from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth import login, logout
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import UserRegisterSerializer, UserLoginSerializer, UserSerializer
+from .serializers import UserRegisterSerializer, UserLoginSerializer, UserSerializer, UserChangePasswordSerializer
 from rest_framework import permissions, status
 from .validations import custom_validation, validate_email, validate_password
 
@@ -22,7 +22,7 @@ class UserRegister(APIView):
 class UserLogin(APIView):
 	permission_classes = (permissions.AllowAny,)
 	authentication_classes = (SessionAuthentication,)
-	##
+
 	def post(self, request):
 		data = request.data
 		assert validate_email(data)
@@ -58,3 +58,16 @@ class UserView(APIView):
 			serializer.save()
 			return Response(serializer.data)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserChangePassword(APIView):
+    permission_classes = (permissions.IsAuthenticated)
+    authentication_classes = (SessionAuthentication)
+
+    def put(self, request):
+        serializer = UserChangePasswordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = request.user
+            serializer.update(user, serializer.validated_data)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
