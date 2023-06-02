@@ -12,7 +12,83 @@ const Timeline = () => <div>Timeline</div>
 const History = () => <div>History</div>
 const Settings = () => <div>Settings</div>
 
-const Profile = ({currentUser}) => {}
+const Profile = ({currentUser}) => {
+    const [username, setUsername] = useState(currentUser.user.username)
+    const [email, setEmail] = useState(currentUser.user.email)
+    const [isEditing, setIsEditing] = useState(false)
+    const [isPopupVisible, setPopupVisible] = useState(false)
+    const [popupMessage, setPopupMessage] = useState("")
+    const [status, setStatus] = useState(null)
+
+    const handleUsernameChange = (event) => setUsername(event.target.value)
+    const handleEmailChange = (event) => setEmail(event.target.value)
+
+    const handleEditClick = () => setIsEditing(true)
+
+    const handleSubmit = (event) => {
+        event.preventDefault()
+
+        const user = {username: username, email: email}
+
+        apiProfileDataChange(user, (response, status) => {
+            setStatus(status)
+            if (status === 200) {
+                setPopupMessage("Changes saved")
+                setPopupVisible(true)
+                setTimeout(() => {
+                    setPopupVisible(false)
+                }, 3000)
+            } else {
+                setPopupMessage("An error occurred")
+                setPopupVisible(true)
+                setTimeout(() => {
+                    setPopupVisible(false)
+                }, 3000)
+            }
+        })
+
+        setIsEditing(false)
+    }
+
+    return (
+        <>
+            {isPopupVisible &&
+                <div className={status === 200 ? "popup popup-success" : "popup popup-error"}>
+                    {popupMessage}
+                </div>
+            }
+            {isEditing ? (
+                <form onSubmit={handleSubmit}>
+                    <h3>Data editing</h3>
+                    <label>
+                        Username:
+                        <input type="text" value={username} onChange={handleUsernameChange} />
+                    </label>
+                    <br />
+                    <label>
+                        Email:
+                        <input type="email" value={email} onChange={handleEmailChange} />
+                    </label>
+                    <br />
+                    <input type="submit" value="Save data" />
+                </form>
+            ) : (
+                <div className="content">
+                    <h3>Profile data</h3>
+                    <div className="data-row">
+                        <p>Username:</p>
+                        <span className="data-field">{username}</span>
+                    </div>
+                    <div className="data-row">
+                        <p>Email:</p>
+                        <span className="data-field">{email}</span>
+                    </div>
+                    <button className="btn btn-primary" onClick={handleEditClick}>Change data</button>
+                </div>
+            )}
+        </>
+    )
+}
 
 export function UserDashboard() {
     const {content} = useParams()
@@ -57,9 +133,7 @@ export function UserDashboard() {
                 </ul>
             </div>
             <div className="content-container">
-                <div className="content">
-                    {renderContent()}
-                </div>
+                {renderContent()}
             </div>
         </div> : <div>Loading...</div>
     )
