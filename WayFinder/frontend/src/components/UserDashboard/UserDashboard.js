@@ -2,7 +2,7 @@ import React, {useState} from "react"
 import {Link, useParams} from "react-router-dom"
 import "./UserDashboard.css"
 import {useCurrentUser} from "../../auth/hooks"
-import {apiProfileDataChange} from "../../lookup/backendLookup"
+import {apiProfileDataChange, apiPasswordChange} from "../../lookup/backendLookup"
 
 const Notifications = () => <div>Notifications</div>
 const Shared = () => <div>Shared</div>
@@ -15,20 +15,35 @@ const Settings = () => <div>Settings</div>
 const Profile = ({currentUser}) => {
     const [username, setUsername] = useState(currentUser.user.username)
     const [email, setEmail] = useState(currentUser.user.email)
+    const [firstName, setFirstName] = useState(currentUser.user.first_name)
+    const [lastName, setLastName] = useState(currentUser.user.last_name)
+    const [oldPassword, setOldPassword] = useState("")
+    const [newPassword, setNewPassword] = useState("")
     const [isEditing, setIsEditing] = useState(false)
+    const [isPasswordEditing, setIsPasswordEditing] = useState(false)
     const [isPopupVisible, setPopupVisible] = useState(false)
     const [popupMessage, setPopupMessage] = useState("")
     const [status, setStatus] = useState(null)
 
     const handleUsernameChange = (event) => setUsername(event.target.value)
     const handleEmailChange = (event) => setEmail(event.target.value)
+    const handleFirstNameChange = (event) => setFirstName(event.target.value)
+    const handleLastNameChange = (event) => setLastName(event.target.value)
 
-    const handleEditClick = () => setIsEditing(true)
+    const handleEditDataClick = () => setIsEditing(true)
 
-    const handleSubmit = (event) => {
+    const handleOldPasswordChange = (event) => setOldPassword(event.target.value)
+    const handleNewPasswordChange = (event) => setNewPassword(event.target.value)
+
+    const handleEditPasswordClick = () => {
+        setIsEditing(true)
+        setIsPasswordEditing(true)
+    }
+
+    const handleDataSubmit = (event) => {
         event.preventDefault()
 
-        const user = {username: username, email: email}
+        const user = {username: username, email: email, first_name: firstName, last_name: lastName}
 
         apiProfileDataChange(user, (response, status) => {
             setStatus(status)
@@ -50,28 +65,81 @@ const Profile = ({currentUser}) => {
         setIsEditing(false)
     }
 
+    const handlePasswordSubmit = (event) => {
+        event.preventDefault()
+
+        const passwords = {old_password: oldPassword, new_password: newPassword}
+
+        apiPasswordChange(passwords, (response, status) => {
+            setStatus(status)
+            if (status === 204) {
+                setPopupMessage("Changes saved")
+                setPopupVisible(true)
+                setTimeout(() => {
+                    setPopupVisible(false)
+                }, 3000)
+            } else {
+                setPopupMessage("An error occurred")
+                setPopupVisible(true)
+                setTimeout(() => {
+                    setPopupVisible(false)
+                }, 3000)
+            }
+        })
+
+        setOldPassword("")
+        setNewPassword("")
+        setIsPasswordEditing(false)
+        setIsEditing(false)
+    }
+
     return (
         <>
             {isPopupVisible &&
-                <div className={status === 200 ? "popup popup-success" : "popup popup-error"}>
+                <div className={(status === 200 || status === 204) ? "popup popup-success" : "popup popup-error"}>
                     {popupMessage}
                 </div>
             }
             {isEditing ? (
-                <form onSubmit={handleSubmit}>
-                    <h3>Data editing</h3>
-                    <label>
-                        Username:
-                        <input type="text" value={username} onChange={handleUsernameChange} />
-                    </label>
-                    <br />
-                    <label>
-                        Email:
-                        <input type="email" value={email} onChange={handleEmailChange} />
-                    </label>
-                    <br />
-                    <input type="submit" value="Save data" />
-                </form>
+                !isPasswordEditing ? (
+                    <form onSubmit={handleDataSubmit}>
+                        <h3>Data editing</h3>
+                        <label>
+                            Username:
+                            <input type="text" value={username} onChange={handleUsernameChange} />
+                        </label>
+                        <br />
+                        <label>
+                            Email:
+                            <input type="email" value={email} onChange={handleEmailChange} />
+                        </label>
+                        <br />
+                        <label>
+                            First name:
+                            <input type="text" value={firstName} onChange={handleFirstNameChange} />
+                        </label>
+                        <br />
+                        <label>
+                            Last name:
+                            <input type="text" value={lastName} onChange={handleLastNameChange} />
+                        </label>
+                        <input type="submit" value="Save data" />
+                    </form>) : (
+                        <form onSubmit={handlePasswordSubmit}>
+                            <h3>Password editing</h3>
+                            <label>
+                                Old password:
+                                <input type="password" value={oldPassword} onChange={handleOldPasswordChange} />
+                            </label>
+                            <br />
+                            <label>
+                                New password:
+                                <input type="password" value={newPassword} onChange={handleNewPasswordChange} />
+                            </label>
+                            <br />
+                            <input type="submit" value="Save new password" />
+                        </form>
+                    )
             ) : (
                 <div className="content">
                     <h3>Profile data</h3>
@@ -83,7 +151,17 @@ const Profile = ({currentUser}) => {
                         <p>Email:</p>
                         <span className="data-field">{email}</span>
                     </div>
-                    <button className="btn btn-primary" onClick={handleEditClick}>Change data</button>
+                    <div className="data-row">
+                        <p>First name:</p>
+                        <span className="data-field">{firstName}</span>
+                    </div>
+                    <div className="data-row">
+                        <p>Last name:</p>
+                        <span className="data-field">{lastName}</span>
+                    </div>
+                    <button className="btn btn-primary" onClick={handleEditDataClick}>Change data</button>
+                    <h3 className="passwd-header">Password</h3>
+                    <button className="btn btn-primary" onClick={handleEditPasswordClick}>Change password</button>
                 </div>
             )}
         </>

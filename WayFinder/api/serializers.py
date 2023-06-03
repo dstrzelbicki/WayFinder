@@ -10,8 +10,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 		model = UserModel
 		fields = '__all__'
 	def create(self, clean_data):
-		user_obj = UserModel.objects.create_user(email=clean_data['email'], password=clean_data['password']) # type: ignore
-		user_obj.username = clean_data['username']
+		user_obj = UserModel.objects.create_user(
+			email=clean_data['email'],
+			username=clean_data['username'],
+			first_name=clean_data['first_name'],
+			last_name=clean_data['last_name'],
+			password=clean_data['password']) # type: ignore
 		user_obj.save()
 		return user_obj
 
@@ -28,7 +32,7 @@ class UserLoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = UserModel
-		fields = ('email', 'username')
+		fields = ('email', 'username', 'first_name', 'last_name')
 
 class UserChangePasswordSerializer(serializers.Serializer):
     model = get_user_model()
