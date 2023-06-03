@@ -16,6 +16,7 @@ import {faTimes, faArrowCircleRight} from "@fortawesome/free-solid-svg-icons"
 import LoginPage from "../LoginPage/LoginPage"
 import RegisterPage from "../RegisterPage/RegisterPage";
 import ForgottenPassword from "../ForgottenPasswordPage/ForgottenPassword";
+import ResetPassword from "../ResetPasswordPage/ResetPassword";
 
 const HomePage = () => {
   const [marker1, setMarker1] = useState(null)
@@ -68,6 +69,7 @@ const HomePage = () => {
       // <LoginPage></LoginPage>
       // <RegisterPage></RegisterPage>
       // <ForgottenPassword></ForgottenPassword>
+      // <ResetPassword></ResetPassword>
       <Router>
         <div className="full-height-container">
           <Sidebar
