@@ -3,6 +3,7 @@ import {Link, useParams} from "react-router-dom"
 import "./UserDashboard.css"
 import {useCurrentUser} from "../../auth/hooks"
 import {apiProfileDataChange, apiPasswordChange} from "../../lookup/backendLookup"
+import PasswordStrengthBar from "react-password-strength-bar"
 
 const Notifications = () => <div>Notifications</div>
 const Shared = () => <div>Shared</div>
@@ -74,23 +75,24 @@ const Profile = ({currentUser}) => {
             setStatus(status)
             if (status === 204) {
                 setPopupMessage("Changes saved")
-                setPopupVisible(true)
-                setTimeout(() => {
-                    setPopupVisible(false)
-                }, 3000)
+                setIsPasswordEditing(false)
+                setIsEditing(false)
             } else {
-                setPopupMessage("An error occurred")
-                setPopupVisible(true)
-                setTimeout(() => {
-                    setPopupVisible(false)
-                }, 3000)
+                if (response.new_password[0] === "This password is too common.") {
+                    setPopupMessage("This password is too common")
+                } else {
+                    setPopupMessage("An error occurred")
+                    setIsPasswordEditing(false)
+                    setIsEditing(false)
+                }
             }
+            setPopupVisible(true)
+            setTimeout(() => {
+                setPopupVisible(false)
+            }, 3000)
         })
-
         setOldPassword("")
         setNewPassword("")
-        setIsPasswordEditing(false)
-        setIsEditing(false)
     }
 
     return (
@@ -136,6 +138,7 @@ const Profile = ({currentUser}) => {
                                 New password:
                                 <input type="password" value={newPassword} onChange={handleNewPasswordChange} />
                             </label>
+                            {newPassword !== "" && <PasswordStrengthBar password={newPassword} />}
                             <br />
                             <input type="submit" value="Save new password" />
                         </form>

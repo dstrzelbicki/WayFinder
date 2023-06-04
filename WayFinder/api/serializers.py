@@ -14,8 +14,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 			email=clean_data['email'],
 			username=clean_data['username'],
 			first_name=clean_data['first_name'],
-			last_name=clean_data['last_name'],
-			password=clean_data['password']) # type: ignore
+			last_name=clean_data['last_name'])
+		user_obj.set_password(clean_data['password'])
 		user_obj.save()
 		return user_obj
 
@@ -26,7 +26,7 @@ class UserLoginSerializer(serializers.Serializer):
 	def check_user(self, clean_data):
 		user = authenticate(username=clean_data['email'], password=clean_data['password'])
 		if not user:
-			raise ValidationError('user not found')
+			return ValidationError('invalid credentials')
 		return user
 
 class UserSerializer(serializers.ModelSerializer):

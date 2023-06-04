@@ -40,8 +40,10 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=50, blank=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    failed_login_attempts = models.IntegerField(default=0)
+    last_failed_login = models.DateTimeField(null=True)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     objects = AppUserManager()
     def __str__(self):
         return self.username

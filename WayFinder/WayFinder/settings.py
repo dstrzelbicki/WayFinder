@@ -118,6 +118,16 @@ DATABASES = {
 #     }
 # }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1', # redis://:<password>@<host>:<port>/<db_number>
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'wf'
+    }
+}
 
 ## User model
 AUTH_USER_MODEL = 'api.AppUser'

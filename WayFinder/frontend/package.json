@@ -45,6 +45,7 @@
     "dotenv": "^16.0.3",
     "dotenv-webpack": "^8.0.1",
     "ol": "^7.3.0",
+    "react-password-strength-bar": "^0.4.1",
     "react-router-dom": "^6.11.1"
   }
 }
