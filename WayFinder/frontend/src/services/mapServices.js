@@ -1,11 +1,12 @@
 import axios from "axios"
 import {fromLonLat} from "ol/proj"
+import {apply} from "ol/transform";
 
 const API_KEY = process.env.REACT_APP_GEOAPIFY_API_KEY
-const nominatimBaseUrl = "https://api.geoapify.com/v1/geocode/search"
+const geoApifyBaseUrl = "https://api.geoapify.com/v1/geocode"
 
 export const geocode = async (searchTerm) => {
-    const url = `${nominatimBaseUrl}?text=${encodeURIComponent(searchTerm)}&format=json&apiKey=${API_KEY}`
+    const url = `${geoApifyBaseUrl}/search?text=${encodeURIComponent(searchTerm)}&format=json&apiKey=${API_KEY}`
 
     const requestOptions = {
         method: 'GET',
@@ -16,10 +17,8 @@ export const geocode = async (searchTerm) => {
         if (response.status >= 400 && response.status < 600) {
             // fixme - improve error handling
             console.error("Error fetching geocoding data. Bad response from server: ", response)
-        } else {
-            console.log("Fetched data location:", response)
         }
-        return await response.json()
+        return response.json()
     } catch (error) {
         console.error("Error fetching geocoding data:", error)
         return null
@@ -42,15 +41,20 @@ export const getRoute = async (start, end) => {
     }
 }
 
+// the clicked point to find out the corresponding address
 export const reverseGeocode = async (coordinates) => {
     const [lon, lat] = coordinates
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+    const url = `${geoApifyBaseUrl}/reverse?lat=${lat}&lon=${lon}&apiKey=${API_KEY}`
 
     try {
         const response = await axios.get(url)
+        if (response.status >= 400 && response.status < 600) {
+            // fixme - improve error handling
+            console.error("Error fetching geocoding data. Bad response from server: ", response)
+        }
         return response.data
     } catch (error) {
-        console.error("Error reverse geocoding: ", error)
+        console.error("Error fetching geocoding data:", error)
         return null
     }
 }
