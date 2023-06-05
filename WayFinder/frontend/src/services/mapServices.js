@@ -1,6 +1,5 @@
 import axios from "axios"
 import {fromLonLat} from "ol/proj"
-import {apply} from "ol/transform";
 
 const API_KEY = process.env.REACT_APP_GEOAPIFY_API_KEY
 const geoApifyBaseUrl = "https://api.geoapify.com/v1/geocode"
@@ -57,4 +56,9 @@ export const reverseGeocode = async (coordinates) => {
         console.error("Error fetching geocoding data:", error)
         return null
     }
+}
+
+export const autocomplete = async (searchTerm) => {
+    const url = `${geoApifyBaseUrl}/autocomplete?text=${encodeURIComponent(searchTerm)}&format=json&limit=5&apiKey=${API_KEY}`;
+    return fetch(url)
 }
