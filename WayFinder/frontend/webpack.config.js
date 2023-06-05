@@ -1,6 +1,5 @@
 const path = require("path");
 const webpack = require("webpack");
-const config = require("dotenv").config();
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
@@ -47,10 +46,9 @@ module.exports = {
     port: 3000,
   },
   plugins: [
-    new webpack.EnvironmentPlugin(config.parsed),
+    new webpack.EnvironmentPlugin(),
     new webpack.DefinePlugin({
       "process.env": {
-        // This has effect on the react lib size
         NODE_ENV: JSON.stringify("development"),
       },
     }),
