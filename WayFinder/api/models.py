@@ -47,3 +47,25 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     objects = AppUserManager()
     def __str__(self):
         return self.username
+
+
+class Route(models.Model):
+    route_id = models.AutoField(primary_key=True)
+    start_location_name = models.CharField(max_length=200)
+    start_location_lat = models.DecimalField(max_digits=9, decimal_places=6)
+    start_location_lng = models.DecimalField(max_digits=9, decimal_places=6)
+    end_location_name = models.CharField(max_length=200)
+    end_location_lat = models.DecimalField(max_digits=9, decimal_places=6)
+    end_location_lng = models.DecimalField(max_digits=9, decimal_places=6)
+    distance = models.DecimalField(max_digits=9, decimal_places=2)
+    duration = models.DurationField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    saved = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Route'
+        verbose_name_plural = 'Routes'
+
+    def __str__(self):
+        return f"{self.start_location_name} to {self.end_location_name}"

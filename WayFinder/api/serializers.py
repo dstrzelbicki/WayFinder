@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
+from .models import Route
 
 UserModel = get_user_model()
 
@@ -53,3 +54,24 @@ class UserChangePasswordSerializer(serializers.Serializer):
         instance.set_password(validated_data['new_password'])
         instance.save()
         return instance
+
+class RouteSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = Route
+        fields = [
+            'route_id',
+            'start_location_name',
+            'start_location_lat',
+            'start_location_lng',
+            'end_location_name',
+            'end_location_lat',
+            'end_location_lng',
+            'distance',
+            'duration',
+            'created_at',
+            'user',
+        ]

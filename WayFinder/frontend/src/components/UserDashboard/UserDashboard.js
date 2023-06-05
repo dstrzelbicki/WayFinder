@@ -1,8 +1,8 @@
-import React, {useState} from "react"
+import React, {useState, useEffect} from "react"
 import {Link, useParams} from "react-router-dom"
 import "./UserDashboard.css"
 import {useCurrentUser} from "../../auth/hooks"
-import {apiProfileDataChange, apiPasswordChange} from "../../lookup/backendLookup"
+import {apiProfileDataChange, apiPasswordChange, apiUserRoutes} from "../../lookup/backendLookup"
 import PasswordStrengthBar from "react-password-strength-bar"
 
 const Notifications = () => <div>Notifications</div>
@@ -10,8 +10,50 @@ const Shared = () => <div>Shared</div>
 const Places = () => <div>Saved places</div>
 const Routes = () => <div>Saved routes</div>
 const Timeline = () => <div>Timeline</div>
-const History = () => <div>History</div>
 const Settings = () => <div>Settings</div>
+
+const History = () => {
+    const [routes, setRoutes] = useState([])
+    const [loaded, setLoaded] = useState(false)
+
+    useEffect(() => {
+        apiUserRoutes((response, status) => {
+            if (status === 200) {
+                setRoutes(response)
+                setLoaded(true)
+            }
+        })
+    }, [])
+
+    return (
+        <div className="content">
+            <h3>Searched routes history</h3>
+            {!loaded ? (
+                <div className="history-message">Unable to load your routes history, try again later</div>
+            ) : (
+                routes.length === 0 ? (
+                    <div className="history-message">Your routes history is empty yet</div>
+                ) : (<table>
+                        <thead>
+                            <tr>
+                                <th>Start location</th>
+                                <th>End location</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {routes.map((route, index) => (
+                                <tr key={index}>
+                                    <td>{route.start_location_name}</td>
+                                    <td>{route.end_location_name}</td>
+                                    <td>{new Intl.DateTimeFormat("pl-PL").format(new Date(route.created_at))}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                </table>))}
+        </div>
+    )
+}
 
 const Profile = ({currentUser}) => {
     const [username, setUsername] = useState(currentUser.user.username)

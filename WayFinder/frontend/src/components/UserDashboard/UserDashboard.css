@@ -165,6 +165,32 @@ p {
     border: 1px solid #0D6EFD;
 }
 
+tr th {
+    border: 1px solid #CCCCCC;
+    padding: 10px;
+}
+
+tr td {
+    border: 1px solid #CCCCCC;
+    padding: 10px;
+}
+
+table {
+    border: 1px solid #CCCCCC;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: center;
+    border-radius: 30px;
+    border-style: hidden;
+    box-shadow: 0 0 0 1px #CCCCCC;
+    background-color: #F7F7F7;
+}
+
+.history-message {
+    margin: auto;
+    margin-top: 10px;
+}
+
 .passwd-header {
     text-align: center;
     margin-top: 120px;

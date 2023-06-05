@@ -54,9 +54,13 @@ export function apiProfileDataChange(user, callback) {
     first_name: user.first_name,
     last_name: user.last_name
   }
-  backendLookup("PUT", `/user`, callback, data)
+  backendLookup("PUT", "/user", callback, data)
 }
 
 export function apiPasswordChange(passwords, callback) {
   backendLookup("PUT", "/change-password", callback, passwords)
+}
+
+export function apiUserRoutes(callback) {
+  backendLookup("GET", "/route", callback)
 }
