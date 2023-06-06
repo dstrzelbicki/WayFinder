@@ -7,23 +7,22 @@ import Feature from "ol/Feature"
 import Point from "ol/geom/Point"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
-import {Icon, Style} from "ol/style"
+import {Icon, Stroke, Style} from "ol/style"
 import {fromLonLat, toLonLat} from "ol/proj"
 import markerIcon from "../../assets/img/marker-icon.png"
-import {reverseGeocode} from "../../services/mapServices"
+import {reverseGeocode, routemap} from "../../services/mapServices"
 import XYZ from "ol/source/XYZ"
 import {Group} from "ol/layer"
+import {LineString} from "ol/geom";
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
 const PopupCard = ({data, onSelect}) => {
-    return (
-        <div className="popup-card">
-            <h4>{data.name}</h4>
-            <p>Coordinates: {data.lonLat.join(", ")}</p>
-            <button onClick={() => onSelect(data)}>Use as Marker2</button>
-        </div>
-    )
+    return (<div className="popup-card">
+        <h4>{data.name}</h4>
+        <p>Coordinates: {data.lonLat.join(", ")}</p>
+        <button onClick={() => onSelect(data)}>Use as Marker2</button>
+    </div>)
 }
 
 const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
@@ -31,6 +30,7 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
     const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
+    const [routeLayer, setRouteLayer] = useState(null);
     const TOMTOM_API_KEY = process.env.REACT_APP_TOMTOM_API_KEY
 
     useEffect(() => {
@@ -42,22 +42,14 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         // create TomTom traffic flow and incidents layers
         const trafficFlowLayer = new TileLayer({
             source: new XYZ({
-                url:
-                    `https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`,
-                maxZoom: 22,
-                tileSize: 256,
-            }),
-            visible: false,
+                url: `https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`, maxZoom: 22, tileSize: 256,
+            }), visible: false,
         })
 
         const trafficIncidentsLayer = new TileLayer({
             source: new XYZ({
-                url:
-                    `https://api.tomtom.com/traffic/map/4/tile/incidents/s3/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`,
-                maxZoom: 22,
-                tileSize: 256,
-            }),
-            visible: false,
+                url: `https://api.tomtom.com/traffic/map/4/tile/incidents/s3/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`, maxZoom: 22, tileSize: 256,
+            }), visible: false,
         })
 
         const trafficLayers = new Group({
@@ -71,11 +63,8 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
 
         // initialize the map with a view centered on a specific location and zoom level
         const initialMap = new Map({
-            target: mapRef.current,
-            layers: [osmLayer, trafficLayers, markerLayer],
-            view: new View({
-                center: [0, 0],
-                zoom: 2,
+            target: mapRef.current, layers: [osmLayer, trafficLayers, markerLayer], view: new View({
+                center: [0, 0], zoom: 2,
             }),
         })
 
@@ -113,10 +102,7 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
 
         const iconStyle = new Style({
             image: new Icon({
-                anchor: [0.5, 1],
-                anchorXUnits: "fraction",
-                anchorYUnits: "fraction",
-                src: markerIcon,
+                anchor: [0.5, 1], anchorXUnits: "fraction", anchorYUnits: "fraction", src: markerIcon,
             }),
         })
 
@@ -141,9 +127,7 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         if (data.features.length > 0) {
             const locationProperties = data.features[0].properties
             setPopupData({
-                coordinates,
-                lonLat,
-                name: locationProperties.formatted,
+                coordinates, lonLat, name: locationProperties.formatted,
             })
         } else {
             console.error(`No results found for coordinates: `, coordinates)
@@ -165,18 +149,81 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         }
     }
 
-    return (
-        <div ref={mapRef} className="map-container" id="map-container">
-            <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
-            {popupData && (
-                <PopupCard data={popupData} onSelect={(data) => {
-                    addOrUpdateMarker(data.lonLat, "marker2")
-                    onMarker2NameUpdate(data.name)
-                }}/>
-            )}
-            <div className="copyright-caption" id="copyright-caption">©TomTom</div>
-        </div>
-    )
+    const drawRoute = async () => {
+        if (marker1 === null || marker2 === null) {
+            console.log("Both markers must have values.")
+            return
+        }
+
+        const reversedMarker1 = [marker1[1], marker1[0]]
+        const reversedMarker2 = [marker2[1], marker2[0]]
+
+        const data = await routemap(reversedMarker1, reversedMarker2)
+        console.log("RETURNED: ", data)
+
+        const route = data.features[0]
+        const coordinates = route.geometry.coordinates
+        console.log("Coordinates:" , coordinates)
+        const routeFeature = new Feature({
+            geometry: new LineString(route.geometry.coordinates), properties: {
+                distance: data.features[0].properties.distance, distance_units: data.features[0].properties.distance_units, time: data.features[0].properties.time,
+            }
+        });
+        console.log("line string:", routeFeature)
+        const routeSource = new VectorSource({
+            features: [routeFeature],
+        });
+
+        const routeLayer = new VectorLayer({
+            source: routeSource, style: new Style({
+                stroke: new Stroke({
+                    color: "rgba(20, 137, 255, 0.7)", width: 5,
+                }),
+            }),
+        });
+
+        routeFeature.on("mouseout", (event) => {
+            const properties = event.target.getProperties();
+            console.log("distance: ", properties.distance)
+            const distance = properties.distance;
+            console.log("distance_units: ", properties.distance_units)
+            const distance_units = properties.distance_units;
+            const time = properties.time;
+
+            // Display the route information in a popup or tooltip
+            // You can use a custom solution or an existing library like OpenLayers Popup or Overlay
+            // Here's an example using a simple alert box:
+            alert(`${distance} ${distance_units}, ${time}`);
+        });
+
+        if (map && routeLayer) {
+            console.log("ADDED !!!")
+            map.addLayer(routeLayer);
+        }
+        // fixme can't see any line
+        // setRouteLayer(newRouteLayer);
+        // map.addLayer(newRouteLayer);
+        console.log("layers:", map.getLayers())
+
+        const view = map.getView();
+
+        // Set the center and zoom level of the view with animation
+        view.animate({
+            center: fromLonLat([marker1[0], marker1[1]]),
+            zoom: 7,
+            duration: 2000 // Animation duration in milliseconds
+        });
+    }
+
+    return (<div ref={mapRef} className="map-container" id="map-container">
+        <button className="route-button" onClick={drawRoute}>Trace route</button>
+        <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
+        {popupData && (<PopupCard data={popupData} onSelect={(data) => {
+            addOrUpdateMarker(data.lonLat, "marker2")
+            onMarker2NameUpdate(data.name)
+        }}/>)}
+        <div className="copyright-caption" id="copyright-caption">©TomTom</div>
+    </div>)
 }
 
 export default OLMap

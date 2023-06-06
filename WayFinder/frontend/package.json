@@ -44,6 +44,8 @@
     "dotenv": "^16.0.3",
     "dotenv-webpack": "^8.0.1",
     "ol": "6.5",
+    "ol-mapbox-style": "^10.6.0",
+    "osrm-rest-client": "^0.1.7",
     "react-router-dom": "^6.11.1"
   }
 }

@@ -52,6 +52,17 @@ body {
   cursor: pointer;
 }
 
+.route-button {
+  position: absolute;
+  bottom: 60px;
+  left: 10px;
+  z-index: 1000;
+  background-color: white;
+  padding: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
 .copyright-caption {
   display: none;
   position: absolute;
