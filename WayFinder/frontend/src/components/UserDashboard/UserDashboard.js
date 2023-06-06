@@ -55,7 +55,7 @@ const History = () => {
     )
 }
 
-const Profile = ({currentUser}) => {
+export function Profile ({currentUser}) {
     const [username, setUsername] = useState(currentUser.user.username)
     const [email, setEmail] = useState(currentUser.user.email)
     const [firstName, setFirstName] = useState(currentUser.user.first_name)

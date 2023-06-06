@@ -9,6 +9,7 @@
     transition: all 0.3s;
     transform: translateX(-70%);
     z-index: 1001;
+    background-color: #00BFFF;
 }
 
 .sidebar.active {
@@ -19,10 +20,10 @@
     position: absolute;
     top: 10px;
     right: 30px;
-    background-color: #f8f9fa;
-    border: 1px solid #ccc;
+    border: 1px solid black;
     padding: 5px 10px;
     cursor: pointer;
+    background-color: #009AD7;
 }
 
 h2 {
@@ -32,10 +33,10 @@ h2 {
 
 .search-history-icon.active {
     position: absolute;
-    top: 50px;
+    margin-top: 10px;
     right: 30px;
-    background-color: #f8f9fa;
-    border: 1px solid #ccc;
+    background-color: #009AD7;
+    border: 1px solid black;
     padding: 5px 10px;
     cursor: pointer;
 }
@@ -44,17 +45,50 @@ h2 {
     display: none;
 }
 
-.search-history-text.active {
-    margin-top: 1rem;
-    margin-left: 10px;
+.user-icon.active {
+    position: absolute;
+    margin-top: 60px;
+    right: 30px;
+    background-color: #009AD7;
+    border: 1px solid black;
+    padding: 5px 10px;
     cursor: pointer;
-    user-select: none;
 }
 
-.search-history-text.none {
+.user-icon.none {
     display: none;
 }
 
-.search-history-text.active:hover {
-    color: #0096ff;
+.logout-icon.active {
+    position: absolute;
+    margin-top: 110px;
+    right: 30px;
+    background-color: #009AD7;
+    border: 1px solid black;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.logout-icon.none {
+    display: none;
+}
+
+.sidebar-text.active {
+    margin-top: 1rem;
+    margin-left: 30px;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid black;
+    border-radius: 10px;
+    text-align: center;
+    width: 200px;
+    height: 30px;
+}
+
+.sidebar-text.none {
+    display: none;
+}
+
+.sidebar-text.active:hover {
+    background-color: #009AD7;
 }

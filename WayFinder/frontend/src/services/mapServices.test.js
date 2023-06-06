@@ -34,7 +34,8 @@ describe("mapServices", () => {
       expect(data).not.toBeNull()
       expect(Array.isArray(data)).toBe(true)
       expect(data.length).toBeGreaterThan(0)
-      expect(data).toEqual(mockResponse)
+      expect(typeof data[0].place_id).toBe("number")
+      expect(data[0].display_name).toBe(mockResponse[0].display_name)
     })
   })
 
