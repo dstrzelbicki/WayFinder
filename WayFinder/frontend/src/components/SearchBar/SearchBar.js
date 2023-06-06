@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useEffect, useRef, useState} from "react"
 import "./SearchBar.css"
 import {autocomplete} from "../../services/mapServices";
 
@@ -7,75 +7,76 @@ const SearchBar = ({placeholder, onSearch}) => {
     const [searchResults, setSearchResults] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
     const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+    const inputRef = useRef(null);
+    const MIN_ADDRESS_LENGTH = 3;
 
     useEffect(() => {
-        const results = addressAutocomplete(searchValue);
-        setSearchResults(results);
-        if (results.length > 0) {
-            setIsDropdownVisible(true);
-        }
+        const fetchAddressAutocomplete = async () => {
+            // Skip empty or short address strings
+            if (!searchValue || searchValue.length < MIN_ADDRESS_LENGTH) {
+                setSearchResults([])
+                return;
+            }
+            try {
+                const results = await addressAutocomplete(searchValue);
+                console.log("WYNIKI:", results);
+                setSearchResults(results);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchAddressAutocomplete();
     }, [searchValue]);
+
+    const addressAutocomplete = (value) => {
+        return new Promise((resolve, reject) => {
+            if (!value || value.length < MIN_ADDRESS_LENGTH) {
+                resolve([]);
+            } else {
+                autocomplete(value)
+                    .then(response => {
+                        if (response.ok) {
+                            response.json().then(data => resolve(data.results.map(result => result.formatted)));
+                        } else {
+                            response.json().then(data => reject(data));
+                        }
+                    })
+                    .catch(error => reject(error));
+            }
+        });
+    };
 
     const handleInputChange = (event) => {
         const value = event.target.value;
-        console.log("TUTAJ!!!", value)
-        setSearchValue(value)
+        setSearchValue(value);
         setIsDropdownVisible(true);
     }
 
-    // const handleKeyPress = (event) => {
-    //     if (event.key === "Enter") {
-    //         onSearch(searchValue)
-    //     }
-    // }
+    const handleKeyPress = (event) => {
+        if (event.key === "Enter") {
+            onSearch(searchValue)
+        }
+    }
 
-    const handleSelectChange = (event) => {
-        const value = event.target.value;
-        console.log("CO TO JRST: ", event)
+    const handleSelectItem = (value) => {
         setSearchValue(value);
         setSelectedItem(value);
         setIsDropdownVisible(false);
     };
 
-    const addressAutocomplete = (value) => {
-        const results = [];
-
-        const MIN_ADDRESS_LENGTH = 3;
-
-        // Skip empty or short address strings
-        if (!value || value.length < MIN_ADDRESS_LENGTH) {
-            return false;
+    const handleOutsideClick = (event) => {
+        if (inputRef.current && !inputRef.current.contains(event.target)) {
+            setIsDropdownVisible(false);
         }
-
-        const promise = new Promise((resolve, reject) => {
-            autocomplete(value)
-                .then(response => {
-                    if (response.ok) {
-                        response.json().then(data => resolve(data));
-                    } else {
-                        response.json().then(data => reject(data));
-                    }
-                });
-        });
-
-        promise.then((data) => {
-            /* For each item in the results */
-            data.results.forEach((result, index) => {
-                const listItem = <li key={index}>{result.formatted}</li>;
-                results.push(listItem);
-            });
-
-        }, (err) => {
-            if (!err.canceled) {
-                console.log(err);
-            }
-        });
-        return results
-    }
-
-    const handleDropdownBlur = () => {
-        setIsDropdownVisible(false);
     };
+
+    useEffect(() => {
+        document.addEventListener("click", handleOutsideClick);
+        return () => {
+            document.removeEventListener("click", handleOutsideClick);
+        };
+    }, []);
 
     return (
         <div className="search-bar">
@@ -85,26 +86,24 @@ const SearchBar = ({placeholder, onSearch}) => {
                 placeholder={placeholder}
                 value={searchValue}
                 onChange={handleInputChange}
-                // onKeyUp={handleKeyPress}
-                onBlur={handleDropdownBlur}
+                ref={inputRef}
+                onKeyDown={handleKeyPress}
             />
-            {isDropdownVisible && searchResults.length > 0 && (
-                <select
-                    value={selectedItem}
-                    onChange={handleSelectChange}
-                    className="dropdown-select"
-                >
-                    <option value="">Select an item</option>
+            {isDropdownVisible && Array.isArray(searchResults) && searchValue.length > 0 && (
+                <ul className="dropdown-list">
                     {searchResults.map((item, index) => (
-                        <option
+                        <li
                             key={index}
-                            value={item.index}
-                            selected={selectedItem === item}
+                            className={`dropdown-item ${
+                                item === selectedItem ? "selected" : ""
+                            }`}
+                            onClick={() => handleSelectItem(item)}
                         >
                             {item}
-                        </option>
+                        </li>
                     ))}
-                </select>)}
+                </ul>
+            )}
         </div>
     )
 }
