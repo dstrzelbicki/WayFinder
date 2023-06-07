@@ -16,10 +16,10 @@ export const geocode = async (searchTerm) => {
   }
 }
 
-const API_KEY = process.env.REACT_APP_OPENROUTESERVICE_API_KEY
+//const API_KEY = process.env.REACT_APP_OPENROUTESERVICE_API_KEY
 
 export const getRoute = async (start, end) => {
-  const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${API_KEY}&start=${start.join(
+  const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${OPENROUTESERVICE_API_KEY}&start=${start.join(
     ","
   )}&end=${end.join(",")}`
 

@@ -20,7 +20,7 @@ function ForgotPasswordPage() {
             </button>
           </div>
         </form>
-        <a href="/login" className="back-to-login-link">Back to Login</a>
+        <a href="/" className="back-to-login-link">Back to Login</a>
       </div>
     </div>
   );

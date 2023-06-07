@@ -22,7 +22,6 @@ class UserRegister(APIView):
 class UserLogin(APIView):
 	permission_classes = (permissions.AllowAny,)
 	authentication_classes = (SessionAuthentication,)
-	##
 	def post(self, request):
 		data = request.data
 		assert validate_email(data)
@@ -45,7 +44,6 @@ class UserLogout(APIView):
 class UserView(APIView):
 	permission_classes = (permissions.IsAuthenticated,)
 	authentication_classes = (SessionAuthentication,)
-	##
 	def get(self, request):
 		serializer = UserSerializer(request.user)
 		return Response({'user': serializer.data}, status=status.HTTP_200_OK)
