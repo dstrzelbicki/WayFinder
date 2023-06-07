@@ -8,12 +8,13 @@ import Point from "ol/geom/Point"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
 import {Icon, Stroke, Style} from "ol/style"
-import {fromLonLat, toLonLat} from "ol/proj"
+import {fromLonLat, toLonLat, transform} from "ol/proj"
 import markerIcon from "../../assets/img/marker-icon.png"
 import {reverseGeocode, routemap} from "../../services/mapServices"
 import XYZ from "ol/source/XYZ"
 import {Group} from "ol/layer"
 import {LineString} from "ol/geom";
+import {getCenter} from "ol/extent";
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
@@ -159,17 +160,23 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         const reversedMarker2 = [marker2[1], marker2[0]]
 
         const data = await routemap(reversedMarker1, reversedMarker2)
-        console.log("RETURNED: ", data)
 
-        const route = data.features[0]
-        const coordinates = route.geometry.coordinates
-        console.log("Coordinates:" , coordinates)
+        const coordinates = data.features[0].geometry.coordinates[0]
+
+        // Transform the coordinates to the projection used by the map
+        const transformedCoordinates = coordinates.map((coord) =>
+            transform(coord, 'EPSG:4326', 'EPSG:3857')
+        );
+
         const routeFeature = new Feature({
-            geometry: new LineString(route.geometry.coordinates), properties: {
-                distance: data.features[0].properties.distance, distance_units: data.features[0].properties.distance_units, time: data.features[0].properties.time,
+            geometry: new LineString(transformedCoordinates),
+            properties: {
+                distance: data.features[0].properties.distance,
+                distance_units: data.features[0].properties.distance_units,
+                time: data.features[0].properties.time,
             }
         });
-        console.log("line string:", routeFeature)
+
         const routeSource = new VectorSource({
             features: [routeFeature],
         });
@@ -182,7 +189,7 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
             }),
         });
 
-        routeFeature.on("mouseout", (event) => {
+        routeFeature.on("pointermove", (event) => {
             const properties = event.target.getProperties();
             console.log("distance: ", properties.distance)
             const distance = properties.distance;
@@ -194,22 +201,22 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
             // You can use a custom solution or an existing library like OpenLayers Popup or Overlay
             // Here's an example using a simple alert box:
             alert(`${distance} ${distance_units}, ${time}`);
+            console.log("COORDINATES: ", `${distance} ${distance_units}, ${time}`)
         });
 
         if (map && routeLayer) {
             console.log("ADDED !!!")
             map.addLayer(routeLayer);
         }
-        // fixme can't see any line
-        // setRouteLayer(newRouteLayer);
-        // map.addLayer(newRouteLayer);
-        console.log("layers:", map.getLayers())
 
         const view = map.getView();
 
         // Set the center and zoom level of the view with animation
+        const extent = routeSource.getExtent();
+        const center = getCenter(extent);
+
         view.animate({
-            center: fromLonLat([marker1[0], marker1[1]]),
+            center: center,
             zoom: 7,
             duration: 2000 // Animation duration in milliseconds
         });
