@@ -76,12 +76,12 @@ body {
 }
 
 .tooltip {
-  position: absolute;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  padding: 5px;
-  border-radius: 5px;
-  font-size: 15px;
+  background: #fff;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px #0000001a;
+  padding: 15px 10px;
+  pointer-events: auto;
+  position: relative;
 }
 
 .instructionContainer {

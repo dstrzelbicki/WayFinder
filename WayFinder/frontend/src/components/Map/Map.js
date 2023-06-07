@@ -215,12 +215,20 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
 
             if (feature === routeFeature) {
                 const properties = routeFeature.getProperties().properties;
+
                 const distance = properties.distance;
                 const time = properties.time;
                 console.log("properties: ", properties)
 
                 const tooltipElement = tooltipOverlay.getElement();
-                tooltipElement.innerHTML = `distance: ${convertMetersToKilometers(distance)}[km],\n time: ${convertSecToHours(time)}`;
+                tooltipElement.innerHTML = `<div>
+                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">distance:</span>
+                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
+                  </div> 
+                  <div>
+                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">time:</span>
+                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${convertSecToHours(time)}</span>
+                  </div>`;
 
                 tooltipOverlay.setPosition(event.coordinate);
                 tooltipOverlay.getElement().style.display = 'block';
@@ -269,13 +277,10 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         const turnByTurnsLayer = new VectorLayer({
             source: turnByTurnsSource, style: new Style({
                 image: new Circle({
-                    radius: 5,
-                    fill: new Fill({
+                    radius: 5, fill: new Fill({
                         color: '#fff',
-                    }),
-                    stroke: new Stroke({
-                        color: '#000',
-                        width: 1,
+                    }), stroke: new Stroke({
+                        color: '#000', width: 1,
                     }),
                 }),
             })
@@ -303,7 +308,7 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
     function convertSecToHours(seconds) {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
-        return hours + "[h]" + minutes + "[m]"
+        return hours + "h" + minutes + "m"
     }
 
     function convertMetersToKilometers(meters) {

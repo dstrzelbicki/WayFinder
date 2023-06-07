@@ -47,7 +47,7 @@ export const autocomplete = async (searchTerm) => {
 }
 
 export const routemap = async (start, end) => {
-    const url = `${geoApifyBaseUrl}/routing?waypoints=${start.join(',')}|${end.join(',')}&mode=drive&details=instruction_details&apiKey=${API_KEY}`
+    const url = `${geoApifyBaseUrl}/routing?waypoints=${start.join(',')}|${end.join(',')}&mode=drive&details=route_details&apiKey=${API_KEY}`
 
     const requestOptions = {
         method: 'GET',

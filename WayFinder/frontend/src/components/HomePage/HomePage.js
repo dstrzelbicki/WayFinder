@@ -7,6 +7,7 @@ import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faArrowCircleRight, faTimes} from "@fortawesome/free-solid-svg-icons"
+import TransportOptions from "../TransportOptionsBox/TransportOptions";
 
 const HomePage = () => {
     const [marker1, setMarker1] = useState(null)
@@ -103,6 +104,7 @@ const HomePage = () => {
                                 placeholder={marker2Name || "Search second location"}
                                 onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
                             />
+                            <TransportOptions/>
                         </>
                     )}
                 </div>
