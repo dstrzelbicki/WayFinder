@@ -7,6 +7,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "./static/frontend"),
     filename: "main.js",
+    publicPath: "/",
   },
   module: {
     rules: [
@@ -43,6 +44,9 @@ module.exports = {
     static: {
       directory: path.join(__dirname, "static"),
     },
+    compress: true,
+    hot: true,
+    historyApiFallback: true,
     port: 3000,
   },
   plugins: [
