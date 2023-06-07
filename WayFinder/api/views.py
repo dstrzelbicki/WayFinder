@@ -16,6 +16,7 @@ from .models import Route
 now_utc = datetime.now(timezone.utc)
 User = get_user_model()
 
+
 def custom_ratelimit(key=None, rate=None, method=None, block=False):
     def decorator(func):
         @wraps(func)
@@ -25,8 +26,11 @@ def custom_ratelimit(key=None, rate=None, method=None, block=False):
                                         block=block)(func)(request, *args, **kwargs)
             else:
                 return func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
+
 
 class UserRegister(APIView):
     permission_classes = (permissions.AllowAny,)
@@ -55,7 +59,7 @@ class UserLogin(APIView):
         user = User.objects.filter(email=data.get('email')).first()
         if user:
             if user.failed_login_attempts >= 5 and \
-            (now_utc - user.last_failed_login) < timedelta(minutes=60):
+                    (now_utc - user.last_failed_login) < timedelta(minutes=60):
                 return Response({"message": "Too many failed login attempts, please wait."},
                                 status=status.HTTP_429_TOO_MANY_REQUESTS)
 

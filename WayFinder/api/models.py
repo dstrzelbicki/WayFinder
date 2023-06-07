@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
+
 class AppUserManager(BaseUserManager):
     def create_user(self, email, username, first_name, last_name, password=None):
         if not email:
@@ -45,6 +46,7 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     objects = AppUserManager()
+
     def __str__(self):
         return self.username
 

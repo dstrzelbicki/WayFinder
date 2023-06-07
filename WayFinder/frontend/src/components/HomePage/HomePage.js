@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from "react"
 import {
+  useNavigate,
   BrowserRouter as Router,
   Routes,
   Route,
@@ -18,6 +19,7 @@ import RegisterPage from "../RegisterPage/RegisterPage";
 import ForgottenPassword from "../ForgottenPasswordPage/ForgottenPassword";
 
 const HomePage = () => {
+  const navigate = useNavigate()
   const [marker1, setMarker1] = useState(null)
   const [marker2, setMarker2] = useState(null)
   const [marker2Name, setMarker2Name] = useState("")
@@ -61,6 +63,15 @@ const HomePage = () => {
   const updateMarker2Name = (name) => {
     setMarker2Name(name)
   }
+
+
+    useEffect(() => {
+    const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+    if (!isLoggedIn) {
+      navigate("/");
+      alert("You need to login or register first to access the homepage.");
+    }
+  }, [navigate]);
 
   //Use 'ctrl + /' to display different pages
 
