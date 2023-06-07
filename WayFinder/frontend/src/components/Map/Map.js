@@ -1,13 +1,12 @@
 import React, {useEffect, useRef, useState} from "react"
 import "./Map.css"
-import {Map, Overlay, Tile, View} from "ol"
+import {Map, Overlay, View} from "ol"
 import TileLayer from "ol/layer/Tile"
-import OSM from "ol/source/OSM"
 import Feature from "ol/Feature"
 import Point from "ol/geom/Point"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
-import {Icon, Stroke, Style} from "ol/style"
+import {Circle, Fill, Icon, Stroke, Style} from "ol/style"
 import {fromLonLat, toLonLat, transform} from "ol/proj"
 import markerIcon from "../../assets/img/marker-icon.png"
 import {reverseGeocode, routemap} from "../../services/mapServices"
@@ -45,15 +44,10 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
 
         const tileLayer = new TileLayer({
             source: new XYZ({
-                url: isRetina ? retinaUrl : baseUrl,
-                attributions: [
-                    new Attribution({
-                        html: 'Powered by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | <a href="https://openmaptiles.org/" rel="nofollow" target="_blank">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" rel="nofollow" target="_blank">© OpenStreetMap</a> contributors',
-                    }),
-                ],
-            }),
-            maxZoom: 20,
-            zIndex: 0, // Set the desired zIndex for layer ordering
+                url: isRetina ? retinaUrl : baseUrl, attributions: [new Attribution({
+                    html: 'Powered by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | <a href="https://openmaptiles.org/" rel="nofollow" target="_blank">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" rel="nofollow" target="_blank">© OpenStreetMap</a> contributors',
+                }),],
+            }), maxZoom: 20, zIndex: 0, // Set the desired zIndex for layer ordering
         });
 
         // create TomTom traffic flow and incidents layers
@@ -180,16 +174,11 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         const coordinates = data.features[0].geometry.coordinates[0]
 
         // Transform the coordinates to the projection used by the map
-        const transformedCoordinates = coordinates.map((coord) =>
-            transform(coord, 'EPSG:4326', 'EPSG:3857')
-        );
+        const transformedCoordinates = coordinates.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
 
         const routeFeature = new Feature({
-            geometry: new LineString(transformedCoordinates),
-            properties: {
-                distance: data.features[0].properties.distance,
-                distance_units: data.features[0].properties.distance_units,
-                time: data.features[0].properties.time,
+            geometry: new LineString(transformedCoordinates), properties: {
+                distance: data.features[0].properties.distance, distance_units: data.features[0].properties.distance_units, time: data.features[0].properties.time,
             }
         });
 
@@ -207,14 +196,16 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
 
         // Create an overlay to display the tooltip
         const tooltipOverlay = new Overlay({
-            element: document.getElementById('tooltip'),
-            positioning: 'bottom-center',
+            element: document.getElementById('tooltip'), positioning: 'bottom-center',
         });
 
         if (map && routeLayer) {
             // Add the overlay to the map
             map.addOverlay(tooltipOverlay);
             map.addLayer(routeLayer);
+
+            // add turn by turn functionality
+            await turnByTurn(data)
         }
 
         // Register the "pointermove" event on the map
@@ -245,14 +236,68 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         const center = getCenter(extent);
 
         view.animate({
-            center: center,
-            zoom: 7,
-            duration: 2000 // Animation duration in milliseconds
+            center: center, zoom: 7, duration: 2000 // Animation duration in milliseconds
         });
     }
 
-    const turnByTurn = () => {
 
+    const turnByTurn = async (data) => {
+        const turnByTurns = [];
+
+        data.features.forEach((feature) => {
+            feature.properties.legs.forEach((leg, legIndex) => {
+                leg.steps.forEach((step) => {
+                    const pointFeature = new Feature({
+                        // Transform the coordinates to the projection used by the map
+                        geometry: new Point(feature.geometry.coordinates[legIndex]
+                            .map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'))[step.from_index]), // Update from_index to fromIndex
+                        properties: {
+                            instruction: step.instruction, // Update instruction.text to instruction
+                        },
+                    });
+                    turnByTurns.push(pointFeature);
+                });
+            });
+        });
+
+        console.log("turn by turns:", turnByTurns[0])
+
+        const turnByTurnsSource = new VectorSource({
+            features: turnByTurns,
+        });
+
+        const turnByTurnsLayer = new VectorLayer({
+            source: turnByTurnsSource, style: new Style({
+                image: new Circle({
+                    radius: 5,
+                    fill: new Fill({
+                        color: '#fff',
+                    }),
+                    stroke: new Stroke({
+                        color: '#000',
+                        width: 1,
+                    }),
+                }),
+            })
+        });
+
+        // Create an overlay to display the instructionContainer
+        const tooltipOverlay = new Overlay({
+            element: document.getElementById('instructionContainer'), positioning: 'bottom-center',
+        });
+
+        map.addOverlay(tooltipOverlay)
+        map.addLayer(turnByTurnsLayer);
+
+        // fixme -doesnt display information about given point, probably because of waypointer
+        turnByTurnsLayer.on('click', function (event) {
+            const tooltipElement = tooltipOverlay.getElement();
+            const feature = event.mapBrowserEvent.feature;
+            tooltipElement.innerHTML = feature.get('instruction');
+
+            tooltipOverlay.setPosition(event.coordinate);
+            tooltipOverlay.getElement().style.display = 'block';
+        });
     }
 
     function convertSecToHours(seconds) {
@@ -267,6 +312,7 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
 
     return (<div ref={mapRef} className="map-container" id="map-container">
         <div id="tooltip" className="tooltip"></div>
+        <div id="instructionContainer" className="instructionContainer"></div>
         <button className="route-button" onClick={drawRoute}>Trace route</button>
         <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
         {popupData && (<PopupCard data={popupData} onSelect={(data) => {

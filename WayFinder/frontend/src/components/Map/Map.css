@@ -83,3 +83,12 @@ body {
   border-radius: 5px;
   font-size: 15px;
 }
+
+.instructionContainer {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 15px;
+}
