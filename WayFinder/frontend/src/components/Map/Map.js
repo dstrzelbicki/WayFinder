@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react"
 import "./Map.css"
-import {Map, View} from "ol"
+import {Map, Overlay, View} from "ol"
 import TileLayer from "ol/layer/Tile"
 import OSM from "ol/source/OSM"
 import Feature from "ol/Feature"
@@ -189,25 +189,38 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
             }),
         });
 
-        routeFeature.on("pointermove", (event) => {
-            const properties = event.target.getProperties();
-            console.log("distance: ", properties.distance)
-            const distance = properties.distance;
-            console.log("distance_units: ", properties.distance_units)
-            const distance_units = properties.distance_units;
-            const time = properties.time;
-
-            // Display the route information in a popup or tooltip
-            // You can use a custom solution or an existing library like OpenLayers Popup or Overlay
-            // Here's an example using a simple alert box:
-            alert(`${distance} ${distance_units}, ${time}`);
-            console.log("COORDINATES: ", `${distance} ${distance_units}, ${time}`)
+        // Create an overlay to display the tooltip
+        const tooltipOverlay = new Overlay({
+            element: document.getElementById('tooltip'),
+            positioning: 'bottom-center',
         });
 
         if (map && routeLayer) {
-            console.log("ADDED !!!")
+            // Add the overlay to the map
+            map.addOverlay(tooltipOverlay);
             map.addLayer(routeLayer);
         }
+
+        // Register the "pointermove" event on the map
+        map.on('pointermove', (event) => {
+            const pixel = map.getEventPixel(event.originalEvent);
+            const feature = map.forEachFeatureAtPixel(pixel, (feature) => feature);
+
+            if (feature === routeFeature) {
+                const properties = routeFeature.getProperties().properties;
+                const distance = properties.distance;
+                const time = properties.time;
+                console.log("properties: ", properties)
+
+                const tooltipElement = tooltipOverlay.getElement();
+                tooltipElement.innerHTML = `distance: ${convertMetersToKilometers(distance)}[km],\n time: ${convertSecToHours(time)}`;
+
+                tooltipOverlay.setPosition(event.coordinate);
+                tooltipOverlay.getElement().style.display = 'block';
+            } else {
+                tooltipOverlay.getElement().style.display = 'none';
+            }
+        });
 
         const view = map.getView();
 
@@ -222,7 +235,18 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         });
     }
 
+    function convertSecToHours(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return hours + "[h]" + minutes + "[m]"
+    }
+
+    function convertMetersToKilometers(meters) {
+        return meters / 1000;
+    }
+
     return (<div ref={mapRef} className="map-container" id="map-container">
+        <div id="tooltip" className="tooltip"></div>
         <button className="route-button" onClick={drawRoute}>Trace route</button>
         <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
         {popupData && (<PopupCard data={popupData} onSelect={(data) => {
