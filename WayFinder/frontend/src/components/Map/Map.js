@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react"
 import "./Map.css"
-import {Map, Overlay, View} from "ol"
+import {Map, Overlay, Tile, View} from "ol"
 import TileLayer from "ol/layer/Tile"
 import OSM from "ol/source/OSM"
 import Feature from "ol/Feature"
@@ -15,6 +15,8 @@ import XYZ from "ol/source/XYZ"
 import {Group} from "ol/layer"
 import {LineString} from "ol/geom";
 import {getCenter} from "ol/extent";
+import {Attribution} from "ol/control";
+import {DEVICE_PIXEL_RATIO} from "ol/has";
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
@@ -31,14 +33,28 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
     const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
-    const [routeLayer, setRouteLayer] = useState(null);
     const TOMTOM_API_KEY = process.env.REACT_APP_TOMTOM_API_KEY
+    const API_KEY = process.env.REACT_APP_GEOAPIFY_API_KEY
+
+    const isRetina = DEVICE_PIXEL_RATIO > 1;
+    const baseUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=" + API_KEY;
+    const retinaUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}@2x.png?apiKey=" + API_KEY;
+
 
     useEffect(() => {
-        // create an OSM base layer
-        const osmLayer = new TileLayer({
-            source: new OSM(),
-        })
+
+        const tileLayer = new TileLayer({
+            source: new XYZ({
+                url: isRetina ? retinaUrl : baseUrl,
+                attributions: [
+                    new Attribution({
+                        html: 'Powered by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | <a href="https://openmaptiles.org/" rel="nofollow" target="_blank">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" rel="nofollow" target="_blank">© OpenStreetMap</a> contributors',
+                    }),
+                ],
+            }),
+            maxZoom: 20,
+            zIndex: 0, // Set the desired zIndex for layer ordering
+        });
 
         // create TomTom traffic flow and incidents layers
         const trafficFlowLayer = new TileLayer({
@@ -64,7 +80,7 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
 
         // initialize the map with a view centered on a specific location and zoom level
         const initialMap = new Map({
-            target: mapRef.current, layers: [osmLayer, trafficLayers, markerLayer], view: new View({
+            target: mapRef.current, layers: [tileLayer, trafficLayers, markerLayer], view: new View({
                 center: [0, 0], zoom: 2,
             }),
         })
@@ -233,6 +249,10 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
             zoom: 7,
             duration: 2000 // Animation duration in milliseconds
         });
+    }
+
+    const turnByTurn = () => {
+
     }
 
     function convertSecToHours(seconds) {
