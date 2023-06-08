@@ -1,22 +1,13 @@
-import React, {useState, useEffect} from "react"
-import {
-  useNavigate,
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link,
-  Redirect,
-} from "react-router-dom"
-import OLMap from "../Map/Map"
-import SearchBar from "../SearchBar/SearchBar"
-import {geocode} from "../../services/mapServices"
-import Sidebar from "../Sidebar/Sidebar"
-import "./HomePage.css"
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
-import {faTimes, faArrowCircleRight} from "@fortawesome/free-solid-svg-icons"
-import LoginPage from "../LoginPage/LoginPage"
-import RegisterPage from "../RegisterPage/RegisterPage";
-import ForgottenPassword from "../ForgottenPasswordPage/ForgottenPassword";
+import React, { useState, useEffect } from "react";
+import OLMap from "../Map/Map";
+import SearchBar from "../SearchBar/SearchBar";
+import { geocode } from "../../services/mapServices";
+import Sidebar from "../Sidebar/Sidebar";
+import "./HomePage.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes, faArrowCircleRight } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
+
 
 const HomePage = () => {
   const navigate = useNavigate()
@@ -76,9 +67,6 @@ const HomePage = () => {
   //Use 'ctrl + /' to display different pages
 
   return (
-      // <LoginPage></LoginPage>
-      // <RegisterPage></RegisterPage>
-      // <ForgottenPassword></ForgottenPassword>
       <div className="full-height-container">
         <Sidebar
           isNotCollapsed={isSidebarNotCollapsed}
