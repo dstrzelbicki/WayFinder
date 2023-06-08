@@ -32,7 +32,6 @@ class AppUserManager(BaseUserManager):
         user.save()
         return user
 
-
 class AppUser(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     email = models.EmailField(max_length=50, unique=True)
@@ -40,11 +39,12 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     # first_name = models.CharField(max_length=50, blank=False)
     # last_name = models.CharField(max_length=50, blank=False)
     is_active = models.BooleanField(default=True)
+   # is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     failed_login_attempts = models.IntegerField(default=0)
     last_failed_login = models.DateTimeField(null=True)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['username']
     objects = AppUserManager()
 
     def __str__(self):
