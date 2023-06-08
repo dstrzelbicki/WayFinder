@@ -74,6 +74,13 @@
   margin-top: 0;
 }
 
+
+.stop-transport-options-container {
+  display: flex;
+  align-items: flex-start;
+  margin-left: 20px;
+}
+
 .add-stop-dots {
   display: flex;
   flex-direction: column;

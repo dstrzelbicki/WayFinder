@@ -202,7 +202,13 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
             const reversedMarker3 = [marker3[1], marker3[0]]
 
             const data1 = await routemap(reversedMarker1, reversedMarker3, transportOption1)
-            const data2 = await routemap(reversedMarker3, reversedMarker2, transportOption2)
+
+            let data2
+            if (transportOption2 === null)
+                data2 = await routemap(reversedMarker3, reversedMarker2, transportOption1)
+            else
+                data2 = await routemap(reversedMarker3, reversedMarker2, transportOption2)
+
             drawRouteWithStop(data1, data2)
 
         } else {

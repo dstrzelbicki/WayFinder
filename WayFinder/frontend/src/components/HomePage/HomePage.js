@@ -19,7 +19,8 @@ const HomePage = () => {
     const [showSearchHistory, setShowSearchHistory] = useState(false)
     const [showAddStop, setShowAddStop] = useState(false);
     const [isMinusIcon, setIsMinusIcon] = useState(false);
-    const [selectedOption, setSelectedOption] = useState('');
+    const [selectedOption1, setSelectedOption1] = useState('');
+    const [selectedOption2, setSelectedOption2] = useState('');
 
     const toggleSidebar = () => {
         setIsSidebarNotCollapsed(!isSidebarNotCollapsed)
@@ -69,20 +70,33 @@ const HomePage = () => {
     };
 
     const handleOptionChange = (option) => {
-        if (selectedOption === option) {
-            setSelectedOption('');
+        if (selectedOption1 === option) {
+            setSelectedOption1('');
         } else {
-            setSelectedOption(option);
+            setSelectedOption1(option);
         }
     };
 
-    const isOptionSelected = (option) => {
-        return selectedOption === option;
+    const handleOptionChange2 = (option) => {
+        if (selectedOption2 === option) {
+            setSelectedOption2('');
+        } else {
+            setSelectedOption2(option);
+        }
+    };
+
+    const isOptionSelected1 = (option) => {
+        return selectedOption1 === option;
+    };
+
+    const isOptionSelected2 = (option) => {
+        return selectedOption2 === option;
     };
 
     useEffect(() => {
         if (isMinusIcon) {
-            setSelectedOption('')
+            setSelectedOption1('')
+            setSelectedOption2('')
         }
     }, [isMinusIcon])
 
@@ -137,10 +151,93 @@ const HomePage = () => {
 
                                 {showAddStop && (
                                     <>
+                                        <div className="stop-transport-options-container">
+                                            <FormGroup>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox
+                                                            checked={isOptionSelected1('Car')}
+                                                            onChange={() => handleOptionChange('Car')}
+                                                            color="primary"
+                                                            disabled={selectedOption1 && !isOptionSelected1('Car')}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <div>
+                                                            <ListItemIcon>
+                                                                <DriveEta/>
+                                                            </ListItemIcon>
+                                                            <span>Car</span>
+                                                        </div>
+                                                    }
+                                                />
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox
+                                                            checked={isOptionSelected1('Bicycle')}
+                                                            onChange={() => handleOptionChange('Bicycle')}
+                                                            disabled={selectedOption1 && !isOptionSelected1('Bicycle')}
+                                                            color="primary"
+                                                        />
+                                                    }
+                                                    label={
+                                                        <div>
+                                                            <ListItemIcon>
+                                                                <DirectionsBike/>
+                                                            </ListItemIcon>
+                                                            <span>Bicycle</span>
+                                                        </div>
+                                                    }
+                                                />
+                                            </FormGroup>
+                                        </div>
+
                                         <div className="add-stop-dots"/>
                                         <div className="search-bar-container">
                                             <SearchBar placeholder="Add stop" onSearch={(searchTerm) => handleSearch(searchTerm, 3)} grayText/>
                                         </div>
+
+                                        <div className="stop-transport-options-container">
+                                            <FormGroup>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox
+                                                            checked={isOptionSelected2('Car')}
+                                                            onChange={() => handleOptionChange2('Car')}
+                                                            color="primary"
+                                                            disabled={selectedOption2 && !isOptionSelected2('Car')}
+                                                        />
+                                                    }
+                                                    label={
+                                                        <div>
+                                                            <ListItemIcon>
+                                                                <DriveEta/>
+                                                            </ListItemIcon>
+                                                            <span>Car</span>
+                                                        </div>
+                                                    }
+                                                />
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox
+                                                            checked={isOptionSelected2('Bicycle')}
+                                                            onChange={() => handleOptionChange2('Bicycle')}
+                                                            disabled={selectedOption2 && !isOptionSelected2('Bicycle')}
+                                                            color="primary"
+                                                        />
+                                                    }
+                                                    label={
+                                                        <div>
+                                                            <ListItemIcon>
+                                                                <DirectionsBike/>
+                                                            </ListItemIcon>
+                                                            <span>Bicycle</span>
+                                                        </div>
+                                                    }
+                                                />
+                                            </FormGroup>
+                                        </div>
+
                                         <div className="add-stop-dots"/>
                                     </>
                                 )}
@@ -151,52 +248,53 @@ const HomePage = () => {
                                     <SearchBar placeholder={marker2Name || "Search second location"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
                                 </div>
                             </div>
-                            <div className="transport-options-container">
-                                <Typography variant="subtitle1">Select Transport Options:</Typography>
-                                <FormGroup>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={isOptionSelected('Car')}
-                                                onChange={() => handleOptionChange('Car')}
-                                                color="primary"
-                                                disabled={selectedOption && !isOptionSelected('Car')}
-                                            />
-                                        }
-                                        label={
-                                            <div>
-                                                <ListItemIcon>
-                                                    <DriveEta/>
-                                                </ListItemIcon>
-                                                <span>Car</span>
-                                            </div>
-                                        }
-                                    />
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={isOptionSelected('Bicycle')}
-                                                onChange={() => handleOptionChange('Bicycle')}
-                                                disabled={selectedOption && !isOptionSelected('Bicycle')}
-                                                color="primary"
-                                            />
-                                        }
-                                        label={
-                                            <div>
-                                                <ListItemIcon>
-                                                    <DirectionsBike/>
-                                                </ListItemIcon>
-                                                <span>Bicycle</span>
-                                            </div>
-                                        }
-                                    />
-                                </FormGroup>
-                                <Typography variant="subtitle2">Selected Options: {selectedOption}</Typography>
-                            </div>
+                            {!showAddStop && (<div className="transport-options-container">
+                                    <Typography variant="subtitle1">Select Transport Options:</Typography>
+                                    <FormGroup>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={isOptionSelected1('Car')}
+                                                    onChange={() => handleOptionChange('Car')}
+                                                    color="primary"
+                                                    disabled={selectedOption1 && !isOptionSelected1('Car')}
+                                                />
+                                            }
+                                            label={
+                                                <div>
+                                                    <ListItemIcon>
+                                                        <DriveEta/>
+                                                    </ListItemIcon>
+                                                    <span>Car</span>
+                                                </div>
+                                            }
+                                        />
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={isOptionSelected1('Bicycle')}
+                                                    onChange={() => handleOptionChange('Bicycle')}
+                                                    disabled={selectedOption1 && !isOptionSelected1('Bicycle')}
+                                                    color="primary"
+                                                />
+                                            }
+                                            label={
+                                                <div>
+                                                    <ListItemIcon>
+                                                        <DirectionsBike/>
+                                                    </ListItemIcon>
+                                                    <span>Bicycle</span>
+                                                </div>
+                                            }
+                                        />
+                                    </FormGroup>
+                                    <Typography variant="subtitle2">Selected Options: {selectedOption1}</Typography>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
-                <OLMap marker1={marker1} marker2={marker2} marker3={marker3} transportOption1={selectedOption} transportOption2={selectedOption} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
+                <OLMap marker1={marker1} marker2={marker2} marker3={marker3} transportOption1={selectedOption1} transportOption2={selectedOption2} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
             </div>
             <Routes>
                 <Route exact path="/"/>
