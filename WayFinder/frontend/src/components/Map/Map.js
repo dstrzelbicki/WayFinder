@@ -29,7 +29,7 @@ const PopupCard = ({data, onSelect}) => {
     </div>)
 }
 
-const OLMap = ({marker1, marker2, marker3, transportOption, onMarker2NameUpdate, isPlusIcon}) => {
+const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, onMarker2NameUpdate, isPlusIcon}) => {
     const mapRef = useRef()
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
@@ -189,7 +189,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption, onMarker2NameUpdate,
             return
         }
 
-        if (transportOption === '') {
+        if (transportOption1 === '') {
             console.log("Transport need to be selected.");
             handleShowMessage();
             return;
@@ -197,13 +197,64 @@ const OLMap = ({marker1, marker2, marker3, transportOption, onMarker2NameUpdate,
 
         if (marker3) {
 
+            const reversedMarker1 = [marker1[1], marker1[0]]
+            const reversedMarker2 = [marker2[1], marker2[0]]
+            const reversedMarker3 = [marker3[1], marker3[0]]
+
+            const data1 = await routemap(reversedMarker1, reversedMarker3, transportOption1)
+            const data2 = await routemap(reversedMarker3, reversedMarker2, transportOption2)
+            drawRouteWithStop(data1, data2)
+
         } else {
             const reversedMarker1 = [marker1[1], marker1[0]]
             const reversedMarker2 = [marker2[1], marker2[0]]
 
-            const data = await routemap(reversedMarker1, reversedMarker2)
+            const data = await routemap(reversedMarker1, reversedMarker2, transportOption1)
             drawRoute(data)
         }
+    }
+
+    // fixme -doesnt display road details for first part of road
+    function drawRouteWithStop(data1, data2) {
+        const coordinates1 = data1.features[0].geometry.coordinates[0]
+        const coordinates2 = data2.features[0].geometry.coordinates[0]
+
+        // Transform the coordinates to the projection used by the map
+        const transformedCoordinates1 = coordinates1.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
+        const transformedCoordinates2 = coordinates2.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
+
+        const routeFeature1 = new Feature({
+            geometry: new LineString(transformedCoordinates1), properties: {
+                distance: data1.features[0].properties.distance, distance_units: data1.features[0].properties.distance_units, time: data1.features[0].properties.time,
+            }
+        });
+        const routeFeature2 = new Feature({
+            geometry: new LineString(transformedCoordinates2), properties: {
+                distance: data2.features[0].properties.distance, distance_units: data2.features[0].properties.distance_units, time: data2.features[0].properties.time,
+            }
+        });
+
+        const routeSource = new VectorSource({
+            features: [routeFeature1, routeFeature2],
+        });
+
+        const routeLayer = new VectorLayer({
+            source: routeSource, style: new Style({
+                stroke: new Stroke({
+                    color: "rgba(20, 137, 255, 0.7)", width: 5,
+                }),
+            }),
+        });
+
+        if (map && routeLayer) {
+            map.addLayer(routeLayer)
+            showRoadDetails(routeFeature1)
+            showRoadDetails(routeFeature2)
+            showTurnByTurnDetails(data1)
+            showTurnByTurnDetails(data2)
+        }
+
+        animateZoomAtLocation(routeSource)
     }
 
     function drawRoute(data) {
@@ -256,7 +307,6 @@ const OLMap = ({marker1, marker2, marker3, transportOption, onMarker2NameUpdate,
 
                 const distance = properties.distance;
                 const time = properties.time;
-                console.log("properties: ", properties)
 
                 const tooltipElement = tooltipOverlay.getElement();
                 tooltipElement.innerHTML = `<div>
@@ -291,7 +341,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption, onMarker2NameUpdate,
         });
     }
 
-
+    // fixme -doesnt display information about given point
     function showTurnByTurnDetails(data) {
         const turnByTurns = [];
 
@@ -337,7 +387,6 @@ const OLMap = ({marker1, marker2, marker3, transportOption, onMarker2NameUpdate,
         map.addOverlay(tooltipOverlay)
         map.addLayer(turnByTurnsLayer);
 
-        // fixme -doesnt display information about given point
         turnByTurnsLayer.on('click', function (event) {
             const tooltipElement = tooltipOverlay.getElement();
             const feature = event.mapBrowserEvent.feature;

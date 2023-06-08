@@ -1,4 +1,4 @@
-import React, {useState} from "react"
+import React, {useEffect, useState} from "react"
 import {BrowserRouter as Router, Route, Routes,} from "react-router-dom"
 import OLMap from "../Map/Map"
 import SearchBar from "../SearchBar/SearchBar"
@@ -9,7 +9,6 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faArrowCircleRight, faMinus, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons"
 import {Checkbox, FormControlLabel, FormGroup, ListItemIcon, Typography} from "@material-ui/core";
 import {DirectionsBike, DriveEta} from "@material-ui/icons";
-import {useEffect} from "react"
 
 const HomePage = () => {
     const [marker1, setMarker1] = useState(null)
@@ -42,7 +41,7 @@ const HomePage = () => {
 
             if (searchBarId === 1) {
                 setMarker1(coordinates)
-            } else if(searchBarId === 2) {
+            } else if (searchBarId === 2) {
                 setMarker2(coordinates)
             } else {
                 setMarker3(coordinates)
@@ -127,21 +126,30 @@ const HomePage = () => {
                         </div>
                     ) : (
                         <>
-                            <div className="search-bar-container">
-                                <SearchBar placeholder="Search first location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)} />
-                                <button className="add-stop-button" onClick={handleAddStop}>
-                                    <FontAwesomeIcon icon={isMinusIcon ? faMinus : faPlus} />
-                                </button>
-                                <br/>
-                            </div>
-                            {showAddStop && (
+                            <div>
                                 <div className="search-bar-container">
-                                    <SearchBar placeholder="Add stop" onSearch={(searchTerm) => handleSearch(searchTerm, 3)} grayText />
+                                    <SearchBar placeholder="Search first location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
+                                    <button className="add-stop-button" onClick={handleAddStop}>
+                                        <FontAwesomeIcon icon={showAddStop ? faMinus : faPlus}/>
+                                    </button>
+                                    <br/>
                                 </div>
-                            )}
+
+                                {showAddStop && (
+                                    <>
+                                        <div className="add-stop-dots"/>
+                                        <div className="search-bar-container">
+                                            <SearchBar placeholder="Add stop" onSearch={(searchTerm) => handleSearch(searchTerm, 3)} grayText/>
+                                        </div>
+                                        <div className="add-stop-dots"/>
+                                    </>
+                                )}
+
                                 <br/>
-                            <div className="search-bar-container">
-                                <SearchBar placeholder={marker2Name || "Search second location"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)} />
+
+                                <div className="search-bar-container">
+                                    <SearchBar placeholder={marker2Name || "Search second location"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
+                                </div>
                             </div>
                             <div className="transport-options-container">
                                 <Typography variant="subtitle1">Select Transport Options:</Typography>
@@ -188,7 +196,7 @@ const HomePage = () => {
                         </>
                     )}
                 </div>
-                <OLMap marker1={marker1} marker2={marker2} marker3={marker3} transportOption={selectedOption} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
+                <OLMap marker1={marker1} marker2={marker2} marker3={marker3} transportOption1={selectedOption} transportOption2={selectedOption} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
             </div>
             <Routes>
                 <Route exact path="/"/>
