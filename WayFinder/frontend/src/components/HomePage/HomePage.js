@@ -6,15 +6,18 @@ import {geocode} from "../../services/mapServices"
 import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
-import {faArrowCircleRight, faTimes} from "@fortawesome/free-solid-svg-icons"
+import {faArrowCircleRight, faMinus, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons"
 import TransportOptions from "../TransportOptionsBox/TransportOptions";
 
 const HomePage = () => {
     const [marker1, setMarker1] = useState(null)
     const [marker2, setMarker2] = useState(null)
+    const [marker3, setMarker3] = useState(null)
     const [marker2Name, setMarker2Name] = useState("")
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
     const [showSearchHistory, setShowSearchHistory] = useState(false)
+    const [showAddStop, setShowAddStop] = useState(false);
+    const [isMinusIcon, setIsMinusIcon] = useState(false);
 
     const toggleSidebar = () => {
         setIsSidebarNotCollapsed(!isSidebarNotCollapsed)
@@ -33,10 +36,13 @@ const HomePage = () => {
                 lat,
                 lon
             )
+
             if (searchBarId === 1) {
                 setMarker1(coordinates)
-            } else {
+            } else if(searchBarId === 2) {
                 setMarker2(coordinates)
+            } else {
+                setMarker3(coordinates)
             }
 
             // save search term to local storage
@@ -54,6 +60,11 @@ const HomePage = () => {
     const updateMarker2Name = (name) => {
         setMarker2Name(name)
     }
+
+    const handleAddStop = () => {
+        setShowAddStop(!showAddStop);
+        setIsMinusIcon(!isMinusIcon);
+    };
 
     //Use 'ctrl + /' to display different pages
 
@@ -95,20 +106,27 @@ const HomePage = () => {
                         </div>
                     ) : (
                         <>
-                            <SearchBar
-                                placeholder="Search first location"
-                                onSearch={(searchTerm) => handleSearch(searchTerm, 1)}
-                            />
-                            <br/>
-                            <SearchBar
-                                placeholder={marker2Name || "Search second location"}
-                                onSearch={(searchTerm) => handleSearch(searchTerm, 2)}
-                            />
-                            <TransportOptions/>
+                            <div className="search-bar-container">
+                                <SearchBar placeholder="Search first location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)} />
+                                <button className="add-stop-button" onClick={handleAddStop}>
+                                    <FontAwesomeIcon icon={isMinusIcon ? faMinus : faPlus} />
+                                </button>
+                                <br/>
+                            </div>
+                            {showAddStop && (
+                                <div className="search-bar-container">
+                                    <SearchBar placeholder="Add stop" onSearch={(searchTerm) => handleSearch(searchTerm, 3)} grayText />
+                                </div>
+                            )}
+                                <br/>
+                            <div className="search-bar-container">
+                                <SearchBar placeholder={marker2Name || "Search second location"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)} />
+                            </div>
+                            <TransportOptions />
                         </>
                     )}
                 </div>
-                <OLMap marker1={marker1} marker2={marker2} onMarker2NameUpdate={updateMarker2Name}/>
+                <OLMap marker1={marker1} marker2={marker2} marker3={marker3} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
             </div>
             <Routes>
                 <Route exact path="/"/>

@@ -38,3 +38,22 @@
   cursor: pointer;
   margin-top: 10px;
 }
+
+.add-stop-button {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 5px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.gray-text {
+  color: gray;
+}

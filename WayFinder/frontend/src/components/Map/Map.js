@@ -27,7 +27,7 @@ const PopupCard = ({data, onSelect}) => {
     </div>)
 }
 
-const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
+const OLMap = ({marker1, marker2, marker3, onMarker2NameUpdate, isPlusIcon}) => {
     const mapRef = useRef()
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
@@ -103,6 +103,18 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         }
     }, [map, marker2])
 
+    useEffect(() => {
+        if (map && marker3) {
+            addOrUpdateMarker(marker3, "marker3")
+        }
+    }, [map, marker3])
+
+    useEffect(() => {
+        if (map && isPlusIcon) {
+            removeMarker(marker3, "marker3")
+        }
+    }, [map, marker3, isPlusIcon])
+
     const addOrUpdateMarker = (coordinates, markerId) => {
         const transformedCoordinates = fromLonLat(coordinates)
 
@@ -126,6 +138,14 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
             markerSource.removeFeature(existingMarker)
         }
         markerSource.addFeature(marker)
+    }
+
+    const removeMarker = (coordinates, markerId) => {
+        const markerSource = map.getLayers().item(2).getSource()
+        const existingMarker = markerSource.getFeatureById(markerId)
+        if (existingMarker) {
+            markerSource.removeFeature(existingMarker)
+        }
     }
 
     const handleMapClick = async (event) => {
