@@ -7,7 +7,9 @@ import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faArrowCircleRight, faMinus, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons"
-import TransportOptions from "../TransportOptionsBox/TransportOptions";
+import {Checkbox, FormControlLabel, FormGroup, ListItemIcon, Typography} from "@material-ui/core";
+import {DirectionsBike, DriveEta} from "@material-ui/icons";
+import {useEffect} from "react"
 
 const HomePage = () => {
     const [marker1, setMarker1] = useState(null)
@@ -18,6 +20,7 @@ const HomePage = () => {
     const [showSearchHistory, setShowSearchHistory] = useState(false)
     const [showAddStop, setShowAddStop] = useState(false);
     const [isMinusIcon, setIsMinusIcon] = useState(false);
+    const [selectedOption, setSelectedOption] = useState('');
 
     const toggleSidebar = () => {
         setIsSidebarNotCollapsed(!isSidebarNotCollapsed)
@@ -66,8 +69,26 @@ const HomePage = () => {
         setIsMinusIcon(!isMinusIcon);
     };
 
-    //Use 'ctrl + /' to display different pages
+    const handleOptionChange = (option) => {
+        if (selectedOption === option) {
+            setSelectedOption('');
+        } else {
+            setSelectedOption(option);
+        }
+    };
 
+    const isOptionSelected = (option) => {
+        return selectedOption === option;
+    };
+
+    useEffect(() => {
+        if (isMinusIcon) {
+            setSelectedOption('')
+        }
+    }, [isMinusIcon])
+
+
+    //Use 'ctrl + /' to display different pages
     return (
         // <LoginPage></LoginPage>
         // <RegisterPage></RegisterPage>
@@ -122,11 +143,52 @@ const HomePage = () => {
                             <div className="search-bar-container">
                                 <SearchBar placeholder={marker2Name || "Search second location"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)} />
                             </div>
-                            <TransportOptions />
+                            <div className="transport-options-container">
+                                <Typography variant="subtitle1">Select Transport Options:</Typography>
+                                <FormGroup>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={isOptionSelected('Car')}
+                                                onChange={() => handleOptionChange('Car')}
+                                                color="primary"
+                                                disabled={selectedOption && !isOptionSelected('Car')}
+                                            />
+                                        }
+                                        label={
+                                            <div>
+                                                <ListItemIcon>
+                                                    <DriveEta/>
+                                                </ListItemIcon>
+                                                <span>Car</span>
+                                            </div>
+                                        }
+                                    />
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={isOptionSelected('Bicycle')}
+                                                onChange={() => handleOptionChange('Bicycle')}
+                                                disabled={selectedOption && !isOptionSelected('Bicycle')}
+                                                color="primary"
+                                            />
+                                        }
+                                        label={
+                                            <div>
+                                                <ListItemIcon>
+                                                    <DirectionsBike/>
+                                                </ListItemIcon>
+                                                <span>Bicycle</span>
+                                            </div>
+                                        }
+                                    />
+                                </FormGroup>
+                                <Typography variant="subtitle2">Selected Options: {selectedOption}</Typography>
+                            </div>
                         </>
                     )}
                 </div>
-                <OLMap marker1={marker1} marker2={marker2} marker3={marker3} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
+                <OLMap marker1={marker1} marker2={marker2} marker3={marker3} transportOption={selectedOption} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
             </div>
             <Routes>
                 <Route exact path="/"/>

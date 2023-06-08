@@ -16,6 +16,8 @@ import {LineString} from "ol/geom";
 import {getCenter} from "ol/extent";
 import {Attribution} from "ol/control";
 import {DEVICE_PIXEL_RATIO} from "ol/has";
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
@@ -27,11 +29,12 @@ const PopupCard = ({data, onSelect}) => {
     </div>)
 }
 
-const OLMap = ({marker1, marker2, marker3, onMarker2NameUpdate, isPlusIcon}) => {
+const OLMap = ({marker1, marker2, marker3, transportOption, onMarker2NameUpdate, isPlusIcon}) => {
     const mapRef = useRef()
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
     const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
+    const [showMessage, setShowMessage] = useState(false)
     const TOMTOM_API_KEY = process.env.REACT_APP_TOMTOM_API_KEY
     const API_KEY = process.env.REACT_APP_GEOAPIFY_API_KEY
 
@@ -180,17 +183,30 @@ const OLMap = ({marker1, marker2, marker3, onMarker2NameUpdate, isPlusIcon}) => 
         }
     }
 
-    const drawRoute = async () => {
+    const route = async () => {
         if (marker1 === null || marker2 === null) {
             console.log("Both markers must have values.")
             return
         }
 
-        const reversedMarker1 = [marker1[1], marker1[0]]
-        const reversedMarker2 = [marker2[1], marker2[0]]
+        if (transportOption === '') {
+            console.log("Transport need to be selected.");
+            handleShowMessage();
+            return;
+        }
 
-        const data = await routemap(reversedMarker1, reversedMarker2)
+        if (marker3) {
 
+        } else {
+            const reversedMarker1 = [marker1[1], marker1[0]]
+            const reversedMarker2 = [marker2[1], marker2[0]]
+
+            const data = await routemap(reversedMarker1, reversedMarker2)
+            drawRoute(data)
+        }
+    }
+
+    function drawRoute(data) {
         const coordinates = data.features[0].geometry.coordinates[0]
 
         // Transform the coordinates to the projection used by the map
@@ -214,19 +230,21 @@ const OLMap = ({marker1, marker2, marker3, onMarker2NameUpdate, isPlusIcon}) => 
             }),
         });
 
+        if (map && routeLayer) {
+            map.addLayer(routeLayer)
+            showRoadDetails(routeFeature)
+            showTurnByTurnDetails(data)
+        }
+
+        animateZoomAtLocation(routeSource)
+    }
+
+    function showRoadDetails(routeFeature) {
+
         // Create an overlay to display the tooltip
         const tooltipOverlay = new Overlay({
             element: document.getElementById('tooltip'), positioning: 'bottom-center',
         });
-
-        if (map && routeLayer) {
-            // Add the overlay to the map
-            map.addOverlay(tooltipOverlay);
-            map.addLayer(routeLayer);
-
-            // add turn by turn functionality
-            await turnByTurn(data)
-        }
 
         // Register the "pointermove" event on the map
         map.on('pointermove', (event) => {
@@ -257,6 +275,11 @@ const OLMap = ({marker1, marker2, marker3, onMarker2NameUpdate, isPlusIcon}) => 
             }
         });
 
+        // Add the overlay to the map
+        map.addOverlay(tooltipOverlay);
+    }
+
+    function animateZoomAtLocation(routeSource) {
         const view = map.getView();
 
         // Set the center and zoom level of the view with animation
@@ -269,7 +292,7 @@ const OLMap = ({marker1, marker2, marker3, onMarker2NameUpdate, isPlusIcon}) => 
     }
 
 
-    const turnByTurn = async (data) => {
+    function showTurnByTurnDetails(data) {
         const turnByTurns = [];
 
         data.features.forEach((feature) => {
@@ -314,7 +337,7 @@ const OLMap = ({marker1, marker2, marker3, onMarker2NameUpdate, isPlusIcon}) => 
         map.addOverlay(tooltipOverlay)
         map.addLayer(turnByTurnsLayer);
 
-        // fixme -doesnt display information about given point, probably because of waypointer
+        // fixme -doesnt display information about given point
         turnByTurnsLayer.on('click', function (event) {
             const tooltipElement = tooltipOverlay.getElement();
             const feature = event.mapBrowserEvent.feature;
@@ -332,13 +355,28 @@ const OLMap = ({marker1, marker2, marker3, onMarker2NameUpdate, isPlusIcon}) => 
     }
 
     function convertMetersToKilometers(meters) {
-        return meters / 1000;
+        return meters / 1000
+    }
+
+    const handleShowMessage = () => {
+        setShowMessage(true)
+    }
+
+    const handleCloseMessage = () => {
+        setShowMessage(false)
     }
 
     return (<div ref={mapRef} className="map-container" id="map-container">
+        <div>
+            <Snackbar open={showMessage} autoHideDuration={4000} onClose={handleCloseMessage}>
+                <MuiAlert onClose={handleCloseMessage} severity="error" sx={{width: '100%'}}>
+                    Transport need to be selected.
+                </MuiAlert>
+            </Snackbar>
+        </div>
         <div id="tooltip" className="tooltip"></div>
         <div id="instructionContainer" className="instructionContainer"></div>
-        <button className="route-button" onClick={drawRoute}>Trace route</button>
+        <button className="route-button" onClick={route}>Trace route</button>
         <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
         {popupData && (<PopupCard data={popupData} onSelect={(data) => {
             addOrUpdateMarker(data.lonLat, "marker2")
