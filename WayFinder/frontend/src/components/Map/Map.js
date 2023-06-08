@@ -42,6 +42,9 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
     const baseUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=" + API_KEY;
     const retinaUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}@2x.png?apiKey=" + API_KEY;
 
+    const routeLayerName = 'route-layer'
+    const turnByTurnLayerName = 'turn-by-turn-layer'
+    const tooltipOverlayName = 'turn-by-turn-layer'
 
     useEffect(() => {
 
@@ -183,7 +186,8 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         }
     }
 
-    const route = async () => {
+    const route1 = async () => {
+
         if (marker1 === null || marker2 === null) {
             console.log("Both markers must have values.")
             return
@@ -194,6 +198,8 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
             handleShowMessage();
             return;
         }
+
+        removeRouteFeatures()
 
         if (marker3) {
 
@@ -218,6 +224,16 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
             const data = await routemap(reversedMarker1, reversedMarker2, transportOption1)
             drawRoute(data)
         }
+    }
+
+    function removeRouteFeatures() {
+        const routeLayer = map.getLayers().getArray().filter(layer => layer.get('name') === routeLayerName)[0];
+        const turnByTurnLayer = map.getLayers().getArray().filter(layer => layer.get('name') === turnByTurnLayerName)[0];
+        const tooltipOverlay = map.getLayers().getArray().filter(layer => layer.get('name') === tooltipOverlayName)[0];
+
+        map.removeLayer(routeLayer);
+        map.removeLayer(turnByTurnLayer);
+        map.removeLayer(tooltipOverlay);
     }
 
     // fixme -doesnt display road details for first part of road
@@ -245,7 +261,9 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         });
 
         const routeLayer = new VectorLayer({
-            source: routeSource, style: new Style({
+            name: routeLayerName,
+            source: routeSource,
+            style: new Style({
                 stroke: new Stroke({
                     color: "rgba(20, 137, 255, 0.7)", width: 5,
                 }),
@@ -254,6 +272,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
 
         if (map && routeLayer) {
             map.addLayer(routeLayer)
+
             showRoadDetails(routeFeature1)
             showRoadDetails(routeFeature2)
             showTurnByTurnDetails(data1)
@@ -280,6 +299,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         });
 
         const routeLayer = new VectorLayer({
+            name: routeLayerName,
             source: routeSource, style: new Style({
                 stroke: new Stroke({
                     color: "rgba(20, 137, 255, 0.7)", width: 5,
@@ -300,7 +320,9 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
 
         // Create an overlay to display the tooltip
         const tooltipOverlay = new Overlay({
-            element: document.getElementById('tooltip'), positioning: 'bottom-center',
+            name: tooltipOverlayName,
+            element: document.getElementById('tooltip'),
+            positioning: 'bottom-center',
         });
 
         // Register the "pointermove" event on the map
@@ -374,6 +396,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         });
 
         const turnByTurnsLayer = new VectorLayer({
+            name: turnByTurnLayerName,
             source: turnByTurnsSource, style: new Style({
                 image: new Circle({
                     radius: 5, fill: new Fill({
@@ -431,7 +454,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         </div>
         <div id="tooltip" className="tooltip"></div>
         <div id="instructionContainer" className="instructionContainer"></div>
-        <button className="route-button" onClick={route}>Trace route</button>
+        <button className="route-button" onClick={route1}>Trace route</button>
         <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
         {popupData && (<PopupCard data={popupData} onSelect={(data) => {
             addOrUpdateMarker(data.lonLat, "marker2")
