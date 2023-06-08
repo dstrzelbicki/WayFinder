@@ -186,7 +186,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         }
     }
 
-    const route1 = async () => {
+    const route = async () => {
 
         if (marker1 === null || marker2 === null) {
             console.log("Both markers must have values.")
@@ -207,21 +207,19 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
             const reversedMarker2 = [marker2[1], marker2[0]]
             const reversedMarker3 = [marker3[1], marker3[0]]
 
-            const data1 = await routemap(reversedMarker1, reversedMarker3, transportOption1)
+            const [data1, data2] = await Promise.all([
+                routemap(reversedMarker1, reversedMarker3, transportOption1),
+                routemap(reversedMarker3, reversedMarker2, transportOption2 || transportOption1)
+            ]);
 
-            let data2
-            if (transportOption2 === null)
-                data2 = await routemap(reversedMarker3, reversedMarker2, transportOption1)
-            else
-                data2 = await routemap(reversedMarker3, reversedMarker2, transportOption2)
-
-            drawRouteWithStop(data1, data2)
+            drawRouteWithStop(data1, data2);
 
         } else {
             const reversedMarker1 = [marker1[1], marker1[0]]
             const reversedMarker2 = [marker2[1], marker2[0]]
 
             const data = await routemap(reversedMarker1, reversedMarker2, transportOption1)
+
             drawRoute(data)
         }
     }
@@ -245,16 +243,8 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         const transformedCoordinates1 = coordinates1.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
         const transformedCoordinates2 = coordinates2.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
 
-        const routeFeature1 = new Feature({
-            geometry: new LineString(transformedCoordinates1), properties: {
-                distance: data1.features[0].properties.distance, distance_units: data1.features[0].properties.distance_units, time: data1.features[0].properties.time,
-            }
-        });
-        const routeFeature2 = new Feature({
-            geometry: new LineString(transformedCoordinates2), properties: {
-                distance: data2.features[0].properties.distance, distance_units: data2.features[0].properties.distance_units, time: data2.features[0].properties.time,
-            }
-        });
+        const routeFeature1 = createRouteLayerFeatures(transformedCoordinates1, data1)
+        const routeFeature2 = createRouteLayerFeatures(transformedCoordinates2, data2)
 
         const routeSource = new VectorSource({
             features: [routeFeature1, routeFeature2],
@@ -288,11 +278,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         // Transform the coordinates to the projection used by the map
         const transformedCoordinates = coordinates.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
 
-        const routeFeature = new Feature({
-            geometry: new LineString(transformedCoordinates), properties: {
-                distance: data.features[0].properties.distance, distance_units: data.features[0].properties.distance_units, time: data.features[0].properties.time,
-            }
-        });
+        const routeFeature = createRouteLayerFeatures(transformedCoordinates, data)
 
         const routeSource = new VectorSource({
             features: [routeFeature],
@@ -316,6 +302,18 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         animateZoomAtLocation(routeSource)
     }
 
+    function createRouteLayerFeatures(transformedCoordinates, data) {
+        return new Feature({
+            geometry: new LineString(transformedCoordinates),
+            properties: {
+                distance: data.features[0].properties.distance,
+                distance_units: data.features[0].properties.distance_units,
+                time: data.features[0].properties.time,
+                mode: data.properties.mode
+            }
+        });
+    }
+
     function showRoadDetails(routeFeature) {
 
         // Create an overlay to display the tooltip
@@ -335,16 +333,22 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
 
                 const distance = properties.distance;
                 const time = properties.time;
+                const mode = properties.mode;
 
                 const tooltipElement = tooltipOverlay.getElement();
                 tooltipElement.innerHTML = `<div>
                 <span class="black-06 mat-caption" style="width: 100px; display:inline-block">distance:</span>
-                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
+                <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
                   </div> 
                   <div>
                 <span class="black-06 mat-caption" style="width: 100px; display:inline-block">time:</span>
-                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${convertSecToHours(time)}</span>
-                  </div>`;
+                <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertSecToHours(time)}</span>
+                  </div>
+                <div>
+                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">transport mode: </span>
+                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${mode}</span>
+                  </div>
+                `;
 
                 tooltipOverlay.setPosition(event.coordinate);
                 tooltipOverlay.getElement().style.display = 'block';
@@ -454,7 +458,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         </div>
         <div id="tooltip" className="tooltip"></div>
         <div id="instructionContainer" className="instructionContainer"></div>
-        <button className="route-button" onClick={route1}>Trace route</button>
+        <button className="route-button" onClick={route}>Trace route</button>
         <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
         {popupData && (<PopupCard data={popupData} onSelect={(data) => {
             addOrUpdateMarker(data.lonLat, "marker2")

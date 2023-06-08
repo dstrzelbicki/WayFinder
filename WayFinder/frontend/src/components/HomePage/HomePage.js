@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useContext, useEffect, useState} from "react"
 import {BrowserRouter as Router, Route, Routes,} from "react-router-dom"
 import OLMap from "../Map/Map"
 import SearchBar from "../SearchBar/SearchBar"
@@ -100,7 +100,6 @@ const HomePage = () => {
         }
     }, [isMinusIcon])
 
-
     //Use 'ctrl + /' to display different pages
     return (
         // <LoginPage></LoginPage>
@@ -146,9 +145,8 @@ const HomePage = () => {
                                     <button className="add-stop-button" onClick={handleAddStop}>
                                         <FontAwesomeIcon icon={showAddStop ? faMinus : faPlus}/>
                                     </button>
-                                    <br/>
                                 </div>
-
+                            </div>
                                 {showAddStop && (
                                     <>
                                         <div className="stop-transport-options-container">
@@ -242,12 +240,11 @@ const HomePage = () => {
                                     </>
                                 )}
 
-                                <br/>
 
-                                <div className="search-bar-container">
+
+                                <div className="search-bar-container2">
                                     <SearchBar placeholder={marker2Name || "Search second location"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
                                 </div>
-                            </div>
                             {!showAddStop && (<div className="transport-options-container">
                                     <Typography variant="subtitle1">Select Transport Options:</Typography>
                                     <FormGroup>

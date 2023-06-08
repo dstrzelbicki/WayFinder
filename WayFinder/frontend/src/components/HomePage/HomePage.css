@@ -1,8 +1,28 @@
+.add-stop-button {
+  background-color: cornflowerblue;
+  color: white;
+  border: none;
+  padding: 5px;
+  margin-left: 40px;
+  margin-top: -18px;
+  cursor: pointer;
+}
+
 .search-container {
   display: inline-block;
   margin-left: 80px;
-  margin-top: 10px;
-  vertical-align: top;
+  margin-top: 50px;
+}
+
+.search-bar-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.search-bar-container2 {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
 .full-height-container {
@@ -39,21 +59,6 @@
   margin-top: 10px;
 }
 
-.add-stop-button {
-  background-color: green;
-  color: white;
-  border: none;
-  padding: 5px;
-  margin-left: 5px;
-  cursor: pointer;
-}
-
-.search-bar-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
 .gray-text {
   color: gray;
 }
@@ -81,18 +86,21 @@
   margin-left: 20px;
 }
 
+.stop-transport-options-container > * {
+  margin-right: 10px;
+}
+
 .add-stop-dots {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 20px;
   color: #88aaff;
-  margin: 8px 0;
+  margin: 2px 0;
 }
 
 .add-stop-dots::before,
 .add-stop-dots::after {
   content: "•";
-  margin: 1px 0;
 }

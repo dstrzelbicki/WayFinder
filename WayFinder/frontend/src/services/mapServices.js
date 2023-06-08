@@ -53,7 +53,7 @@ export const routemap = async (start, end, transportOption) => {
         mode = "drive"
     } else mode = "bicycle"
 
-    const url = `${geoApifyBaseUrl}/routing?waypoints=${start.join(',')}|${end.join(',')}&mode=${mode}&details=route_details&apiKey=${API_KEY}`
+    const url = `${geoApifyBaseUrl}/routing?waypoints=${start.join(',')}|${end.join(',')}&mode=${mode}&details=instruction_details,route_details,elevation&apiKey=${API_KEY}`
 
     const requestOptions = {
         method: 'GET',
