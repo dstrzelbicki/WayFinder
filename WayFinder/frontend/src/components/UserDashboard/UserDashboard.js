@@ -58,8 +58,8 @@ const History = () => {
 export function Profile ({currentUser}) {
     const [username, setUsername] = useState(currentUser.user.username)
     const [email, setEmail] = useState(currentUser.user.email)
-    const [firstName, setFirstName] = useState(currentUser.user.first_name)
-    const [lastName, setLastName] = useState(currentUser.user.last_name)
+    // const [firstName, setFirstName] = useState(currentUser.user.first_name)
+    // const [lastName, setLastName] = useState(currentUser.user.last_name)
     const [oldPassword, setOldPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
     const [isEditing, setIsEditing] = useState(false)
@@ -70,8 +70,8 @@ export function Profile ({currentUser}) {
 
     const handleUsernameChange = (event) => setUsername(event.target.value)
     const handleEmailChange = (event) => setEmail(event.target.value)
-    const handleFirstNameChange = (event) => setFirstName(event.target.value)
-    const handleLastNameChange = (event) => setLastName(event.target.value)
+    // const handleFirstNameChange = (event) => setFirstName(event.target.value)
+    // const handleLastNameChange = (event) => setLastName(event.target.value)
 
     const handleEditDataClick = () => setIsEditing(true)
 
@@ -86,7 +86,8 @@ export function Profile ({currentUser}) {
     const handleDataSubmit = (event) => {
         event.preventDefault()
 
-        const user = {username: username, email: email, first_name: firstName, last_name: lastName}
+        // const user = {username: username, email: email, first_name: firstName, last_name: lastName}
+        const user = {username: username, email: email}
 
         apiProfileDataChange(user, (response, status) => {
             setStatus(status)
@@ -157,7 +158,7 @@ export function Profile ({currentUser}) {
                             Email:
                             <input type="email" value={email} onChange={handleEmailChange} />
                         </label>
-                        <br />
+                        {/* <br />
                         <label>
                             First name:
                             <input type="text" value={firstName} onChange={handleFirstNameChange} />
@@ -166,7 +167,7 @@ export function Profile ({currentUser}) {
                         <label>
                             Last name:
                             <input type="text" value={lastName} onChange={handleLastNameChange} />
-                        </label>
+                        </label> */}
                         <input type="submit" value="Save data" />
                     </form>) : (
                         <form onSubmit={handlePasswordSubmit}>
@@ -196,14 +197,14 @@ export function Profile ({currentUser}) {
                         <p>Email:</p>
                         <span className="data-field">{email}</span>
                     </div>
-                    <div className="data-row">
+                    {/* <div className="data-row">
                         <p>First name:</p>
                         <span className="data-field">{firstName}</span>
                     </div>
                     <div className="data-row">
                         <p>Last name:</p>
                         <span className="data-field">{lastName}</span>
-                    </div>
+                    </div> */}
                     <button className="btn btn-primary" onClick={handleEditDataClick}>Change data</button>
                     <h3 className="passwd-header">Password</h3>
                     <button className="btn btn-primary" onClick={handleEditPasswordClick}>Change password</button>
@@ -216,6 +217,7 @@ export function Profile ({currentUser}) {
 export function UserDashboard() {
     const {content} = useParams()
     const {currentUser, isLoading} = useCurrentUser()
+    console.log(currentUser)
 
     const renderContent = () => {
         switch (content) {

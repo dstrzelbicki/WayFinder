@@ -11,10 +11,10 @@ class AppUserManager(BaseUserManager):
             raise ValueError('A password is required.')
         if not username:
             raise ValueError('A username is required.')
-        if not first_name:
-            raise ValueError('A first name is required.')
-        if not last_name:
-            raise ValueError('A last name is required.')
+        # if not first_name:
+        #     raise ValueError('A first name is required.')
+        # if not last_name:
+        #     raise ValueError('A last name is required.')
         email = self.normalize_email(email)
         user = self.model(
             email=email,
@@ -25,8 +25,8 @@ class AppUserManager(BaseUserManager):
         user.save()
         return user
 
-    def create_superuser(self, email, username, first_name, last_name, password=None):
-        user = self.create_user(email, username, first_name, last_name, password)
+    def create_superuser(self, email, username, password=None):
+        user = self.create_user(email, username, password)
         user.is_staff = True
         user.is_superuser = True
         user.save()
@@ -37,8 +37,8 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     email = models.EmailField(max_length=50, unique=True)
     username = models.CharField(max_length=50, unique=True)
-    first_name = models.CharField(max_length=50, blank=False)
-    last_name = models.CharField(max_length=50, blank=False)
+    # first_name = models.CharField(max_length=50, blank=False)
+    # last_name = models.CharField(max_length=50, blank=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     failed_login_attempts = models.IntegerField(default=0)

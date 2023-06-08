@@ -51,8 +51,8 @@ export function apiProfileDataChange(user, callback) {
   const data = {
     username: user.username,
     email: user.email,
-    first_name: user.first_name,
-    last_name: user.last_name
+    // first_name: user.first_name,
+    // last_name: user.last_name
   }
   backendLookup("PUT", "/user", callback, data)
 }

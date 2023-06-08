@@ -6,7 +6,7 @@ export const useCurrentUser = () => {
   const baseURL = process.env.REACT_APP_BASE_URL
 
   useEffect(() => {
-    fetch(`${baseURL}/api/user`, {
+    fetch(`http://localhost:8000/api/user`, {
       method: "GET",
       credentials: "include",
       headers: {

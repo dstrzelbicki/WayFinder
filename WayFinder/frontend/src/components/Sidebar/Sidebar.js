@@ -20,16 +20,16 @@ const Sidebar = ({isNotCollapsed, toggleSidebar, onSearchHistoryClick}) => {
           <FontAwesomeIcon icon={faHistory} />
         </div>
         <div className={`sidebar-text${isNotCollapsed ? " active" : " none"}`}>
-          <Link to={"user-dashboard/profile"} style={{textDecoration: "none", color: "inherit"}}>User dashboard</Link>
+          <Link to={"/user-dashboard/profile"} style={{textDecoration: "none", color: "inherit"}}>User dashboard</Link>
         </div>
         <div className={`user-icon${isNotCollapsed ? " none" : " active"}`}>
-          <Link to={"user-dashboard/profile"} style={{textDecoration: "none", color: "inherit"}}><FontAwesomeIcon icon={faUserAlt} /></Link>
+          <Link to={"/user-dashboard/profile"} style={{textDecoration: "none", color: "inherit"}}><FontAwesomeIcon icon={faUserAlt} /></Link>
         </div>
         <div className={`sidebar-text${isNotCollapsed ? " active" : " none"}`}>
-          <Link to={"logout"} style={{textDecoration: "none", color: "inherit"}}>Logout</Link>
+          <Link to={"/logout"} style={{textDecoration: "none", color: "inherit"}}>Logout</Link>
         </div>
         <div className={`logout-icon${isNotCollapsed ? " none" : " active"}`}>
-          <Link to={"logout"} style={{textDecoration: "none", color: "inherit"}}><FontAwesomeIcon icon={faSignOut} /></Link>
+          <Link to={"/logout"} style={{textDecoration: "none", color: "inherit"}}><FontAwesomeIcon icon={faSignOut} /></Link>
         </div>
     </div>
   )
