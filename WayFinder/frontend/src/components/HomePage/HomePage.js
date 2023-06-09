@@ -64,8 +64,6 @@ const HomePage = () => {
     }
   }, [navigate]);
 
-  //Use 'ctrl + /' to display different pages
-
   return (
       <div className="full-height-container">
         <Sidebar
