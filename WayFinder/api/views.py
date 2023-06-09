@@ -1,3 +1,5 @@
+from django.core.mail import send_mail
+from django.conf import settings
 from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model, authenticate
 from django.forms import ValidationError
 from rest_framework.authentication import SessionAuthentication
@@ -42,6 +44,19 @@ class UserRegister(APIView):
         serializer = UserRegisterSerializer(data=clean_data)
         if serializer.is_valid():
             user = serializer.save()
+
+            subject = 'Welcome to WayFinder'
+            message = 'Thank you for registering on WayFinder!'
+            recipients = [user.email]
+
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=recipients,
+                fail_silently=False,
+            )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
