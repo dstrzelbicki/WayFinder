@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f64a2a7b-b6b4-47f2-a8bf-7fdbe6f9bbd6" name="Changes" comment="merge fixes 2">
+      <change beforePath="$PROJECT_DIR$/WayFinder/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/WayFinder/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WayFinder/frontend/src/components/HomePage/HomePage.js" beforeDir="false" afterPath="$PROJECT_DIR$/WayFinder/frontend/src/components/HomePage/HomePage.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+        <option value="JavaScript File" />
+        <option value="CSS File" />
+      </list>
+    </option>
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="dev" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="6a47d233-5c05-4eb3-ab3c-b904b511aed6" />
+        <option name="url" value="https://github.com/dstrzelbicki/WayFinder.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2PQxWV62dgzGOG9qnmojY276RYN" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;login-register-page&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/WayFinder/WayFinder/WayFinder&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\WayFinder\WayFinder\WayFinder" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\WayFinder" />
+      <recent name="D:\WayFinder\WayFinder\WayFinder" />
+      <recent name="D:\WayFinder\WayFinder" />
+      <recent name="D:\WayFinder\WayFinder\frontend\src\assets\img" />
+      <recent name="D:\WayFinder\WayFinder\frontend\src\components\LoginPage\img" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Node.js.HomePage.js">
+    <configuration name="HomePage.js" type="NodeJSConfigurationType" path-to-node="$PROJECT_DIR$/../Narzędzia/Node/node" nameIsGenerated="true" path-to-js-file="HomePage.js" working-dir="$PROJECT_DIR$/WayFinder/frontend/src/components/HomePage">
+      <method v="2" />
+    </configuration>
+    <configuration name="manage" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="WayFinder" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\dstrz\AppData\Local\Microsoft\WindowsApps\python3.11.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/WayFinder" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/WayFinder/manage.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.manage" />
+        <item itemvalue="Python.manage" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f64a2a7b-b6b4-47f2-a8bf-7fdbe6f9bbd6" name="Changes" comment="" />
+      <created>1683403138540</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1683403138540</updated>
+      <workItem from="1683403146418" duration="1061000" />
+      <workItem from="1683404256159" duration="1143000" />
+      <workItem from="1683405416485" duration="1386000" />
+      <workItem from="1683407737497" duration="1909000" />
+      <workItem from="1683409718978" duration="2179000" />
+      <workItem from="1683448654618" duration="817000" />
+      <workItem from="1683452156344" duration="4468000" />
+      <workItem from="1683457367167" duration="840000" />
+      <workItem from="1683495195839" duration="842000" />
+      <workItem from="1683496058232" duration="112000" />
+      <workItem from="1683544233117" duration="958000" />
+      <workItem from="1683575536419" duration="2476000" />
+      <workItem from="1683651177096" duration="1767000" />
+      <workItem from="1683653725828" duration="4494000" />
+      <workItem from="1683749417838" duration="10824000" />
+      <workItem from="1683760324687" duration="325000" />
+      <workItem from="1683818516575" duration="1628000" />
+      <workItem from="1683979631398" duration="544000" />
+      <workItem from="1684060833107" duration="2189000" />
+      <workItem from="1684321090981" duration="341000" />
+      <workItem from="1685002636954" duration="46000" />
+      <workItem from="1685037026269" duration="599000" />
+      <workItem from="1685105122002" duration="7208000" />
+      <workItem from="1685178712667" duration="599000" />
+      <workItem from="1685180020146" duration="7480000" />
+      <workItem from="1685641535911" duration="830000" />
+      <workItem from="1685803882050" duration="3742000" />
+      <workItem from="1685975424216" duration="649000" />
+      <workItem from="1685980482907" duration="7574000" />
+      <workItem from="1686161486398" duration="1633000" />
+      <workItem from="1686163138528" duration="10383000" />
+      <workItem from="1686252077220" duration="896000" />
+      <workItem from="1686335901869" duration="1819000" />
+    </task>
+    <task id="LOCAL-00001" summary="login and register pages added">
+      <created>1683760053434</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1683760053434</updated>
+    </task>
+    <task id="LOCAL-00002" summary="forgotten password link added">
+      <created>1685108257210</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1685108257210</updated>
+    </task>
+    <task id="LOCAL-00003" summary="forgotten password page added">
+      <created>1685111103615</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1685111103615</updated>
+    </task>
+    <task id="LOCAL-00004" summary="reset password page added">
+      <created>1685820691895</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1685820691895</updated>
+    </task>
+    <task id="LOCAL-00005" summary="merge fixes">
+      <created>1686171869873</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1686171869873</updated>
+    </task>
+    <task id="LOCAL-00006" summary="merge fixes 2">
+      <created>1686172063046</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1686172063046</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/dev" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="login and register pages added" />
+    <MESSAGE value="forgotten password link added" />
+    <MESSAGE value="forgotten password page added" />
+    <MESSAGE value="reset password page added" />
+    <MESSAGE value="merge fixes" />
+    <MESSAGE value="merge fixes 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="merge fixes 2" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/WayFinder$manage.coverage" NAME="manage Coverage Results" MODIFIED="1683404811109" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/WayFinder" />
+  </component>
+</project>
