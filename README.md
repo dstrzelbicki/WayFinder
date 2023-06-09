@@ -19,11 +19,29 @@ pip install django
 
 - Connect via OpenVPN to connect to the database (Instruction for connecting through UAM OpenVPN: https://laboratoria.wmi.amu.edu.pl/uslugi/vpn/windows/connect/)
 
-## To run locally:
+## Starting development server:
 
-Starting development server: 
+To run locally use commands:
 ```bash
-python manage.py runserver
+python .\manage.py runserver
+```
+
+To run locally frontend app, use commands:
+```
+cd WayFinder/WayFinder/frontend
+npm start
+```
+If npm is not installed, use command:
+```
+sudo apt update
+sudo apt install nodejs npm
+```
+App is available at http://localhost:3000/
+
+To run test suites:
+```
+cd WayFinder/WayFinder/frontend
+npm test
 ```
 
 WARNING:
@@ -34,7 +52,7 @@ pip install djangorestframework
 ```
 
 
-We use django-environ package to manage .env in Django for keeping any secret or sensitive data needed for connecting in our application:
+We use django-environ package to manage .env in Django for keeping sensitive data needed for connecting in our application:
 ```bash
 pip install django-environ
 ```

@@ -1,13 +1,14 @@
 const path = require("path");
 const webpack = require("webpack");
-const config = require("dotenv").config();
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+require("dotenv").config();
 
 module.exports = {
   entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "./static/frontend"),
     filename: "main.js",
+    publicPath: "/",
   },
   module: {
     rules: [
@@ -44,14 +45,17 @@ module.exports = {
     static: {
       directory: path.join(__dirname, "static"),
     },
+    compress: true,
+    hot: true,
+    historyApiFallback: true,
     port: 3000,
   },
   plugins: [
-    new webpack.EnvironmentPlugin(config.parsed),
+    new webpack.EnvironmentPlugin(),
     new webpack.DefinePlugin({
       "process.env": {
-        // This has effect on the react lib size
         NODE_ENV: JSON.stringify("development"),
+        "REACT_APP_BASE_URL": JSON.stringify(process.env.REACT_APP_BASE_URL),
       },
     }),
     new HtmlWebpackPlugin({
