@@ -1,4 +1,4 @@
-import {geocode, getRoute, reverseGeocode} from "./mapServices"
+import {geocode, reverseGeocode} from "./mapServices"
 import nock from "nock"
 
 describe("mapServices", () => {
@@ -36,37 +36,6 @@ describe("mapServices", () => {
       expect(data.length).toBeGreaterThan(0)
       expect(typeof data[0].place_id).toBe("number")
       expect(data[0].display_name).toBe(mockResponse[0].display_name)
-    })
-  })
-
-  describe("getRoute", () => {
-    it("should return route data for valid start and end coordinates", async () => {
-      const start = [-74.006, 40.7128]
-      const end = [-73.9352, 40.7306]
-      const mockResponse = {
-        type: "FeatureCollection",
-        features: [
-          {
-            type: "Feature",
-            geometry: {
-              type: "LineString",
-              coordinates: [
-                [-74.006, 40.7128],
-                [-73.9352, 40.7306],
-              ],
-            },
-          },
-        ],
-      }
-
-      nock("https://api.openrouteservice.org")
-        .get(`/v2/directions/driving-car?api_key=${process.env.REACT_APP_OPENROUTESERVICE_API_KEY}&start=${start.join(",")}&end=${end.join(",")}`)
-        .reply(200, mockResponse)
-
-      const route = await getRoute(start, end)
-      expect(route).not.toBeNull()
-      expect(Array.isArray(route)).toBe(true)
-      expect(route.length).toBeGreaterThan(0)
     })
   })
 

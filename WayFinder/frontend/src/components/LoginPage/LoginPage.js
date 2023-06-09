@@ -28,7 +28,9 @@ export default function LoginPage() {
       .then(function (res) {
         if (res.status === 200) {
           // Login successful
+          const token = res.data.token;
           sessionStorage.setItem("isLoggedIn", "true");
+          sessionStorage.setItem("token", token);
           setLoggedIn(true);
           navigate("/home");
         } else {

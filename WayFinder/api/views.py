@@ -1,4 +1,4 @@
-from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model
+from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model, authenticate
 from django.forms import ValidationError
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -12,6 +12,8 @@ from django_ratelimit.decorators import ratelimit as django_ratelimit
 from django_ratelimit.exceptions import Ratelimited
 from functools import wraps
 from .models import Route
+from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
 
 now_utc = datetime.now(timezone.utc)
 User = get_user_model()
@@ -65,18 +67,20 @@ class UserLogin(APIView):
 
         serializer = UserLoginSerializer(data=data)
         if serializer.is_valid():
-            if serializer.check_user(serializer.validated_data) != ValidationError('invalid credentials'):
+            user = authenticate(request, email=data['email'], password=data['password'])
+            if user:
                 login(request, user)
                 # reset failed login attempts
                 user.failed_login_attempts = 0
                 user.save()
-                return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key}, status=status.HTTP_200_OK)
             else:
                 # increment failed login attempts
                 user.failed_login_attempts += 1
                 user.last_failed_login = datetime.now()
                 user.save()
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400)
 
 
 class UserLogout(APIView):
@@ -90,7 +94,7 @@ class UserLogout(APIView):
 
 class UserView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (SessionAuthentication,)
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
         serializer = UserSerializer(request.user)
@@ -107,7 +111,7 @@ class UserView(APIView):
 
 class UserChangePassword(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (SessionAuthentication,)
+    authentication_classes = (TokenAuthentication,)
 
     def put(self, request):
         serializer = UserChangePasswordSerializer(data=request.data, context={'request': request})
@@ -120,7 +124,7 @@ class UserChangePassword(APIView):
 
 class RouteView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (SessionAuthentication,)
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
         routes = Route.objects.filter(user=request.user)

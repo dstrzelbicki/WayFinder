@@ -25,9 +25,10 @@ function backendLookup(method, endpoint, callback, data) {
   xhr.open(method, url)
   xhr.setRequestHeader("Content-Type", "application/json")
   if (csrftoken) {
-    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
     xhr.setRequestHeader("X-CSRFToken", csrftoken)
   }
+  xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
+  xhr.setRequestHeader("Authorization", `Token ${sessionStorage.getItem("token")}`)
   xhr.withCredentials = true
   xhr.onload = function() {
     if (xhr.status === 403) {
@@ -63,4 +64,8 @@ export function apiPasswordChange(passwords, callback) {
 
 export function apiUserRoutes(callback) {
   backendLookup("GET", "/route", callback)
+}
+
+export function apiProfileData(callback) {
+  backendLookup("GET", "/user", callback)
 }

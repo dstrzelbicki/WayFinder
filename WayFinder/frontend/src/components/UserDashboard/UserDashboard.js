@@ -2,7 +2,8 @@ import React, {useState, useEffect} from "react"
 import {Link, useParams} from "react-router-dom"
 import "./UserDashboard.css"
 import {useCurrentUser} from "../../auth/hooks"
-import {apiProfileDataChange, apiPasswordChange, apiUserRoutes} from "../../lookup/backendLookup"
+import {apiProfileDataChange, apiPasswordChange,
+        apiUserRoutes, apiProfileData} from "../../lookup/backendLookup"
 import PasswordStrengthBar from "react-password-strength-bar"
 
 const Notifications = () => <div>Notifications</div>
@@ -12,7 +13,7 @@ const Routes = () => <div>Saved routes</div>
 const Timeline = () => <div>Timeline</div>
 const Settings = () => <div>Settings</div>
 
-const History = () => {
+export function History() {
     const [routes, setRoutes] = useState([])
     const [loaded, setLoaded] = useState(false)
 
@@ -56,8 +57,8 @@ const History = () => {
 }
 
 export function Profile ({currentUser}) {
-    const [username, setUsername] = useState(currentUser.user.username)
-    const [email, setEmail] = useState(currentUser.user.email)
+    const [username, setUsername] = useState(currentUser.username)
+    const [email, setEmail] = useState(currentUser.email)
     // const [firstName, setFirstName] = useState(currentUser.user.first_name)
     // const [lastName, setLastName] = useState(currentUser.user.last_name)
     const [oldPassword, setOldPassword] = useState("")
@@ -184,6 +185,10 @@ export function Profile ({currentUser}) {
                             {newPassword !== "" && <PasswordStrengthBar password={newPassword} />}
                             <br />
                             <input type="submit" value="Save new password" />
+                            <button className="btn btn-danger" onClick={() => {
+                                setIsPasswordEditing(false),
+                                setIsEditing(false)
+                                }}>Cancel</button>
                         </form>
                     )
             ) : (
@@ -216,8 +221,18 @@ export function Profile ({currentUser}) {
 
 export function UserDashboard() {
     const {content} = useParams()
-    const {currentUser, isLoading} = useCurrentUser()
-    console.log(currentUser)
+    //const {currentUser, isLoading} = useCurrentUser()
+    const [currentUser, setCurrentUser] = useState({})
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        if (setIsLoading) {
+            apiProfileData((response, status) => {
+                setCurrentUser(response.user)
+                setIsLoading(false)
+            })
+        }
+    }, [])
 
     const renderContent = () => {
         switch (content) {
@@ -238,7 +253,7 @@ export function UserDashboard() {
             case "settings":
                 return <Settings />
             default:
-                return <Profile />
+                return <Profile currentUser={currentUser} />
         }
     }
 
