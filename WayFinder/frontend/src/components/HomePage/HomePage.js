@@ -100,12 +100,7 @@ const HomePage = () => {
         }
     }, [isMinusIcon])
 
-    //Use 'ctrl + /' to display different pages
     return (
-        // <LoginPage></LoginPage>
-        // <RegisterPage></RegisterPage>
-        // <ForgottenPassword></ForgottenPassword>
-        <Router>
             <div className="full-height-container">
                 <Sidebar
                     isNotCollapsed={isSidebarNotCollapsed}
@@ -292,10 +287,6 @@ const HomePage = () => {
                 </div>
                 <OLMap marker1={marker1} marker2={marker2} marker3={marker3} transportOption1={selectedOption1} transportOption2={selectedOption2} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
             </div>
-            <Routes>
-                <Route exact path="/"/>
-            </Routes>
-        </Router>
     )
 }
 
