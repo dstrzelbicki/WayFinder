@@ -71,3 +71,9 @@ form button[type="submit"] {
 .login-link:hover {
   color: #0056b3;
 }
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
+}

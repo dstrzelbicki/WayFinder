@@ -1,6 +1,11 @@
 import React, { Component } from "react"
+import  LoginPage  from "./LoginPage/LoginPage"
+import  RegisterPage  from "./RegisterPage/RegisterPage"
+import ForgotPasswordPage from "./ForgottenPasswordPage/ForgottenPassword";
 import HomePage from "./HomePage/HomePage"
 import { createRoot } from "react-dom/client"
+import {BrowserRouter as Router, Routes, Route, HashRouter} from "react-router-dom"
+import UserDashboard from "./UserDashboard/UserDashboard"
 
 export default class App extends Component {
   constructor(props) {
@@ -9,9 +14,23 @@ export default class App extends Component {
 
   render() {
     return (
-      <div>
-        <HomePage />
-      </div>
+        //<div>
+        <Router>
+          <Routes>
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage  />} />
+            <Route path="/user-dashboard/:content" element={<UserDashboard />} />
+            <Route path="/" element={<LoginPage />} />
+          </Routes>
+        </Router>
+      //</div>
+      //  <Router>
+      //    <Routes>
+      //           <Route path="/user-dashboard/:content" element={<UserDashboard />} />
+      //          <Route exact path="/" element={<LoginPage />} />
+      //     </Routes>
+      //   </Router>
     )
   }
 }

@@ -19,7 +19,6 @@ const SearchBar = ({placeholder, onSearch}) => {
             }
             try {
                 const results = await addressAutocomplete(searchValue);
-                console.log("WYNIKI:", results);
                 setSearchResults(results);
             } catch (error) {
                 console.log(error);

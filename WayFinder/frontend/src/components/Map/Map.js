@@ -16,6 +16,8 @@ import {LineString} from "ol/geom";
 import {getCenter} from "ol/extent";
 import {Attribution} from "ol/control";
 import {DEVICE_PIXEL_RATIO} from "ol/has";
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
@@ -27,11 +29,12 @@ const PopupCard = ({data, onSelect}) => {
     </div>)
 }
 
-const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
+const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, onMarker2NameUpdate, isPlusIcon}) => {
     const mapRef = useRef()
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
     const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
+    const [showMessage, setShowMessage] = useState(false)
     const TOMTOM_API_KEY = process.env.REACT_APP_TOMTOM_API_KEY
     const API_KEY = process.env.REACT_APP_GEOAPIFY_API_KEY
 
@@ -39,6 +42,9 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
     const baseUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=" + API_KEY;
     const retinaUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}@2x.png?apiKey=" + API_KEY;
 
+    const routeLayerName = 'route-layer'
+    const turnByTurnLayerName = 'turn-by-turn-layer'
+    const tooltipOverlayName = 'turn-by-turn-layer'
 
     useEffect(() => {
 
@@ -103,6 +109,18 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         }
     }, [map, marker2])
 
+    useEffect(() => {
+        if (map && marker3) {
+            addOrUpdateMarker(marker3, "marker3")
+        }
+    }, [map, marker3])
+
+    useEffect(() => {
+        if (map && isPlusIcon) {
+            removeMarker(marker3, "marker3")
+        }
+    }, [map, marker3, isPlusIcon])
+
     const addOrUpdateMarker = (coordinates, markerId) => {
         const transformedCoordinates = fromLonLat(coordinates)
 
@@ -128,13 +146,20 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         markerSource.addFeature(marker)
     }
 
+    const removeMarker = (coordinates, markerId) => {
+        const markerSource = map.getLayers().item(2).getSource()
+        const existingMarker = markerSource.getFeatureById(markerId)
+        if (existingMarker) {
+            markerSource.removeFeature(existingMarker)
+        }
+    }
+
     const handleMapClick = async (event) => {
         const coordinates = event.coordinate
         const lonLat = toLonLat(coordinates)
 
         const data = await reverseGeocode(lonLat)
 
-        console.log("Reverse geocoding: ", data.features)
         if (data.features.length > 0) {
             const locationProperties = data.features[0].properties
             setPopupData({
@@ -160,33 +185,106 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         }
     }
 
-    const drawRoute = async () => {
+    const route = async () => {
+
         if (marker1 === null || marker2 === null) {
             console.log("Both markers must have values.")
             return
         }
 
-        const reversedMarker1 = [marker1[1], marker1[0]]
-        const reversedMarker2 = [marker2[1], marker2[0]]
+        if (transportOption1 === '') {
+            console.log("Transport need to be selected.");
+            handleShowMessage();
+            return;
+        }
 
-        const data = await routemap(reversedMarker1, reversedMarker2)
+        removeRouteFeatures()
 
+        if (marker3) {
+
+            const reversedMarker1 = [marker1[1], marker1[0]]
+            const reversedMarker2 = [marker2[1], marker2[0]]
+            const reversedMarker3 = [marker3[1], marker3[0]]
+
+            const [data1, data2] = await Promise.all([
+                routemap(reversedMarker1, reversedMarker3, transportOption1),
+                routemap(reversedMarker3, reversedMarker2, transportOption2 || transportOption1)
+            ]);
+
+            drawRouteWithStop(data1, data2);
+
+        } else {
+            const reversedMarker1 = [marker1[1], marker1[0]]
+            const reversedMarker2 = [marker2[1], marker2[0]]
+
+            const data = await routemap(reversedMarker1, reversedMarker2, transportOption1)
+
+            drawRoute(data)
+        }
+    }
+
+    function removeRouteFeatures() {
+        const routeLayer = map.getLayers().getArray().filter(layer => layer.get('name') === routeLayerName)[0];
+        const turnByTurnLayer = map.getLayers().getArray().filter(layer => layer.get('name') === turnByTurnLayerName)[0];
+        const tooltipOverlay = map.getLayers().getArray().filter(layer => layer.get('name') === tooltipOverlayName)[0];
+
+        map.removeLayer(routeLayer);
+        map.removeLayer(turnByTurnLayer);
+        map.removeLayer(tooltipOverlay);
+    }
+
+    // fixme -doesnt display road details for first part of road
+    function drawRouteWithStop(data1, data2) {
+        const coordinates1 = data1.features[0].geometry.coordinates[0]
+        const coordinates2 = data2.features[0].geometry.coordinates[0]
+
+        // Transform the coordinates to the projection used by the map
+        const transformedCoordinates1 = coordinates1.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
+        const transformedCoordinates2 = coordinates2.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
+
+        const routeFeature1 = createRouteLayerFeatures(transformedCoordinates1, data1)
+        const routeFeature2 = createRouteLayerFeatures(transformedCoordinates2, data2)
+
+        const routeSource = new VectorSource({
+            features: [routeFeature1, routeFeature2],
+        });
+
+        const routeLayer = new VectorLayer({
+            name: routeLayerName,
+            source: routeSource,
+            style: new Style({
+                stroke: new Stroke({
+                    color: "rgba(20, 137, 255, 0.7)", width: 5,
+                }),
+            }),
+        });
+
+        if (map && routeLayer) {
+            map.addLayer(routeLayer)
+
+            showRoadDetails(routeFeature1)
+            showRoadDetails(routeFeature2)
+            showTurnByTurnDetails(data1)
+            showTurnByTurnDetails(data2)
+        }
+
+        animateZoomAtLocation(routeSource)
+    }
+
+    function drawRoute(data) {
         const coordinates = data.features[0].geometry.coordinates[0]
 
         // Transform the coordinates to the projection used by the map
         const transformedCoordinates = coordinates.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
 
-        const routeFeature = new Feature({
-            geometry: new LineString(transformedCoordinates), properties: {
-                distance: data.features[0].properties.distance, distance_units: data.features[0].properties.distance_units, time: data.features[0].properties.time,
-            }
-        });
+        const routeFeature = createRouteLayerFeatures(transformedCoordinates, data)
 
         const routeSource = new VectorSource({
             features: [routeFeature],
         });
 
         const routeLayer = new VectorLayer({
+            name: routeLayerName,
             source: routeSource, style: new Style({
                 stroke: new Stroke({
                     color: "rgba(20, 137, 255, 0.7)", width: 5,
@@ -194,19 +292,35 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
             }),
         });
 
+        if (map && routeLayer) {
+            map.addLayer(routeLayer)
+            showRoadDetails(routeFeature)
+            showTurnByTurnDetails(data)
+        }
+
+        animateZoomAtLocation(routeSource)
+    }
+
+    function createRouteLayerFeatures(transformedCoordinates, data) {
+        return new Feature({
+            geometry: new LineString(transformedCoordinates),
+            properties: {
+                distance: data.features[0].properties.distance,
+                distance_units: data.features[0].properties.distance_units,
+                time: data.features[0].properties.time,
+                mode: data.properties.mode
+            }
+        });
+    }
+
+    function showRoadDetails(routeFeature) {
+
         // Create an overlay to display the tooltip
         const tooltipOverlay = new Overlay({
-            element: document.getElementById('tooltip'), positioning: 'bottom-center',
+            name: tooltipOverlayName,
+            element: document.getElementById('tooltip'),
+            positioning: 'bottom-center',
         });
-
-        if (map && routeLayer) {
-            // Add the overlay to the map
-            map.addOverlay(tooltipOverlay);
-            map.addLayer(routeLayer);
-
-            // add turn by turn functionality
-            await turnByTurn(data)
-        }
 
         // Register the "pointermove" event on the map
         map.on('pointermove', (event) => {
@@ -218,17 +332,22 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
 
                 const distance = properties.distance;
                 const time = properties.time;
-                console.log("properties: ", properties)
+                const mode = properties.mode;
 
                 const tooltipElement = tooltipOverlay.getElement();
                 tooltipElement.innerHTML = `<div>
                 <span class="black-06 mat-caption" style="width: 100px; display:inline-block">distance:</span>
-                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
+                <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
                   </div> 
                   <div>
                 <span class="black-06 mat-caption" style="width: 100px; display:inline-block">time:</span>
-                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${convertSecToHours(time)}</span>
-                  </div>`;
+                <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertSecToHours(time)}</span>
+                  </div>
+                <div>
+                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">transport mode: </span>
+                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${mode}</span>
+                  </div>
+                `;
 
                 tooltipOverlay.setPosition(event.coordinate);
                 tooltipOverlay.getElement().style.display = 'block';
@@ -237,6 +356,11 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
             }
         });
 
+        // Add the overlay to the map
+        map.addOverlay(tooltipOverlay);
+    }
+
+    function animateZoomAtLocation(routeSource) {
         const view = map.getView();
 
         // Set the center and zoom level of the view with animation
@@ -248,33 +372,33 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         });
     }
 
-
-    const turnByTurn = async (data) => {
+    function showTurnByTurnDetails(data) {
         const turnByTurns = [];
 
         data.features.forEach((feature) => {
             feature.properties.legs.forEach((leg, legIndex) => {
                 leg.steps.forEach((step) => {
-                    const pointFeature = new Feature({
-                        // Transform the coordinates to the projection used by the map
-                        geometry: new Point(feature.geometry.coordinates[legIndex]
-                            .map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'))[step.from_index]), // Update from_index to fromIndex
-                        properties: {
-                            instruction: step.instruction, // Update instruction.text to instruction
-                        },
-                    });
-                    turnByTurns.push(pointFeature);
+                    if (step.instruction !== undefined) {
+                        const pointFeature = new Feature({
+                            // Transform the coordinates to the projection used by the map
+                            geometry: new Point(feature.geometry.coordinates[legIndex]
+                                .map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'))[step.from_index]),
+                            properties: {
+                                instruction: step.instruction,
+                            },
+                        });
+                        turnByTurns.push(pointFeature);
+                    }
                 });
             });
         });
-
-        console.log("turn by turns:", turnByTurns[0])
 
         const turnByTurnsSource = new VectorSource({
             features: turnByTurns,
         });
 
         const turnByTurnsLayer = new VectorLayer({
+            name: turnByTurnLayerName,
             source: turnByTurnsSource, style: new Style({
                 image: new Circle({
                     radius: 5, fill: new Fill({
@@ -286,7 +410,6 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
             })
         });
 
-        // Create an overlay to display the instructionContainer
         const tooltipOverlay = new Overlay({
             element: document.getElementById('instructionContainer'), positioning: 'bottom-center',
         });
@@ -294,14 +417,16 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
         map.addOverlay(tooltipOverlay)
         map.addLayer(turnByTurnsLayer);
 
-        // fixme -doesnt display information about given point, probably because of waypointer
-        turnByTurnsLayer.on('click', function (event) {
-            const tooltipElement = tooltipOverlay.getElement();
-            const feature = event.mapBrowserEvent.feature;
-            tooltipElement.innerHTML = feature.get('instruction');
+        map.on('click', function (event) {
+            const clickedCoordinate = event.coordinate;
+            const feature = map.forEachFeatureAtPixel(event.pixel, function (feature) {
+                return feature;
+            });
 
-            tooltipOverlay.setPosition(event.coordinate);
-            tooltipOverlay.getElement().style.display = 'block';
+            if (feature) {
+                document.getElementById('instructionContainer').innerHTML = feature.values_.properties.instruction.text
+                tooltipOverlay.setPosition(clickedCoordinate);
+            }
         });
     }
 
@@ -312,13 +437,28 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
     }
 
     function convertMetersToKilometers(meters) {
-        return meters / 1000;
+        return meters / 1000
+    }
+
+    const handleShowMessage = () => {
+        setShowMessage(true)
+    }
+
+    const handleCloseMessage = () => {
+        setShowMessage(false)
     }
 
     return (<div ref={mapRef} className="map-container" id="map-container">
+        <div>
+            <Snackbar open={showMessage} autoHideDuration={4000} onClose={handleCloseMessage}>
+                <MuiAlert onClose={handleCloseMessage} severity="error" sx={{width: '100%'}}>
+                    Transport need to be selected.
+                </MuiAlert>
+            </Snackbar>
+        </div>
         <div id="tooltip" className="tooltip"></div>
         <div id="instructionContainer" className="instructionContainer"></div>
-        <button className="route-button" onClick={drawRoute}>Trace route</button>
+        <button className="route-button" onClick={route}>Trace route</button>
         <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
         {popupData && (<PopupCard data={popupData} onSelect={(data) => {
             addOrUpdateMarker(data.lonLat, "marker2")

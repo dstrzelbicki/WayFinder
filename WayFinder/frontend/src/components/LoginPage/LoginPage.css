@@ -58,6 +58,24 @@ button[type="submit"]:hover {
   background-color: #0056b3;
 }
 
+.register-btn {
+  background-color: #333;
+  display: inline-block;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1.1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-right: 10px;
+  transition: all 0.3s ease;
+}
+
+.register-btn:hover {
+  background-color: #0056b3;
+}
+
 .register-link {
   display: inline-block;
   font-size: 1.2rem;
@@ -82,4 +100,9 @@ button[type="submit"]:hover {
 
 .forgot-password-link:hover {
   color: #0056b3;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
 }
