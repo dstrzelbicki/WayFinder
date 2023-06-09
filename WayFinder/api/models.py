@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 
 class AppUserManager(BaseUserManager):
-    def create_user(self, email, username, first_name, last_name, password=None):
+    def create_user(self, email, username, password=None): # def create_user(self, email, username, first_name, last_name, password=None):
         if not email:
             raise ValueError('An email is required.')
         if not password:
@@ -18,9 +18,9 @@ class AppUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(
             email=email,
-            username=username,
-            first_name=first_name,
-            last_name=last_name)
+            username=username)
+            # first_name=first_name,
+            # last_name=last_name)
         user.set_password(password)
         user.save()
         return user
@@ -32,6 +32,7 @@ class AppUserManager(BaseUserManager):
         user.save()
         return user
 
+
 class AppUser(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     email = models.EmailField(max_length=50, unique=True)
@@ -39,7 +40,7 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     # first_name = models.CharField(max_length=50, blank=False)
     # last_name = models.CharField(max_length=50, blank=False)
     is_active = models.BooleanField(default=True)
-   # is_admin = models.BooleanField(default=False)
+    # is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     failed_login_attempts = models.IntegerField(default=0)
     last_failed_login = models.DateTimeField(null=True)
