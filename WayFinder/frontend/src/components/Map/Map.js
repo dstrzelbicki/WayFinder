@@ -160,7 +160,6 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
 
         const data = await reverseGeocode(lonLat)
 
-        console.log("Reverse geocoding: ", data.features)
         if (data.features.length > 0) {
             const locationProperties = data.features[0].properties
             setPopupData({
@@ -373,27 +372,26 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         });
     }
 
-    // fixme -doesnt display information about given point
     function showTurnByTurnDetails(data) {
         const turnByTurns = [];
 
         data.features.forEach((feature) => {
             feature.properties.legs.forEach((leg, legIndex) => {
                 leg.steps.forEach((step) => {
-                    const pointFeature = new Feature({
-                        // Transform the coordinates to the projection used by the map
-                        geometry: new Point(feature.geometry.coordinates[legIndex]
-                            .map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'))[step.from_index]), // Update from_index to fromIndex
-                        properties: {
-                            instruction: step.instruction, // Update instruction.text to instruction
-                        },
-                    });
-                    turnByTurns.push(pointFeature);
+                    if (step.instruction !== undefined) {
+                        const pointFeature = new Feature({
+                            // Transform the coordinates to the projection used by the map
+                            geometry: new Point(feature.geometry.coordinates[legIndex]
+                                .map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'))[step.from_index]),
+                            properties: {
+                                instruction: step.instruction,
+                            },
+                        });
+                        turnByTurns.push(pointFeature);
+                    }
                 });
             });
         });
-
-        console.log("turn by turns:", turnByTurns[0])
 
         const turnByTurnsSource = new VectorSource({
             features: turnByTurns,
@@ -412,7 +410,6 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
             })
         });
 
-        // Create an overlay to display the instructionContainer
         const tooltipOverlay = new Overlay({
             element: document.getElementById('instructionContainer'), positioning: 'bottom-center',
         });
@@ -420,13 +417,16 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         map.addOverlay(tooltipOverlay)
         map.addLayer(turnByTurnsLayer);
 
-        turnByTurnsLayer.on('click', function (event) {
-            const tooltipElement = tooltipOverlay.getElement();
-            const feature = event.mapBrowserEvent.feature;
-            tooltipElement.innerHTML = feature.get('instruction');
+        map.on('click', function (event) {
+            const clickedCoordinate = event.coordinate;
+            const feature = map.forEachFeatureAtPixel(event.pixel, function (feature) {
+                return feature;
+            });
 
-            tooltipOverlay.setPosition(event.coordinate);
-            tooltipOverlay.getElement().style.display = 'block';
+            if (feature) {
+                document.getElementById('instructionContainer').innerHTML = feature.values_.properties.instruction.text
+                tooltipOverlay.setPosition(clickedCoordinate);
+            }
         });
     }
 
