@@ -28,7 +28,9 @@ export default function LoginPage() {
       .then(function (res) {
         if (res.status === 200) {
           // Login successful
+          const token = res.data.token;
           sessionStorage.setItem("isLoggedIn", "true");
+          sessionStorage.setItem("token", token);
           setLoggedIn(true);
           navigate("/home");
         } else {
@@ -95,7 +97,7 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-        <a href="/#/forgot-password" className="forgot-password-link">
+        <a href="/forgot-password" className="forgot-password-link">
           Forgotten Password?
         </a>
         {loginError && <p className="error-message">Invalid email or password</p>}

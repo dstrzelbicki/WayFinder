@@ -55,4 +55,5 @@ const Sidebar = ({ isNotCollapsed, toggleSidebar, onSearchHistoryClick }) => {
   );
 };
 
+
 export default Sidebar;

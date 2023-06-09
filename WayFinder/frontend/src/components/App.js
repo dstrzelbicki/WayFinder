@@ -14,17 +14,17 @@ export default class App extends Component {
 
   render() {
     return (
-        <div>
-        <HashRouter>
+        //<div>
+        <Router>
           <Routes>
-            <Route path="/" element={<LoginPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage  />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/user-dashboard/:content" element={<UserDashboard />} />
+            <Route path="/" element={<LoginPage />} />
           </Routes>
-        </HashRouter>
-      </div>
+        </Router>
+      //</div>
       //  <Router>
       //    <Routes>
       //           <Route path="/user-dashboard/:content" element={<UserDashboard />} />

@@ -4,30 +4,43 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 
 class AppUserManager(BaseUserManager):
-	def create_user(self, email, username, password):
-		if not email:
-			raise ValueError('email required')
-		email = self.normalize_email(email)
-		user = self.model(email=email, username=username, password=password)
-		user.set_password(password)
-		user.save()
-		return user
-	
-	def create_superuser(self, email, password, **extra_fields):
-		user = self.create_user(email=self.normalize_email(email),  password=password, **extra_fields)
-		user.is_superuser = True
-		user.is_staff = True
-		user.save()
-		return user
+    def create_user(self, email, username, password=None): # def create_user(self, email, username, first_name, last_name, password=None):
+        if not email:
+            raise ValueError('An email is required.')
+        if not password:
+            raise ValueError('A password is required.')
+        if not username:
+            raise ValueError('A username is required.')
+        # if not first_name:
+        #     raise ValueError('A first name is required.')
+        # if not last_name:
+        #     raise ValueError('A last name is required.')
+        email = self.normalize_email(email)
+        user = self.model(
+            email=email,
+            username=username)
+            # first_name=first_name,
+            # last_name=last_name)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def create_superuser(self, email, username, password=None):
+        user = self.create_user(email, username, password)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
+        return user
+
 
 class AppUser(AbstractBaseUser, PermissionsMixin):
     user_id = models.AutoField(primary_key=True)
     email = models.EmailField(max_length=50, unique=True)
     username = models.CharField(max_length=50, unique=True)
-    #first_name = models.CharField(max_length=50, blank=False)
-    #last_name = models.CharField(max_length=50, blank=False)
+    # first_name = models.CharField(max_length=50, blank=False)
+    # last_name = models.CharField(max_length=50, blank=False)
     is_active = models.BooleanField(default=True)
-   # is_admin = models.BooleanField(default=False)
+    # is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     failed_login_attempts = models.IntegerField(default=0)
     last_failed_login = models.DateTimeField(null=True)
