@@ -4,9 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f64a2a7b-b6b4-47f2-a8bf-7fdbe6f9bbd6" name="Changes" comment="merge fixes 2">
+    <list default="true" id="d48ede59-ecca-407f-9d1b-fba401fd98ff" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/WayFinder/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/WayFinder/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WayFinder/frontend/src/components/HomePage/HomePage.js" beforeDir="false" afterPath="$PROJECT_DIR$/WayFinder/frontend/src/components/HomePage/HomePage.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WayFinder/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/WayFinder/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WayFinder/frontend/src/components/Map/Map.js" beforeDir="false" afterPath="$PROJECT_DIR$/WayFinder/frontend/src/components/Map/Map.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WayFinder/frontend/src/services/mapServices.js" beforeDir="false" afterPath="$PROJECT_DIR$/WayFinder/frontend/src/services/mapServices.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,6 +61,7 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2PQxWV62dgzGOG9qnmojY276RYN" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -93,7 +97,7 @@
       <recent name="D:\WayFinder\WayFinder\frontend\src\components\LoginPage\img" />
     </key>
   </component>
-  <component name="RunManager" selected="Node.js.HomePage.js">
+  <component name="RunManager" selected="Python.manage">
     <configuration name="HomePage.js" type="NodeJSConfigurationType" path-to-node="$PROJECT_DIR$/../Narzędzia/Node/node" nameIsGenerated="true" path-to-js-file="HomePage.js" working-dir="$PROJECT_DIR$/WayFinder/frontend/src/components/HomePage">
       <method v="2" />
     </configuration>

@@ -35,8 +35,8 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
     const [popupData, setPopupData] = useState(null)
     const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
     const [showMessage, setShowMessage] = useState(false)
-    const TOMTOM_API_KEY = process.env.REACT_APP_TOMTOM_API_KEY
-    const API_KEY = process.env.REACT_APP_GEOAPIFY_API_KEY
+    const TOMTOM_API_KEY = 'yaFyr0Achz6WGOGfk3r1PUIpMV7On6JE'
+    const API_KEY = 'b716933a82ae4ee08317542b1ed2664c'
 
     const isRetina = DEVICE_PIXEL_RATIO > 1;
     const baseUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=" + API_KEY;
