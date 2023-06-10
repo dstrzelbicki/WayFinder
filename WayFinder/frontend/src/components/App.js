@@ -19,7 +19,7 @@ export default class App extends Component {
           <Routes>
             <Route path="/home" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage  />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/user-dashboard/:content" element={<UserDashboard />} />
             <Route path="/" element={<LoginPage />} />
           </Routes>
