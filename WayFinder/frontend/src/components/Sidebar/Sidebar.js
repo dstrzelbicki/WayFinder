@@ -32,12 +32,12 @@ const Sidebar = ({ isNotCollapsed, toggleSidebar, onSearchHistoryClick }) => {
         <FontAwesomeIcon icon={faHistory} />
       </div>
       <div className={`sidebar-text${isNotCollapsed ? " active" : " none"}`}>
-        <Link to={"user-dashboard/profile"} style={{ textDecoration: "none", color: "inherit" }}>
+        <Link to={"/user-dashboard/profile"} style={{ textDecoration: "none", color: "inherit" }}>
           User dashboard
         </Link>
       </div>
       <div className={`user-icon${isNotCollapsed ? " none" : " active"}`}>
-        <Link to={"user-dashboard/profile"} style={{ textDecoration: "none", color: "inherit" }}>
+        <Link to={"/user-dashboard/profile"} style={{ textDecoration: "none", color: "inherit" }}>
           <FontAwesomeIcon icon={faUserAlt} />
         </Link>
       </div>
