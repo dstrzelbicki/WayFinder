@@ -358,6 +358,8 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
 
         // Add the overlay to the map
         map.addOverlay(tooltipOverlay);
+
+        console.log(map.getLayers())
     }
 
     function animateZoomAtLocation(routeSource) {
@@ -423,7 +425,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
                 return feature;
             });
 
-            if (feature) {
+            if (feature && feature.values_.properties.instruction !== undefined) {
                 document.getElementById('instructionContainer').innerHTML = feature.values_.properties.instruction.text
                 tooltipOverlay.setPosition(clickedCoordinate);
             }
