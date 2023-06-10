@@ -21,8 +21,9 @@ pip install django
 
 ## Starting development server:
 
-To run locally use commands:
-```bash
+To run locally backend app use commands:
+```
+cd WayFinder/WayFinder
 python .\manage.py runserver
 ```
 

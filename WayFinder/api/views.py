@@ -1,5 +1,16 @@
-from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.http import HttpResponse
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from django.views import View
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.crypto import get_random_string
 from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model, authenticate
 from django.forms import ValidationError
 from rest_framework.authentication import SessionAuthentication
@@ -17,6 +28,7 @@ from .models import Route
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 
+token_generator = PasswordResetTokenGenerator()
 now_utc = datetime.now(timezone.utc)
 User = get_user_model()
 
@@ -152,3 +164,62 @@ class RouteView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def reset_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+
+        # Check if the user with the provided email exists
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return JsonResponse({'message': 'User does not exist'}, status=404)
+
+        # Generate a reset token
+        reset_token = get_random_string(length=32)
+
+        # Save the reset token to the user's profile
+        user.profile.reset_token = reset_token
+        user.profile.save()
+
+        # Prepare the email content
+        subject = 'Password Reset'
+        message = f'Click the link to reset your password: https://example.com/reset-password/{reset_token}'
+        from_email = 'wayfinder.no.response@gmail.com'
+        recipient_list = [email]
+
+        # Send the email
+        try:
+            send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+        except Exception as e:
+            return JsonResponse({'message': str(e)}, status=500)
+
+        return JsonResponse({'message': 'Email sent successfully'})
+    else:
+        return JsonResponse({'message': 'Invalid request method'}, status=405)
+
+
+class ResetPasswordConfirmView(APIView):
+    # permission_classes = (permissions.AllowAny,)
+    # authentication_classes = (TokenAuthentication,)
+
+    def post(self, request):
+        token = request.POST.get('token')
+        password = request.POST.get('password')
+        uidb64 = request.POST.get('uidb64')
+
+        # Decode the token and get the user
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = get_user_model().objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist):
+            user = None
+
+        if user is not None and token_generator.check_token(user, token):
+            # Reset the user's password
+            user.set_password(password)
+            user.save()
+            return JsonResponse({'message': 'Password reset successful'})
+        else:
+            return JsonResponse({'message': 'Invalid or expired token'}, status=400)

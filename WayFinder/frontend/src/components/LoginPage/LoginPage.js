@@ -97,7 +97,7 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-        <a href="/forgot-password" className="forgot-password-link">
+        <a href= "http://127.0.0.1:8000/api/password_reset" className="forgot-password-link">
           Forgotten Password?
         </a>
         {loginError && <p className="error-message">Invalid email or password</p>}

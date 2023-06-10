@@ -31,7 +31,8 @@ const OLMap = ({marker1, marker2, onMarker2NameUpdate}) => {
   const [map, setMap] = useState(null)
   const [popupData, setPopupData] = useState(null)
   const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
-  const TOMTOM_API_KEY = process.env.REACT_APP_TOMTOM_API_KEY
+  const TOMTOM_API_KEY ='yaFyr0Achz6WGOGfk3r1PUIpMV7On6JE'
+  // const TOMTOM_API_KEY = process.env.REACT_APP_TOMTOM_API_KEY
 
   useEffect(() => {
     // create an OSM base layer
