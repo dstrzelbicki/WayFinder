@@ -42,10 +42,12 @@ const HomePage = () => {
 
             if (searchBarId === 1) {
                 setMarker1(coordinates)
+                sessionStorage.setItem("start", searchTerm)
             } else if (searchBarId === 2) {
                 setMarker2(coordinates)
             } else {
                 setMarker3(coordinates)
+                sessionStorage.setItem("end", searchTerm)
             }
 
             // save search term to local storage

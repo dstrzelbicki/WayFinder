@@ -1,4 +1,5 @@
 import axios from "axios"
+import { apiPostRoute } from "../lookup/backendLookup"
 
 const API_KEY = 'b716933a82ae4ee08317542b1ed2664c'
 const geoApifyBaseUrl = "https://api.geoapify.com/v1"
@@ -65,6 +66,7 @@ export const routemap = async (start, end, transportOption) => {
             // fixme - improve error handling
             console.error("Error fetching geocoding data. Bad response from server: ", response)
         }
+        apiPostRoute(sessionStorage.getItem("start"), sessionStorage.getItem("end"), (response, status) => console.log(response, status))
         return response.json()
     } catch (error) {
         console.error("Error fetching geocoding data:", error)

@@ -69,3 +69,18 @@ export function apiUserRoutes(callback) {
 export function apiProfileData(callback) {
   backendLookup("GET", "/user", callback)
 }
+
+export function apiPostRoute(start, end, callback) {
+  const data = {
+    start_location_name: start,
+    start_location_lat: 0,
+    start_location_lng: 0,
+    end_location_name: end,
+    end_location_lat: 0,
+    end_location_lng: 0,
+    distance: 0,
+    duration: 0
+  }
+
+  backendLookup("POST", "/route", callback, data)
+}
