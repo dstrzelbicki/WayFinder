@@ -275,7 +275,7 @@ export function UserDashboard() {
             <div className="content-container">
                 {renderContent()}
             </div>
-        </div> : <div>Loading...</div>
+        </div> : <div className="loading-info">Loading...</div>
     )
 }
 

@@ -70,17 +70,17 @@ export function apiProfileData(callback) {
   backendLookup("GET", "/user", callback)
 }
 
-export function apiPostRoute(start, end, callback) {
-  const data = {
-    start_location_name: start,
-    start_location_lat: 0,
-    start_location_lng: 0,
-    end_location_name: end,
-    end_location_lat: 0,
-    end_location_lng: 0,
+export function apiPostRoute(callback) {
+  const routeData = {
+    start_location_name: sessionStorage.getItem("start"),
+    start_location_lat: sessionStorage.getItem("startLat"),
+    start_location_lng: sessionStorage.getItem("startLon"),
+    end_location_name: sessionStorage.getItem("end"),
+    end_location_lat: sessionStorage.getItem("endLat"),
+    end_location_lng: sessionStorage.getItem("endLon"),
     distance: 0,
     duration: 0
   }
 
-  backendLookup("POST", "/route", callback, data)
+  backendLookup("POST", "/route", callback, routeData)
 }
