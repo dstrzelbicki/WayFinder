@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: wayfinder
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "python WayFinder\manage.py runserver"
