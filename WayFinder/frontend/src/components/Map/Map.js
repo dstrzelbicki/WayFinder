@@ -236,11 +236,13 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
 
     function removeRouteFeatures() {
         const routeLayer = map.getLayers().getArray().filter(layer => layer.get('name') === routeLayerName)[0];
-        const turnByTurnLayer = map.getLayers().getArray().filter(layer => layer.get('name') === turnByTurnLayerName)[0];
+        const turnByTurnLayer = map.getLayers().getArray().filter(layer => layer.get('name') === turnByTurnLayerName);
         const tooltipOverlay = map.getLayers().getArray().filter(layer => layer.get('name') === tooltipOverlayName)[0];
 
         map.removeLayer(routeLayer);
-        map.removeLayer(turnByTurnLayer);
+        turnByTurnLayer.forEach(layer => {
+            map.removeLayer(layer)
+        });
         map.removeLayer(tooltipOverlay);
     }
 
