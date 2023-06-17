@@ -2,6 +2,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.contrib.auth.views import LoginView
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
@@ -220,6 +222,6 @@ class ResetPasswordConfirmView(APIView):
             # Reset the user's password
             user.set_password(password)
             user.save()
-            return JsonResponse({'message': 'Password reset successful'})
+            return redirect('login')
         else:
-            return JsonResponse({'message': 'Invalid or expired token'}, status=400)
+            return HttpResponse('Invalid or expired token', status=400)
