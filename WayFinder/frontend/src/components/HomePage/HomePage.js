@@ -42,10 +42,19 @@ const HomePage = () => {
 
             if (searchBarId === 1) {
                 setMarker1(coordinates)
+                sessionStorage.setItem("start", searchTerm)
+                sessionStorage.setItem("startLat", lat)
+                sessionStorage.setItem("startLon", lon)
             } else if (searchBarId === 2) {
                 setMarker2(coordinates)
+                sessionStorage.setItem("end", searchTerm)
+                sessionStorage.setItem("endLat", lat)
+                sessionStorage.setItem("endLon", lon)
             } else {
                 setMarker3(coordinates)
+                sessionStorage.setItem("mid", searchTerm)
+                sessionStorage.setItem("midLat", lat)
+                sessionStorage.setItem("midLon", lon)
             }
 
             // save search term to local storage

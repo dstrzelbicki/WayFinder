@@ -18,6 +18,7 @@ import {Attribution} from "ol/control";
 import {DEVICE_PIXEL_RATIO} from "ol/has";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
+import {apiPostRoute} from "../../lookup/backendLookup"
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
@@ -221,15 +222,27 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
 
             drawRoute(data)
         }
+        apiPostRoute((response, status) => console.log(response, status))
+        sessionStorage.removeItem("start")
+        sessionStorage.removeItem("startLat")
+        sessionStorage.removeItem("startLon")
+        sessionStorage.removeItem("mid")
+        sessionStorage.removeItem("midLat")
+        sessionStorage.removeItem("midLon")
+        sessionStorage.removeItem("end")
+        sessionStorage.removeItem("endLat")
+        sessionStorage.removeItem("endLon")
     }
 
     function removeRouteFeatures() {
         const routeLayer = map.getLayers().getArray().filter(layer => layer.get('name') === routeLayerName)[0];
-        const turnByTurnLayer = map.getLayers().getArray().filter(layer => layer.get('name') === turnByTurnLayerName)[0];
+        const turnByTurnLayer = map.getLayers().getArray().filter(layer => layer.get('name') === turnByTurnLayerName);
         const tooltipOverlay = map.getLayers().getArray().filter(layer => layer.get('name') === tooltipOverlayName)[0];
 
         map.removeLayer(routeLayer);
-        map.removeLayer(turnByTurnLayer);
+        turnByTurnLayer.forEach(layer => {
+            map.removeLayer(layer)
+        });
         map.removeLayer(tooltipOverlay);
     }
 
