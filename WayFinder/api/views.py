@@ -29,6 +29,12 @@ from functools import wraps
 from .models import Route
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
+import pyotp
+from django_otp.plugins.otp_totp.models import TOTPDevice
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 
 token_generator = PasswordResetTokenGenerator()
 now_utc = datetime.now(timezone.utc)
@@ -225,3 +231,42 @@ class ResetPasswordConfirmView(APIView):
             return redirect('login')
         else:
             return HttpResponse('Invalid or expired token', status=400)
+
+
+class SetupTOTP(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        totp_device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
+
+        if not totp_device:
+            secret_key = pyotp.random_base32()
+            totp_device = TOTPDevice.objects.create(user=user, key=secret_key, confirmed=False)
+        else:
+            secret_key = totp_device.key
+
+        totp = pyotp.TOTP(secret_key)
+        provisioning_url = totp.provisioning_uri(user.email, issuer_name="WayFinder")
+
+        return Response({"provisioning_url": provisioning_url})
+
+
+class VerifyTOTP(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        otp = request.data.get('otp')
+
+        totp_device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
+        if not totp_device:
+            return Response({"detail": "TOTP device not set up."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not totp_device.verify_token(otp):
+            return Response({"detail": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        totp_device.confirmed = True
+        totp_device.save()
+
+        return Response({"detail": "TOTP device confirmed."})
