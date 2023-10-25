@@ -84,3 +84,12 @@ export function apiPostRoute(callback) {
 
   backendLookup("POST", "/route", callback, routeData)
 }
+
+export function apiSetupTOTP(callback) {
+  backendLookup("GET", "/setup-totp/", callback)
+}
+
+export function apiVerifyTOTP(otp, callback) {
+  const data = { otp }
+  backendLookup("POST", "/verify-totp/", callback, data)
+}

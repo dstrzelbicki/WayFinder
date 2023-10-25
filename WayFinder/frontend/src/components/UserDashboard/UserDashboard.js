@@ -5,13 +5,60 @@ import {useCurrentUser} from "../../auth/hooks"
 import {apiProfileDataChange, apiPasswordChange,
         apiUserRoutes, apiProfileData} from "../../lookup/backendLookup"
 import PasswordStrengthBar from "react-password-strength-bar"
+import QRCode from "qrcode.react";
+import {apiSetupTOTP, apiVerifyTOTP} from "../../lookup/backendLookup";
 
 const Notifications = () => <div>Notifications</div>
 const Shared = () => <div>Shared</div>
 const Places = () => <div>Saved places</div>
 const Routes = () => <div>Saved routes</div>
 const Timeline = () => <div>Timeline</div>
-const Settings = () => <div>Settings</div>
+
+function SetupTOTP() {
+    const [provisioningUrl, setProvisioningUrl] = useState("")
+    const [otp, setOtp] = useState("")
+
+    useEffect(() => {
+      // call the backend to get the provisioning URL
+      apiSetupTOTP((response, status) => {
+        console.log(response)
+        if(status === 200) {
+          setProvisioningUrl(response.provisioning_url)
+        } else {
+          console.error("Error fetching provisioning URL", response)
+        }
+      })
+    }, [])
+
+    const handleVerify = () => {
+      // call the backend to verify the OTP
+      apiVerifyTOTP(otp, (response, status) => {
+        if(status === 200) {
+          console.log("TOTP device confirmed")
+        } else {
+          console.error("Error verifying OTP", response)
+        }
+      })
+    }
+
+    return (
+      <div>
+        <h2>Setup Two-Factor Authentication</h2>
+        {provisioningUrl && <QRCode value={provisioningUrl} />}
+        <input
+          type="text"
+          value={otp}
+          onChange={e => setOtp(e.target.value)}
+          placeholder="Enter OTP"
+        />
+        <button onClick={handleVerify}>Verify</button>
+      </div>
+    )
+}
+
+export function Settings() {
+    return <SetupTOTP />
+}
 
 export function History() {
     const [routes, setRoutes] = useState([])

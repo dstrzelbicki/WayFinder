@@ -35,6 +35,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+import secrets
 
 token_generator = PasswordResetTokenGenerator()
 now_utc = datetime.now(timezone.utc)
@@ -235,18 +236,20 @@ class ResetPasswordConfirmView(APIView):
 
 class SetupTOTP(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
         user = request.user
         totp_device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
 
         if not totp_device:
-            secret_key = pyotp.random_base32()
+            # generate a random 20-byte (160-bit) hexadecimal key
+            secret_key = secrets.token_hex(20)
             totp_device = TOTPDevice.objects.create(user=user, key=secret_key, confirmed=False)
         else:
             secret_key = totp_device.key
 
-        totp = pyotp.TOTP(secret_key)
+        totp = pyotp.TOTP(secret_key, digits=6)
         provisioning_url = totp.provisioning_uri(user.email, issuer_name="WayFinder")
 
         return Response({"provisioning_url": provisioning_url})
@@ -254,6 +257,7 @@ class SetupTOTP(APIView):
 
 class VerifyTOTP(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication,)
 
     def post(self, request):
         user = request.user
@@ -263,7 +267,11 @@ class VerifyTOTP(APIView):
         if not totp_device:
             return Response({"detail": "TOTP device not set up."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not totp_device.verify_token(otp):
+        # initialize a TOTP object with the stored base32 key
+        totp = pyotp.TOTP(totp_device.key, digits=6)
+
+        # manually verify the OTP
+        if not totp.verify(otp.strip()):
             return Response({"detail": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
 
         totp_device.confirmed = True
