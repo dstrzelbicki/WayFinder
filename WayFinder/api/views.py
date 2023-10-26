@@ -243,13 +243,12 @@ class SetupTOTP(APIView):
         totp_device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
 
         if not totp_device:
-            # generate a random 20-byte (160-bit) hexadecimal key
-            secret_key = secrets.token_hex(20)
+            secret_key = pyotp.random_base32()
             totp_device = TOTPDevice.objects.create(user=user, key=secret_key, confirmed=False)
         else:
             secret_key = totp_device.key
 
-        totp = pyotp.TOTP(secret_key, digits=6)
+        totp = pyotp.TOTP(secret_key)
         provisioning_url = totp.provisioning_uri(user.email, issuer_name="WayFinder")
 
         return Response({"provisioning_url": provisioning_url})
