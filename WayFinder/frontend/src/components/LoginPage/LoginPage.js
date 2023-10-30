@@ -9,40 +9,46 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
+  const [otp, setOtp] = useState("")
+  const [requiresOtp, setRequiresOtp] = useState(false)
 
   function submitLogin(e) {
     e.preventDefault();
+    const data = {
+      email: email,
+      password: password,
+    }
+    if (requiresOtp) {
+      data.otp = otp
+    }
     client
-      .post(
-        "/api/login",
-        {
-          email: email,
-          password: password,
+      .post("/api/login", data, {
+        headers: {
+          "Content-Type": "application/json",
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
+      })
       .then(function (res) {
         if (res.status === 200) {
-          // Login successful
-          const token = res.data.token;
-          sessionStorage.setItem("isLoggedIn", "true");
-          sessionStorage.setItem("token", token);
-          setLoggedIn(true);
-          navigate("/home");
+          if (res.data.requires_otp) {
+            // 2FA is required, prompt the user for OTP
+            setRequiresOtp(true)
+          } else {
+            // Login successful
+            const token = res.data.token
+            sessionStorage.setItem("isLoggedIn", "true")
+            sessionStorage.setItem("token", token)
+            setLoggedIn(true)
+            navigate("/home")
+          }
         } else {
           // Login failed
           setLoginError(true);
         }
       })
       .catch(function (error) {
-        // Login failed
-        setLoginError(true);
-        console.log(error.response); // Log the error response for debugging purposes
-      });
+        setLoginError(true)
+        console.log(error.response)
+      })
   }
 
   function navigateToRegisterPage() {
@@ -88,6 +94,20 @@ export default function LoginPage() {
               }}
             />
           </div>
+          {requiresOtp && (
+              <div className="form-group">
+                <label htmlFor="otp">OTP:</label>
+                <input
+                  type="text"
+                  id="otp"
+                  name="otp"
+                  value={otp}
+                  onChange={(e) => {
+                    setOtp(e.target.value)
+                  }}
+                />
+              </div>
+          )}
           <div className="button-container">
             <button className="login-btn" type="submit">
               Login

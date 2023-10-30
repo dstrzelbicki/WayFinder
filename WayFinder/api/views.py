@@ -104,7 +104,17 @@ class UserLogin(APIView):
         serializer = UserLoginSerializer(data=data)
         if serializer.is_valid():
             user = authenticate(request, email=data['email'], password=data['password'])
-            if user:
+            if user and user.is_authenticated:
+                totp_device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+                if totp_device:
+                    otp = data.get('otp')
+                    if not otp:
+                        return Response({"message": "OTP required for 2FA.", "requires_otp": True}, status=status.HTTP_200_OK)
+
+                    totp = pyotp.TOTP(totp_device.key, digits=6)
+                    if not totp.verify(otp.strip()):
+                        print(otp.strip())
+                        return Response({"message": "Invalid OTP."}, status=status.HTTP_401_UNAUTHORIZED)
                 login(request, user)
                 # reset failed login attempts
                 user.failed_login_attempts = 0
