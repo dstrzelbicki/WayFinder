@@ -113,7 +113,6 @@ class UserLogin(APIView):
 
                     totp = pyotp.TOTP(totp_device.key, digits=6)
                     if not totp.verify(otp.strip()):
-                        print(otp.strip())
                         return Response({"message": "Invalid OTP."}, status=status.HTTP_401_UNAUTHORIZED)
                 login(request, user)
                 # reset failed login attempts
@@ -271,10 +270,18 @@ class VerifyTOTP(APIView):
     def post(self, request):
         user = request.user
         otp = request.data.get('otp')
+        action = request.data.get('action')
 
-        totp_device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
+        if action not in ['enable', 'disable']:
+            return Response({"detail": "Invalid action. Use 'enable' or 'disable'."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # for enabling 2FA, look for an unconfirmed device; for disabling, look for a confirmed device
+        confirmed_status = True if action == 'disable' else False
+        totp_device = TOTPDevice.objects.filter(user=user, confirmed=confirmed_status).first()
+
         if not totp_device:
-            return Response({"detail": "TOTP device not set up."}, status=status.HTTP_400_BAD_REQUEST)
+            device_status = "confirmed" if confirmed_status else "unconfirmed"
+            return Response({"detail": f"TOTP device not set up or not {device_status}."}, status=status.HTTP_400_BAD_REQUEST)
 
         # initialize a TOTP object with the stored base32 key
         totp = pyotp.TOTP(totp_device.key, digits=6)
@@ -286,4 +293,31 @@ class VerifyTOTP(APIView):
         totp_device.confirmed = True
         totp_device.save()
 
+        user.is_2fa_enabled = True
+        user.save()
+
         return Response({"detail": "TOTP device confirmed."})
+
+
+class DisableTOTP(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication,)
+
+    def post(self, request):
+        user = request.user
+
+        # check if the user has 2FA enabled
+        if not user.is_2fa_enabled:
+            return Response({"detail": "2FA is not enabled for this user."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # fetch the confirmed TOTP device for the user
+        totp_device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+        if not totp_device:
+            return Response({"detail": "Confirmed TOTP device not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # disable 2FA for the user and delete the TOTP device
+        user.is_2fa_enabled = False
+        user.save()
+        totp_device.delete()
+
+        return Response({"detail": "2FA has been disabled."})

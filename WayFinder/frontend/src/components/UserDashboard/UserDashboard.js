@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react"
+import React, {useState, useEffect, createContext} from "react"
 import {Link, useParams} from "react-router-dom"
 import "./UserDashboard.css"
 import {useCurrentUser} from "../../auth/hooks"
@@ -6,13 +6,62 @@ import {apiProfileDataChange, apiPasswordChange,
         apiUserRoutes, apiProfileData} from "../../lookup/backendLookup"
 import PasswordStrengthBar from "react-password-strength-bar"
 import QRCode from "qrcode.react";
-import {apiSetupTOTP, apiVerifyTOTP} from "../../lookup/backendLookup";
+import {apiSetupTOTP, apiVerifyTOTP, apiDisableTOTP} from "../../lookup/backendLookup"
 
 const Notifications = () => <div>Notifications</div>
 const Shared = () => <div>Shared</div>
 const Places = () => <div>Saved places</div>
 const Routes = () => <div>Saved routes</div>
 const Timeline = () => <div>Timeline</div>
+
+const UserContext = createContext()
+
+function DisableTOTP() {
+    const [otp, setOtp] = useState("")
+    const [isPopupVisible, setPopupVisible] = useState(false)
+    const [popupMessage, setPopupMessage] = useState("")
+    const [status, setStatus] = useState(null)
+
+    const handleVerify = () => {
+        // call the backend to verify the OTP
+        apiVerifyTOTP(otp, 'disable', (response, status) => {
+            if(status === 200) {
+                console.log("TOTP device confirmed")
+                apiDisableTOTP((response, status) => {
+                    if(status === 200) {
+                        setPopupMessage("TOTP device disabled")
+                        setPopupVisible(true)
+                        setTimeout(() => {
+                            setPopupVisible(false)
+                        }, 3000)
+                    } else {
+                        console.error("Error fetching provisioning URL", response)
+                    }
+                })
+            } else {
+                console.error("Error verifying OTP", response)
+            }
+        })
+    }
+
+    return (
+        <div className="content">
+            <h3>Disable Two-Factor Authentication</h3>
+            <input
+                type="text"
+                value={otp}
+                onChange={e => setOtp(e.target.value)}
+                placeholder="Enter OTP"
+            />
+            <button onClick={handleVerify}>Verify</button>
+            {isPopupVisible &&
+                <div className={(status === 200 || status === 204) ? "popup popup-success" : "popup popup-error"}>
+                    {popupMessage}
+                </div>
+            }
+        </div>
+    )
+}
 
 function SetupTOTP() {
     const [provisioningUrl, setProvisioningUrl] = useState("")
@@ -32,7 +81,7 @@ function SetupTOTP() {
 
     const handleVerify = () => {
       // call the backend to verify the OTP
-      apiVerifyTOTP(otp, (response, status) => {
+      apiVerifyTOTP(otp, 'enable', (response, status) => {
         if(status === 200) {
           console.log("TOTP device confirmed")
         } else {
@@ -42,8 +91,8 @@ function SetupTOTP() {
     }
 
     return (
-      <div>
-        <h2>Setup Two-Factor Authentication</h2>
+      <div className="content">
+        <h3>Setup Two-Factor Authentication</h3>
         {provisioningUrl && <QRCode value={provisioningUrl} />}
         <input
           type="text"
@@ -57,7 +106,15 @@ function SetupTOTP() {
 }
 
 export function Settings() {
-    return <SetupTOTP />
+    return (
+        <UserContext.Consumer>
+            {currentUser => (
+                !currentUser.is_2fa_enabled
+                    ? <SetupTOTP />
+                    : <DisableTOTP />
+            )}
+        </UserContext.Consumer>
+    )
 }
 
 export function History() {
@@ -305,7 +362,7 @@ export function UserDashboard() {
     }
 
     return (
-        !isLoading ? <div className="user-dashboard">
+        (!isLoading ? <div className="user-dashboard">
             <div className="dashboard-sidebar">
                 <h2>Your account</h2>
                 <ul className="centered-list">
@@ -320,9 +377,11 @@ export function UserDashboard() {
                 </ul>
             </div>
             <div className="content-container">
-                {renderContent()}
+                <UserContext.Provider value={currentUser}>
+                    {renderContent()}
+                </UserContext.Provider>
             </div>
-        </div> : <div className="loading-info">Loading...</div>
+        </div> : <div className="loading-info">Loading...</div>)
     )
 }
 

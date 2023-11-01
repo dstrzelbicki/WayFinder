@@ -34,7 +34,7 @@ class UserLoginSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = ('email', 'username')
+        fields = ('email', 'username', 'is_2fa_enabled')
         # fields = ('email', 'username', 'first_name', 'last_name')
 
 

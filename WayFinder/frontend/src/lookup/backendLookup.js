@@ -89,7 +89,14 @@ export function apiSetupTOTP(callback) {
   backendLookup("GET", "/setup-totp/", callback)
 }
 
-export function apiVerifyTOTP(otp, callback) {
-  const data = { otp }
+export function apiVerifyTOTP(otp, action, callback) {
+  const data = {
+    otp: otp,
+    action: action
+  }
   backendLookup("POST", "/verify-totp/", callback, data)
+}
+
+export function apiDisableTOTP(callback) {
+  backendLookup("POST", "/disable-totp/", callback)
 }

@@ -17,4 +17,5 @@ urlpatterns = [
 
     path('setup-totp/', views.SetupTOTP.as_view(), name='setup_totp'),
     path('verify-totp/', views.VerifyTOTP.as_view(), name='verify_totp'),
+    path('disable-totp/', views.DisableTOTP.as_view(), name='disable-totp'),
 ]

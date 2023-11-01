@@ -44,6 +44,7 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     failed_login_attempts = models.IntegerField(default=0)
     last_failed_login = models.DateTimeField(null=True)
+    is_2fa_enabled = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     objects = AppUserManager()
