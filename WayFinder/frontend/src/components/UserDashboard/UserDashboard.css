@@ -132,6 +132,30 @@ p {
     text-align: center;
 }
 
+.user-dashboard .content input[type="text"] {
+    border: 1px solid #CCCCCC;
+    border-radius: 5px;
+    padding: 5px;
+    display: inline-block;
+    width: 65%;
+    text-align: center;
+}
+
+.user-dashboard .content input {
+    display: flex;
+    flex-direction: column;
+    margin-left: 18%;
+    text-align: center;
+    margin-top: 5%;
+}
+
+.user-dashboard .content .qr-code {
+    display: flex;
+    flex-direction: column;
+    margin-left: 34%;
+    width: 100%;
+}
+
 .user-dashboard form input[type="submit"] {
     margin-top: 10px;
     padding: 5px;

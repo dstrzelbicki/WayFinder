@@ -1,4 +1,4 @@
-import React, {useState, useEffect, createContext} from "react"
+import React, {useState, useEffect, createContext, useContext} from "react"
 import {Link, useParams} from "react-router-dom"
 import "./UserDashboard.css"
 import {useCurrentUser} from "../../auth/hooks"
@@ -16,7 +16,7 @@ const Timeline = () => <div>Timeline</div>
 
 const UserContext = createContext()
 
-function DisableTOTP() {
+function DisableTOTP({ onUpdate }) {
     const [otp, setOtp] = useState("")
     const [isPopupVisible, setPopupVisible] = useState(false)
     const [popupMessage, setPopupMessage] = useState("")
@@ -26,20 +26,32 @@ function DisableTOTP() {
         // call the backend to verify the OTP
         apiVerifyTOTP(otp, 'disable', (response, status) => {
             if(status === 200) {
-                console.log("TOTP device confirmed")
+                // call the backend to disbale 2FA
                 apiDisableTOTP((response, status) => {
                     if(status === 200) {
-                        setPopupMessage("TOTP device disabled")
+                        setPopupMessage("2FA disabled")
                         setPopupVisible(true)
+                        setStatus(status)
+                        setTimeout(() => {
+                            setPopupVisible(false)
+                            onUpdate(false)
+                        }, 3000)
+                    } else {
+                        setPopupMessage("Unable to disable 2FA, try again later")
+                        setPopupVisible(true)
+                        setStatus(status)
                         setTimeout(() => {
                             setPopupVisible(false)
                         }, 3000)
-                    } else {
-                        console.error("Error fetching provisioning URL", response)
                     }
                 })
             } else {
-                console.error("Error verifying OTP", response)
+                setPopupMessage("Invalid OTP")
+                setPopupVisible(true)
+                setStatus(status)
+                setTimeout(() => {
+                    setPopupVisible(false)
+                }, 3000)
             }
         })
     }
@@ -53,9 +65,9 @@ function DisableTOTP() {
                 onChange={e => setOtp(e.target.value)}
                 placeholder="Enter OTP"
             />
-            <button onClick={handleVerify}>Verify</button>
+            <button className="btn btn-primary" onClick={handleVerify}>Verify</button>
             {isPopupVisible &&
-                <div className={(status === 200 || status === 204) ? "popup popup-success" : "popup popup-error"}>
+                <div className={(status === 200) ? "popup popup-success" : "popup popup-error"}>
                     {popupMessage}
                 </div>
             }
@@ -63,18 +75,25 @@ function DisableTOTP() {
     )
 }
 
-function SetupTOTP() {
+function SetupTOTP({ onUpdate }) {
     const [provisioningUrl, setProvisioningUrl] = useState("")
     const [otp, setOtp] = useState("")
+    const [isPopupVisible, setPopupVisible] = useState(false)
+    const [popupMessage, setPopupMessage] = useState("")
+    const [status, setStatus] = useState(null)
 
     useEffect(() => {
       // call the backend to get the provisioning URL
       apiSetupTOTP((response, status) => {
-        console.log(response)
         if(status === 200) {
           setProvisioningUrl(response.provisioning_url)
         } else {
-          console.error("Error fetching provisioning URL", response)
+            setPopupMessage("Unable to fetch QR code, try again later")
+            setPopupVisible(true)
+            setStatus(status)
+            setTimeout(() => {
+                setPopupVisible(false)
+            }, 3000)
         }
       })
     }, [])
@@ -83,9 +102,20 @@ function SetupTOTP() {
       // call the backend to verify the OTP
       apiVerifyTOTP(otp, 'enable', (response, status) => {
         if(status === 200) {
-          console.log("TOTP device confirmed")
+            setPopupMessage("2FA enabled successfully")
+            setPopupVisible(true)
+            setStatus(status)
+            setTimeout(() => {
+                setPopupVisible(false)
+                onUpdate(true)
+            }, 3000)
         } else {
-          console.error("Error verifying OTP", response)
+            setPopupMessage("Invalid OTP")
+            setPopupVisible(true)
+            setStatus(status)
+            setTimeout(() => {
+                setPopupVisible(false)
+            }, 3000)
         }
       })
     }
@@ -93,27 +123,39 @@ function SetupTOTP() {
     return (
       <div className="content">
         <h3>Setup Two-Factor Authentication</h3>
-        {provisioningUrl && <QRCode value={provisioningUrl} />}
+        {provisioningUrl && <div className="qr-code"><QRCode value={provisioningUrl} /></div>}
         <input
           type="text"
           value={otp}
           onChange={e => setOtp(e.target.value)}
           placeholder="Enter OTP"
         />
-        <button onClick={handleVerify}>Verify</button>
+        <button className="btn btn-primary" onClick={handleVerify}>Verify</button>
+        {isPopupVisible &&
+                <div className={(status === 200) ? "popup popup-success" : "popup popup-error"}>
+                    {popupMessage}
+                </div>
+        }
       </div>
     )
 }
 
 export function Settings() {
+    const { currentUser, setCurrentUser } = useContext(UserContext)
+
+    const handleUpdate = (is2faEnabled) => {
+        const updatedUser = { ...currentUser, is_2fa_enabled: is2faEnabled }
+        setCurrentUser(updatedUser)
+    }
+
     return (
-        <UserContext.Consumer>
-            {currentUser => (
-                !currentUser.is_2fa_enabled
-                    ? <SetupTOTP />
-                    : <DisableTOTP />
+        <>
+            {!currentUser.is_2fa_enabled ? (
+                <SetupTOTP onUpdate={handleUpdate} />
+            ) : (
+                <DisableTOTP onUpdate={handleUpdate} />
             )}
-        </UserContext.Consumer>
+        </>
     )
 }
 
@@ -377,7 +419,7 @@ export function UserDashboard() {
                 </ul>
             </div>
             <div className="content-container">
-                <UserContext.Provider value={currentUser}>
+                <UserContext.Provider value={{currentUser, setCurrentUser}}>
                     {renderContent()}
                 </UserContext.Provider>
             </div>
