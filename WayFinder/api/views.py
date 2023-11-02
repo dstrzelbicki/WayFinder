@@ -26,7 +26,7 @@ from datetime import datetime, timedelta, timezone
 from django_ratelimit.decorators import ratelimit as django_ratelimit
 from django_ratelimit.exceptions import Ratelimited
 from functools import wraps
-from .models import Route
+from .models import Route, RecoveryCode
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 import pyotp
@@ -35,7 +35,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-import secrets
 
 token_generator = PasswordResetTokenGenerator()
 now_utc = datetime.now(timezone.utc)
@@ -290,13 +289,27 @@ class VerifyTOTP(APIView):
         if not totp.verify(otp.strip()):
             return Response({"detail": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
 
+        if action == 'enable':
+            # generating recovery codes
+            num_recovery_codes = 10
+            recovery_codes = []
+            RecoveryCode.objects.filter(user=user, used=False).delete() # remove old recovery codes
+
+            for _ in range(num_recovery_codes):
+                recovery_code = RecoveryCode(user=user)
+                recovery_code.save()
+                recovery_codes.append(recovery_code.code)
+
         totp_device.confirmed = True
         totp_device.save()
 
         user.is_2fa_enabled = True
         user.save()
 
-        return Response({"detail": "TOTP device confirmed."})
+        if action == 'disable':
+            return Response({"detail": "TOTP device confirmed."})
+        else:
+            return Response({"detail": "TOTP device confirmed.", "recovery_codes": recovery_codes})
 
 
 class DisableTOTP(APIView):
@@ -321,3 +334,20 @@ class DisableTOTP(APIView):
         totp_device.delete()
 
         return Response({"detail": "2FA has been disabled."})
+
+
+class UseRecoveryCode(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication,)
+
+    def post(self, request):
+        user = request.user
+        code = request.data.get('recovery_code')
+        recovery_code = RecoveryCode.objects.filter(code=code, user=request.user, used=False).first()
+
+        if recovery_code:
+            recovery_code.mark_as_used()
+            login(request, user)
+            return Response({"detail": "Recovery successful."})
+        else:
+            return Response({"detail": "Invalid or already used recovery code."}, status=status.HTTP_400_BAD_REQUEST)

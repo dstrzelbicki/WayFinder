@@ -77,10 +77,12 @@ function DisableTOTP({ onUpdate }) {
 
 function SetupTOTP({ onUpdate }) {
     const [provisioningUrl, setProvisioningUrl] = useState("")
+    const [recoveryCodes, setRecoveryCodes] = useState([])
     const [otp, setOtp] = useState("")
     const [isPopupVisible, setPopupVisible] = useState(false)
     const [popupMessage, setPopupMessage] = useState("")
     const [status, setStatus] = useState(null)
+    const [otpVerified, setOtpVerified] = useState(false)
 
     useEffect(() => {
       // call the backend to get the provisioning URL
@@ -102,12 +104,14 @@ function SetupTOTP({ onUpdate }) {
       // call the backend to verify the OTP
       apiVerifyTOTP(otp, 'enable', (response, status) => {
         if(status === 200) {
+            setRecoveryCodes(response.recovery_codes)
+            setOtpVerified(true)
             setPopupMessage("2FA enabled successfully")
             setPopupVisible(true)
             setStatus(status)
             setTimeout(() => {
                 setPopupVisible(false)
-                onUpdate(true)
+                //onUpdate(true)
             }, 3000)
         } else {
             setPopupMessage("Invalid OTP")
@@ -120,22 +124,42 @@ function SetupTOTP({ onUpdate }) {
       })
     }
 
+    const recoveryCodesSaved = () => {
+        setRecoveryCodes([])
+        onUpdate(true)
+    }
+
     return (
       <div className="content">
-        <h3>Setup Two-Factor Authentication</h3>
-        {provisioningUrl && <div className="qr-code"><QRCode value={provisioningUrl} /></div>}
-        <input
-          type="text"
-          value={otp}
-          onChange={e => setOtp(e.target.value)}
-          placeholder="Enter OTP"
-        />
-        <button className="btn btn-primary" onClick={handleVerify}>Verify</button>
-        {isPopupVisible &&
-                <div className={(status === 200) ? "popup popup-success" : "popup popup-error"}>
-                    {popupMessage}
-                </div>
-        }
+        {!otpVerified ? <>
+            <h3>Setup Two-Factor Authentication</h3>
+            {provisioningUrl && <div className="qr-code"><QRCode value={provisioningUrl} /></div>}
+            <input
+            type="text"
+            value={otp}
+            onChange={e => setOtp(e.target.value)}
+            placeholder="Enter OTP"
+            />
+            <button className="btn btn-primary" onClick={handleVerify}>Verify</button>
+            {isPopupVisible &&
+                    <div className={(status === 200) ? "popup popup-success" : "popup popup-error"}>
+                        {popupMessage}
+                    </div>
+            } </>
+        : <>
+        {recoveryCodes.length > 0 && (
+          <div className="recovery-codes">
+            <h4>Recovery Codes</h4>
+            <p>Save these codes in a secure place. You can use them to regain access to your account if your two-factor authentication device is lost.</p>
+            <ul>
+              {recoveryCodes.map((code, index) => (
+                <li key={index}>{code}</li>
+              ))}
+            </ul>
+            <button className="btn btn-primary" onClick={recoveryCodesSaved}>I saved my codes</button>
+          </div>
+        )}
+        </>}
       </div>
     )
 }

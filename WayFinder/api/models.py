@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+import secrets
 
 
 class AppUserManager(BaseUserManager):
@@ -73,3 +74,19 @@ class Route(models.Model):
 
     def __str__(self):
         return f"{self.start_location_name} to {self.end_location_name}"
+
+
+class RecoveryCode(models.Model):
+    user = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name='recovery_codes')
+    code = models.CharField(max_length=10, unique=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = secrets.token_hex(5)
+        super(RecoveryCode, self).save(*args, **kwargs)
+
+    def mark_as_used(self):
+        self.used = True
+        self.save()

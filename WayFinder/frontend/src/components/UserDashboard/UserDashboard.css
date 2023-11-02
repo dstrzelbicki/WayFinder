@@ -85,6 +85,11 @@ p {
     width: 80%;
 }
 
+.user-dashboard .content .recovery-codes {
+    text-align: justify;
+  text-justify: inter-word;
+}
+
 .data-field {
     border: 1px solid #CCCCCC;
     border-radius: 5px;
