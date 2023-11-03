@@ -337,17 +337,24 @@ class DisableTOTP(APIView):
 
 
 class UseRecoveryCode(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = (TokenAuthentication,)
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = (SessionAuthentication,)
 
     def post(self, request):
-        user = request.user
-        code = request.data.get('recovery_code')
-        recovery_code = RecoveryCode.objects.filter(code=code, user=request.user, used=False).first()
+        data = request.data
+        assert validate_email(data)
+
+        user = User.objects.filter(email=data.get('email')).first()
+
+        code = data.get('recovery_code')
+        recovery_code = RecoveryCode.objects.filter(code=code, user=user, used=False).first()
 
         if recovery_code:
             recovery_code.mark_as_used()
             login(request, user)
-            return Response({"detail": "Recovery successful."})
+            user.failed_login_attempts = 0
+            user.save()
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key, 'detail': "Recovery successful"}, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Invalid or already used recovery code."}, status=status.HTTP_400_BAD_REQUEST)

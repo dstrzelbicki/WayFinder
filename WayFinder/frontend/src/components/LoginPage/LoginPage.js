@@ -55,6 +55,11 @@ export default function LoginPage() {
     navigate("/register");
   }
 
+  const navigateToRecoveryCodePage = () => {
+    sessionStorage.setItem("email", email)
+    navigate("/recovery-code")
+  }
+
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn");
     if (isLoggedIn) {
@@ -117,9 +122,14 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-        <a href= "http://127.0.0.1:8000/api/password_reset" className="forgot-password-link">
-          Forgotten Password?
-        </a>
+        {!requiresOtp ?
+            <a href="http://127.0.0.1:8000/api/password_reset" className="forgot-password-link">
+              Forgotten Password?
+            </a> :
+            <button className="btn btn-primary" onClick={navigateToRecoveryCodePage}>
+              Lost access to OTP device?
+            </button>
+        }
         {loginError && <p className="error-message">Invalid email or password</p>}
       </div>
     </div>

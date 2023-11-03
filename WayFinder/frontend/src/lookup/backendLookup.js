@@ -100,3 +100,11 @@ export function apiVerifyTOTP(otp, action, callback) {
 export function apiDisableTOTP(callback) {
   backendLookup("POST", "/disable-totp/", callback)
 }
+
+export function apiVerifyRecoveryCode(recoveryCode, email, callback) {
+  const data = {
+    recovery_code: recoveryCode,
+    email: email
+  }
+  backendLookup("POST", "/use-recovery-code/", callback, data)
+}
