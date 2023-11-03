@@ -300,6 +300,18 @@ class VerifyTOTP(APIView):
                 recovery_code.save()
                 recovery_codes.append(recovery_code.code)
 
+            subject = 'Two-Factor Authentication has been enabled on your account'
+            message = 'You have successfully enabled Two-Factor Authentication on your account.'
+            recipients = [user.email]
+
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=recipients,
+                fail_silently=False,
+            )
+
         totp_device.confirmed = True
         totp_device.save()
 
