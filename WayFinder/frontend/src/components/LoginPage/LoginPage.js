@@ -114,10 +114,10 @@ export default function LoginPage() {
               </div>
           )}
           <div className="button-container">
-            <button className="login-btn" type="submit">
+            <button className="btn btn-primary" type="submit">
               Login
             </button>
-            <button className="register-btn" type="button" onClick={navigateToRegisterPage}>
+            <button className="btn btn-primary" type="button" onClick={navigateToRegisterPage}>
               Register
             </button>
           </div>

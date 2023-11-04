@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 from django.contrib.auth import get_user_model
 UserModel = get_user_model()
 
@@ -38,3 +39,50 @@ def validate_password(data):
     if not password:
         raise ValidationError('a password is needed')
     return True
+
+
+class UppercaseValidator:
+    def validate(self, password, user=None):
+        if not any(char.isupper() for char in password):
+            raise ValidationError(
+                _("The password must contain at least 1 uppercase letter, A-Z."),
+                code='password_no_upper',
+            )
+
+    def get_help_text(self):
+        return _("Your password must contain at least 1 uppercase letter, A-Z.")
+
+class LowercaseValidator:
+    def validate(self, password, user=None):
+        if not any(char.islower() for char in password):
+            raise ValidationError(
+                _("The password must contain at least 1 lowercase letter, a-z."),
+                code='password_no_lower',
+            )
+
+    def get_help_text(self):
+        return _("Your password must contain at least 1 lowercase letter, a-z.")
+
+class SpecialCharacterValidator:
+    def validate(self, password, user=None):
+        if not any(char in set('!@#$%^&*()-_=+[]{};:"\'|\\,.<>?/~`') for char in password):
+            raise ValidationError(
+                _("The password must contain at least 1 special character: " +
+                  "!@#$%^&*()-_=+[]{};:\"'|\\,.<>?/~`"),
+                code='password_no_special',
+            )
+
+    def get_help_text(self):
+        return _("Your password must contain at least 1 special character: " +
+                 "!@#$%^&*()-_=+[]{};:\"'|\\,.<>?/~`")
+
+class NumericValidator:
+    def validate(self, password, user=None):
+        if not any(char.isdigit() for char in password):
+            raise ValidationError(
+                _("The password must contain at least 1 digit, 0-9."),
+                code='password_no_number',
+            )
+
+    def get_help_text(self):
+        return _("Your password must contain at least 1 digit, 0-9.")

@@ -14,6 +14,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         model = UserModel
         fields = ['email', 'username', 'password']
 
+    def validate_password(self, value):
+        # validate the password against Django's built-in validators as well as your custom validators
+        validate_password(value, self.instance)
+        return value
+
     def create(self, validated_data):
         password = validated_data.pop('password')
         user = UserModel.objects.create_user(**validated_data, password=password)
@@ -50,7 +55,8 @@ class UserChangePasswordSerializer(serializers.Serializer):
         return value
 
     def validate_new_password(self, value):
-        validate_password(value)
+        user = self.context['request'].user
+        validate_password(value, user=user)
         return value
 
     def update(self, instance, validated_data):
