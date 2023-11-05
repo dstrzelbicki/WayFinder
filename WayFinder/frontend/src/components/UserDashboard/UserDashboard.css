@@ -183,6 +183,17 @@ p {
     border: 1px solid #0D6EFD;
 }
 
+.dashboard-sidebar .toggle-button {
+    position: absolute;
+    width: 35px;
+    top: 10px;
+    left: 30px;
+    border: 1px solid black;
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #009AD7;
+}
+
 tr th {
     border: 1px solid #CCCCCC;
     padding: 10px;

@@ -5,6 +5,9 @@ import {useCurrentUser} from "../../auth/hooks"
 import {apiProfileDataChange, apiPasswordChange,
         apiUserRoutes, apiProfileData} from "../../lookup/backendLookup"
 import PasswordStrengthBar from "react-password-strength-bar"
+import {useNavigate} from "react-router-dom"
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
+import {faTimes} from "@fortawesome/free-solid-svg-icons"
 
 const Notifications = () => <div>Notifications</div>
 const Shared = () => <div>Shared</div>
@@ -224,6 +227,11 @@ export function UserDashboard() {
     //const {currentUser, isLoading} = useCurrentUser()
     const [currentUser, setCurrentUser] = useState({})
     const [isLoading, setIsLoading] = useState(true)
+    const navigate = useNavigate()
+
+    const navigatetoHomePage = () => {
+        navigate("/home")
+    }
 
     useEffect(() => {
         if (setIsLoading) {
@@ -260,6 +268,9 @@ export function UserDashboard() {
     return (
         !isLoading ? <div className="user-dashboard">
             <div className="dashboard-sidebar">
+                <div className="toggle-button" onClick={navigatetoHomePage} role="button">
+                    <FontAwesomeIcon icon={faTimes} />
+                </div>
                 <h2>Your account</h2>
                 <ul className="centered-list">
                     <li><Link to="/user-dashboard/profile">Profile</Link></li>
