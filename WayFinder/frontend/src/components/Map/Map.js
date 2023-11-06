@@ -19,6 +19,7 @@ import {DEVICE_PIXEL_RATIO} from "ol/has";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import {apiPostRoute} from "../../lookup/backendLookup"
+import { set } from "ol/transform"
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
@@ -38,6 +39,8 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
     const [showMessage, setShowMessage] = useState(false)
     const TOMTOM_API_KEY = 'yaFyr0Achz6WGOGfk3r1PUIpMV7On6JE'
     const API_KEY = 'b716933a82ae4ee08317542b1ed2664c'
+    const [trafficHint, setTrafficHint] = useState("Show traffic")
+    const [trafficInfo, setTrafficInfo] = useState(false)
 
     const isRetina = DEVICE_PIXEL_RATIO > 1;
     const baseUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=" + API_KEY;
@@ -176,6 +179,10 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
             const layers = trafficLayerGroup.getLayers().getArray()
             const visible = !layers[0].getVisible()
             layers.forEach((layer) => layer.setVisible(visible))
+
+            trafficHint === "Show traffic" ?
+                setTrafficHint("Hide traffic")
+                : setTrafficHint("Show traffic")
 
             const copyrightCaption = document.getElementById("copyright-caption")
             if (visible) {
@@ -463,6 +470,10 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         setShowMessage(false)
     }
 
+    const trafficInfoToggle = () => {
+        setTrafficInfo(!trafficInfo)
+    }
+
     return (<div ref={mapRef} className="map-container" id="map-container">
         <div>
             <Snackbar open={showMessage} autoHideDuration={4000} onClose={handleCloseMessage}>
@@ -474,7 +485,19 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         <div id="tooltip" className="tooltip"></div>
         <div id="instructionContainer" className="instructionContainer"></div>
         <button className="route-button" onClick={route}>Trace route</button>
-        <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
+        <button className="map-button" onClick={toggleTraffic}>{trafficHint}</button>
+        {trafficHint === "Hide traffic" && <button className="traffic-info-button" onClick={trafficInfoToggle}>Traffic information</button>}
+        {!trafficInfo && (<div className="traffic-card">
+                            <h3>Traffic information</h3>
+                            <div className="traffic-info">
+                                <p><span className="traffic-circle red"></span>Very slow or stationary traffic</p>
+                                <p><span className="traffic-circle yellow"></span>Slow-moving traffic</p>
+                                <p><span className="traffic-circle green"></span>Free-flowing traffic</p>
+                                <p><span className="traffic-circle grey"></span>Closed road</p>
+                                <p><i className="arrow"></i>Direction the traffic jam is taking place</p>
+                            </div>
+                            <button className="btn btn-primary" onClick={trafficInfoToggle}>Close</button>
+                        </div>)}
         {popupData && (<PopupCard data={popupData} onSelect={(data) => {
             addOrUpdateMarker(data.lonLat, "marker2")
             onMarker2NameUpdate(data.name)
