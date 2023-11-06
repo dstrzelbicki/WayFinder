@@ -273,14 +273,14 @@ export function UserDashboard() {
                 </div>
                 <h2>Your account</h2>
                 <ul className="centered-list">
-                    <li><Link to="/user-dashboard/profile">Profile</Link></li>
-                    <li><Link to="/user-dashboard/notifications">Notifications</Link></li>
-                    <li><Link to="/user-dashboard/shared">Shared</Link></li>
-                    <li><Link to="/user-dashboard/places">Saved places</Link></li>
-                    <li><Link to="/user-dashboard/routes">Saved routes</Link></li>
-                    <li><Link to="/user-dashboard/timeline">Timeline</Link></li>
-                    <li><Link to="/user-dashboard/history">History</Link></li>
-                    <li><Link to="/user-dashboard/settings">Settings</Link></li>
+                    <li><Link to="/user-dashboard/profile" className="full-width-link">Profile</Link></li>
+                    <li><Link to="/user-dashboard/notifications" className="full-width-link">Notifications</Link></li>
+                    <li><Link to="/user-dashboard/shared" className="full-width-link">Shared</Link></li>
+                    <li><Link to="/user-dashboard/places" className="full-width-link">Saved places</Link></li>
+                    <li><Link to="/user-dashboard/routes" className="full-width-link">Saved routes</Link></li>
+                    <li><Link to="/user-dashboard/timeline" className="full-width-link">Timeline</Link></li>
+                    <li><Link to="/user-dashboard/history" className="full-width-link">History</Link></li>
+                    <li><Link to="/user-dashboard/settings" className="full-width-link">Settings</Link></li>
                 </ul>
             </div>
             <div className="content-container">

@@ -487,7 +487,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         <button className="route-button" onClick={route}>Trace route</button>
         <button className="map-button" onClick={toggleTraffic}>{trafficHint}</button>
         {trafficHint === "Hide traffic" && <button className="traffic-info-button" onClick={trafficInfoToggle}>Traffic information</button>}
-        {!trafficInfo && (<div className="traffic-card">
+        {trafficInfo && (<div className="traffic-card">
                             <h3>Traffic information</h3>
                             <div className="traffic-info">
                                 <p><span className="traffic-circle red"></span>Very slow or stationary traffic</p>

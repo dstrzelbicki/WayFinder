@@ -47,8 +47,15 @@
 .centered-list li {
     border: 1px solid black;
     border-radius: 10px;
-    padding: 10px;
+    padding: 0px;
     margin-bottom: 10px;
+}
+
+.full-width-link {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: inherit;
 }
 
 .centered-list li:hover {
