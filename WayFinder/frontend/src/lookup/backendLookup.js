@@ -84,3 +84,11 @@ export function apiPostRoute(callback) {
 
   backendLookup("POST", "/route", callback, routeData)
 }
+
+export function apiPostSearchedLocation(data, callback) {
+  backendLookup("POST", "/location", callback, data)
+}
+
+export function apiGetSearchedLocations(callback) {
+  backendLookup("GET", "/location", callback)
+}

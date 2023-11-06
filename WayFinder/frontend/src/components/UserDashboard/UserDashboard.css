@@ -18,7 +18,7 @@
 
 .user-dashboard {
     color: black;
-    background-color: white;
+    background-color: #F3E7D3;
     height: 100%;
     width: 100%;
     display: flex;
@@ -27,7 +27,7 @@
 
 .user-dashboard .dashboard-sidebar {
     color: black;
-    background-color: #00BFFF;
+    background-color: #007bff;
     height: 100%;
     width: 20%;
     overflow: auto;
@@ -59,7 +59,7 @@
 }
 
 .centered-list li:hover {
-    background-color: #009AD7;
+    background-color: #006acd;
 }
 
 p {
@@ -99,6 +99,7 @@ p {
     display: inline-block;
     width: 65%;
     text-align: center;
+    background-color: #FFFAED;
 }
 
 .data-row {
@@ -129,9 +130,14 @@ p {
     margin-bottom: 10px;
 }
 
+.user-dashboard form input[type="password"] {
+    background-color: #FFFAED;
+}
+
 .user-dashboard form input[type="text"],
 .user-dashboard form input[type="email"] {
     border: 1px solid #CCCCCC;
+    background-color: #FFFAED;
     border-radius: 5px;
     padding: 5px;
     display: inline-block;
@@ -198,7 +204,11 @@ p {
     border: 1px solid black;
     padding: 5px 10px;
     cursor: pointer;
-    background-color: #009AD7;
+    background-color: #007bff;
+}
+
+.dashboard-sidebar .toggle-button:hover {
+    background-color: #006acd;
 }
 
 tr th {
@@ -219,7 +229,7 @@ table {
     border-radius: 30px;
     border-style: hidden;
     box-shadow: 0 0 0 1px #CCCCCC;
-    background-color: #F7F7F7;
+    background-color: #FFFAED;
 }
 
 .history-message {

@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import Route
+from .models import Route, SearchedLocation
 
 UserModel = get_user_model()
 
@@ -76,6 +76,23 @@ class RouteSerializer(serializers.ModelSerializer):
             'end_location_lng',
             'distance',
             'duration',
+            'created_at',
+            'user',
+        ]
+
+
+class SearchedLocationSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = SearchedLocation
+        fields = [
+            'id',
+            'name',
+            'lat',
+            'lng',
             'created_at',
             'user',
         ]

@@ -72,3 +72,19 @@ class Route(models.Model):
 
     def __str__(self):
         return f"{self.start_location_name} to {self.end_location_name}"
+
+
+class SearchedLocation(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    lat = models.DecimalField(max_digits=9, decimal_places=7)
+    lng = models.DecimalField(max_digits=9, decimal_places=7)
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Searched Location'
+        verbose_name_plural = 'Searched Locations'
+
+    def __str__(self):
+        return f"{self.name}"

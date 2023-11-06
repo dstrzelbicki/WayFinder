@@ -9,6 +9,8 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faArrowCircleRight, faMinus, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons"
 import {Checkbox, FormControlLabel, FormGroup, ListItemIcon, Typography} from "@material-ui/core";
 import {DirectionsBike, DriveEta} from "@material-ui/icons";
+import {apiGetSearchedLocations, apiPostSearchedLocation} from "../../lookup/backendLookup";
+import { set } from "ol/transform"
 
 const HomePage = () => {
     const [marker1, setMarker1] = useState(null)
@@ -17,6 +19,7 @@ const HomePage = () => {
     const [marker2Name, setMarker2Name] = useState("")
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
     const [showSearchHistory, setShowSearchHistory] = useState(false)
+    const [searchHistory, setSearchHistory] = useState([])
     const [showAddStop, setShowAddStop] = useState(false);
     const [isMinusIcon, setIsMinusIcon] = useState(false);
     const [selectedOption1, setSelectedOption1] = useState('');
@@ -57,10 +60,19 @@ const HomePage = () => {
                 sessionStorage.setItem("midLon", lon)
             }
 
-            // save search term to local storage
+            // save searched location to db
             let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || []
             searchHistory.push({searchTerm, searchBarId, timestamp: new Date()})
             localStorage.setItem("searchHistory", JSON.stringify(searchHistory))
+
+            let locationData = {
+                name: searchTerm,
+                lat: lat,
+                lng: lon
+            }
+            apiPostSearchedLocation(locationData, (response, status) => {
+                console.log(response, status)
+            })
         } else {
             console.error(
                 `No results found for SearchBar${searchBarId}: `,
@@ -68,6 +80,16 @@ const HomePage = () => {
             )
         }
     }
+
+    useEffect(() => {
+        apiGetSearchedLocations((response, status) => {
+            if (status === 200) {
+                setSearchHistory(response)
+            } else {
+                console.log(response, status)
+            }
+        })
+    }, [showSearchHistory])
 
     const updateMarker2Name = (name) => {
         setMarker2Name(name)
@@ -123,19 +145,19 @@ const HomePage = () => {
                     {showSearchHistory ? (
                         <div className="search-history-container">
                             <div className="search-history-close" onClick={() => setShowSearchHistory(!showSearchHistory)}>
-                                <p>Close search history &nbsp;<FontAwesomeIcon icon={faTimes}/></p>
+                                <p>Close history &nbsp;<FontAwesomeIcon icon={faTimes}/></p>
                             </div>
                             <div className="search-history-list">
-                                {JSON.parse(localStorage.getItem("searchHistory")) &&
-                                    JSON.parse(localStorage.getItem("searchHistory")).map((item, index) => (
-                                        <div key={index} className="search-history-item" onClick={() => {
+                                {searchHistory && searchHistory.map((item, index) => (
+                                        <div key={item.id} className="search-history-item" onClick={() => {
                                             setShowSearchHistory(false)
-                                            updateMarker2Name(item.searchTerm)
-                                            handleSearch(item.searchTerm, 2)
+                                            updateMarker2Name(item.name)
+                                            handleSearch(item.name, 2)
                                         }}
                                         >
                     <span>
-                      {item.searchTerm}&nbsp;&nbsp;<FontAwesomeIcon icon={faArrowCircleRight}/>
+                        {item.name.length > 20 ? item.name.substring(0, 35) + "..." : item.name}
+                        &nbsp;&nbsp;<FontAwesomeIcon icon={faArrowCircleRight}/>
                     </span>
                                         </div>
                                     ))}
