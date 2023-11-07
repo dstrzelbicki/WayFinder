@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from "react"
-import "./SearchBar.css"
-import {autocomplete} from "../../services/mapServices";
+import "./SearchBox.css"
+import {autocomplete} from "../../services/mapServices.js";
 
-const SearchBar = ({placeholder, onSearch}) => {
+const SearchBox = ({placeholder, onSearch}) => {
     const [searchValue, setSearchValue] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -107,4 +107,4 @@ const SearchBar = ({placeholder, onSearch}) => {
     )
 }
 
-export default SearchBar
+export default SearchBox
