@@ -2,24 +2,16 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    margin-left: 20px; /* Adjust the margin value as needed */
 }
 
-.transport-options-container h3,
-.transport-options-container h4 {
-    margin-top: 0;
+.transport-options-container h2 {
+    margin-top: 10px;
 }
 
 .transport-options-container label {
-    margin-bottom: 10px;
+    margin-top: 6px;
 }
 
-.stop-transport-options-container {
-    display: flex;
-    align-items: flex-start;
-    margin-left: 20px;
-}
-
-.stop-transport-options-container > * {
-    margin-right: 10px;
+.transport-options-label {
+    margin-top:5px;
 }
