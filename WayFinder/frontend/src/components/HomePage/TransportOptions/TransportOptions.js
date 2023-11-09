@@ -1,8 +1,7 @@
 import React from 'react';
-import {Checkbox, FormControlLabel, FormGroup, ListItemIcon, Typography} from "@material-ui/core";
+import {Checkbox, FormControlLabel, FormGroup, Typography} from "@material-ui/core";
 import {DirectionsBike, DriveEta} from "@material-ui/icons";
-import "./TransportOptions.css"
-import {ListItem, ListItemText} from "@mui/material";
+import {Box, IconButton} from "@mui/material";
 
 function TransportOptions(props) {
 
@@ -16,33 +15,28 @@ function TransportOptions(props) {
         props.handleOptionChange(option);
     };
 
-    return (<div className="transport-options-container">
+    return (<FormGroup>
             <Typography variant="h2">Select Transport Options:</Typography>
-            <FormGroup>
-                {transportOptions.map((option) => (
-                    <FormControlLabel
-                        key={option.value}
-                        control={
-                            <Checkbox size='small'
-                                      checked={props.selectedOption === option.value}
-                                      onChange={() => handleOptionChange(option.value)}
-                                      color="default"
-                                      disabled={props.selectedOption && props.selectedOption !== option.value}
-                            />
-                        }
-                        label={
-                            <ListItem>
-                                <ListItemIcon style={{minWidth: '25px'}}>{option.icon}</ListItemIcon>
-                                <ListItemText
-                                    disableTypography
-                                    primary={<Typography style={{ fontSize:9, color: '#424242' }}>{option.label}</Typography>}
-                                />
-                            </ListItem>
-                        }
-                    />
-                ))}
-            </FormGroup>
-        </div>
+            {transportOptions.map((option) => (
+                <FormControlLabel
+                    control={
+                        <Checkbox size='small'
+                                  checked={props.selectedOption === option.value}
+                                  onChange={() => handleOptionChange(option.value)}
+                                  color="default"
+                                  disabled={props.selectedOption && props.selectedOption !== option.value}
+                        />
+                    }
+                    label={
+                        <Box display="flex"
+                             alignItems="center">
+                            <IconButton style={{minWidth: '25px'}}>{option.icon}</IconButton>
+                            <Typography style={{fontSize: 9, color: '#424242'}}>{option.label}</Typography>
+                        </Box>
+                    }
+                />
+            ))}
+        </FormGroup>
     );
 }
 
