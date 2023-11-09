@@ -2,13 +2,15 @@ from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
+from WayFinder.api.validations import validate_email
 from .models import Route
 
 UserModel = get_user_model()
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    email = serializers.EmailField(validators=[validate_email])
+    password = serializers.CharField(write_only=True, validators=[validate_password])
 
     class Meta:
         model = UserModel
@@ -37,6 +39,8 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(validators=[validate_email])
+
     class Meta:
         model = UserModel
         fields = ('email', 'username', 'is_2fa_enabled')
@@ -46,7 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserChangePasswordSerializer(serializers.Serializer):
     model = get_user_model()
     old_password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password])
 
     def validate_old_password(self, value):
         user = self.context['request'].user

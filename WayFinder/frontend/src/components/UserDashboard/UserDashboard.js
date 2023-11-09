@@ -23,6 +23,18 @@ function DisableTOTP({ onUpdate }) {
     const [status, setStatus] = useState(null)
 
     const handleVerify = () => {
+
+        const otpPattern = /^\d{6}$/
+
+        if (!otpPattern.test(otp)) {
+            setPopupMessage("Invalid OTP format")
+            setPopupVisible(true)
+            setTimeout(() => {
+                setPopupVisible(false)
+            }, 3000)
+            return
+        }
+
         // call the backend to verify the OTP
         apiVerifyTOTP(otp, 'disable', (response, status) => {
             if(status === 200) {
@@ -64,6 +76,7 @@ function DisableTOTP({ onUpdate }) {
                 value={otp}
                 onChange={e => setOtp(e.target.value)}
                 placeholder="Enter OTP"
+                pattern="\d{6}"
             />
             <button className="btn btn-primary" onClick={handleVerify}>Verify</button>
             {isPopupVisible &&
@@ -101,27 +114,39 @@ function SetupTOTP({ onUpdate }) {
     }, [])
 
     const handleVerify = () => {
-      // call the backend to verify the OTP
-      apiVerifyTOTP(otp, 'enable', (response, status) => {
-        if(status === 200) {
-            setRecoveryCodes(response.recovery_codes)
-            setOtpVerified(true)
-            setPopupMessage("2FA enabled successfully")
+
+        const otpPattern = /^\d{6}$/
+
+        if (!otpPattern.test(otp)) {
+            setPopupMessage("Invalid OTP format")
             setPopupVisible(true)
-            setStatus(status)
-            setTimeout(() => {
-                setPopupVisible(false)
-                //onUpdate(true)
-            }, 3000)
-        } else {
-            setPopupMessage("Invalid OTP")
-            setPopupVisible(true)
-            setStatus(status)
             setTimeout(() => {
                 setPopupVisible(false)
             }, 3000)
+            return
         }
-      })
+
+        // call the backend to verify the OTP
+        apiVerifyTOTP(otp, 'enable', (response, status) => {
+            if(status === 200) {
+                setRecoveryCodes(response.recovery_codes)
+                setOtpVerified(true)
+                setPopupMessage("2FA enabled successfully")
+                setPopupVisible(true)
+                setStatus(status)
+                setTimeout(() => {
+                    setPopupVisible(false)
+                    //onUpdate(true)
+                }, 3000)
+            } else {
+                setPopupMessage("Invalid OTP")
+                setPopupVisible(true)
+                setStatus(status)
+                setTimeout(() => {
+                    setPopupVisible(false)
+                }, 3000)
+            }
+        })
     }
 
     const recoveryCodesSaved = () => {
@@ -135,10 +160,11 @@ function SetupTOTP({ onUpdate }) {
             <h3>Setup Two-Factor Authentication</h3>
             {provisioningUrl && <div className="qr-code"><QRCode value={provisioningUrl} /></div>}
             <input
-            type="text"
-            value={otp}
-            onChange={e => setOtp(e.target.value)}
-            placeholder="Enter OTP"
+                type="text"
+                value={otp}
+                onChange={e => setOtp(e.target.value)}
+                placeholder="Enter OTP"
+                pattern="\d{6}"
             />
             <button className="btn btn-primary" onClick={handleVerify}>Verify</button>
             {isPopupVisible &&
@@ -396,6 +422,7 @@ export function UserDashboard() {
     //const {currentUser, isLoading} = useCurrentUser()
     const [currentUser, setCurrentUser] = useState({})
     const [isLoading, setIsLoading] = useState(true)
+    const validContents = ['profile', 'notifications', 'shared', 'places', 'routes', 'timeline', 'history', 'settings']
 
     useEffect(() => {
         if (setIsLoading) {
@@ -407,25 +434,27 @@ export function UserDashboard() {
     }, [])
 
     const renderContent = () => {
-        switch (content) {
-            case "profile":
-                return <Profile currentUser={currentUser} />
-            case "notifications":
-                return <Notifications />
-            case "shared":
-                return <Shared />
-            case "places":
-                return <Places />
-            case "routes":
-                return <Routes />
-            case "timeline":
-                return <Timeline />
-            case "history":
-                return <History />
-            case "settings":
-                return <Settings />
-            default:
-                return <Profile currentUser={currentUser} />
+        if (validContents.includes(content)) {
+            switch (content) {
+                case "profile":
+                    return <Profile currentUser={currentUser} />
+                case "notifications":
+                    return <Notifications />
+                case "shared":
+                    return <Shared />
+                case "places":
+                    return <Places />
+                case "routes":
+                    return <Routes />
+                case "timeline":
+                    return <Timeline />
+                case "history":
+                    return <History />
+                case "settings":
+                    return <Settings />
+                default:
+                    return <Profile currentUser={currentUser} />
+            }
         }
     }
 

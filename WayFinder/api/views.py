@@ -35,10 +35,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from django import forms
 
 token_generator = PasswordResetTokenGenerator()
 now_utc = datetime.now(timezone.utc)
 User = get_user_model()
+
+
+class OTPForm(forms.Form):
+    otp = forms.RegexField(regex=r'^\d{6}$', error_messages={'invalid': 'OTP must be 6 digits'})
 
 
 def custom_ratelimit(key=None, rate=None, method=None, block=False):
@@ -267,8 +272,12 @@ class VerifyTOTP(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def post(self, request):
+        form = OTPForm(request.data)
+        if not form.is_valid():
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
         user = request.user
-        otp = request.data.get('otp')
+        otp = form.cleaned_data['otp'] # otp = request.data.get('otp')
         action = request.data.get('action')
 
         if action not in ['enable', 'disable']:
