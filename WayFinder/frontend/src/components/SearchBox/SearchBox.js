@@ -78,16 +78,18 @@ const SearchBox = ({placeholder, onSearch}) => {
     }, []);
 
     return (
-        <div className="search-bar">
-            <input
-                type="text"
-                className="search-input"
-                placeholder={placeholder}
-                value={searchValue}
-                onChange={handleInputChange}
-                ref={inputRef}
-                onKeyDown={handleKeyPress}
-            />
+        <div className="no-submit">
+            <form className="no-submit">
+                <input
+                    type="search"
+                    className="no-submit"
+                    placeholder={placeholder}
+                    value={searchValue}
+                    onChange={handleInputChange}
+                    ref={inputRef}
+                    onKeyDown={handleKeyPress}
+                />
+            </form>
             {isDropdownVisible && Array.isArray(searchResults) && searchValue.length > 0 && (
                 <ul className="dropdown-list">
                     {searchResults.map((item, index) => (

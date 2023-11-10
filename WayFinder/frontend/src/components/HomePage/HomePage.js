@@ -111,7 +111,7 @@ const HomePage = () => {
                     setIsSidebarNotCollapsed(false)
                 }}
             />
-            <div className="search-container">
+            <div>
                 {showSearchHistory ? (
                     <div className="search-history-container">
                         <div className="search-history-close" onClick={() => setShowSearchHistory(!showSearchHistory)}>
@@ -135,8 +135,8 @@ const HomePage = () => {
                     </div>
                 ) : (
                     <div className="search-location-container">
-                        <SearchBox placeholder="Search first location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
-                        <SearchBox placeholder={marker2Name || "Search second location"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
+                        <SearchBox placeholder="Search location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
+                        <SearchBox placeholder={marker2Name || "Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
                         <div className="add-stop-button">
                             <button className="add-stop-button" onClick={handleAddStop}><FontAwesomeIcon icon={showAddStop ? faMinus : faPlus}/></button>
                         </div>

@@ -16,7 +16,7 @@ function TransportOptions(props) {
     };
 
     return (<FormGroup>
-            <Typography variant="h2">Select Transport Options:</Typography>
+            <Typography style={{marginTop: '20px'}} variant="h2">Select Transport Options:</Typography>
             {transportOptions.map((option) => (
                 <FormControlLabel
                     control={
