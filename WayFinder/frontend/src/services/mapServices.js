@@ -26,7 +26,7 @@ export const geocode = async (searchTerm) => {
 // the clicked point to find out the corresponding address
 export const reverseGeocode = async (coordinates) => {
     const [lon, lat] = coordinates
-    const url = `${geoApifyBaseUrl}/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${API_KEY}`
+    const url = `${geoApifyBaseUrl}/geocode/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&apiKey=${API_KEY}`
 
     try {
         const response = await axios.get(url)
@@ -53,7 +53,7 @@ export const routemap = async (start, end, transportOption) => {
         mode = "drive"
     } else mode = "bicycle"
 
-    const url = `${geoApifyBaseUrl}/routing?waypoints=${start.join(',')}|${end.join(',')}&mode=${mode}&details=instruction_details,route_details,elevation&apiKey=${API_KEY}`
+    const url = `${geoApifyBaseUrl}/routing?waypoints=${encodeURIComponent(start.join(','))}|${encodeURIComponent(end.join(','))}&mode=${mode}&details=instruction_details,route_details,elevation&apiKey=${API_KEY}`
 
     const requestOptions = {
         method: 'GET',

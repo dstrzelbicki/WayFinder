@@ -83,7 +83,10 @@ export default function LoginPage() {
               name="email"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
+                const sanitizedEmail = DOMPurify.sanitize(e.target.value)
+                if (validator.isEmail(sanitizedEmail)) {
+                  setEmail(sanitizedEmail)
+                }
               }}
             />
           </div>

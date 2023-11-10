@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from "react"
 import "./SearchBar.css"
 import {autocomplete} from "../../services/mapServices";
+import DOMPurify from "dompurify";
 
 const SearchBar = ({placeholder, onSearch}) => {
     const [searchValue, setSearchValue] = useState("");
@@ -48,7 +49,8 @@ const SearchBar = ({placeholder, onSearch}) => {
 
     const handleInputChange = (event) => {
         const value = event.target.value;
-        setSearchValue(value);
+        const sanitizedValue = DOMPurify.sanitize(value);
+        setSearchValue(sanitizedValue);
         setIsDropdownVisible(true);
     }
 
