@@ -26,7 +26,6 @@ const HomePage = () => {
     }
 
     const handleSearch = async (searchTerm, searchBarId) => {
-        // fixme add validation and display error when not found
         const data = await geocode(searchTerm)
         if (data && data.results.length > 0) {
             const {lat, lon} = data.results[0]

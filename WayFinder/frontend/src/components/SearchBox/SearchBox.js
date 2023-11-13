@@ -54,13 +54,15 @@ const SearchBox = ({placeholder, onSearch}) => {
 
     const handleKeyPress = (event) => {
         if (event.key === "Enter") {
-            onSearch(searchValue)
+            event.preventDefault();
+            onSearch(searchValue);
         }
     }
 
     const handleSelectItem = (value) => {
         setSearchValue(value);
         setSelectedItem(value);
+        onSearch(value);
         setIsDropdownVisible(false);
     };
 
