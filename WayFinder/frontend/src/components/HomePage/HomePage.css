@@ -3,7 +3,6 @@
     height: 100vh;
 }
 
-/*search-history style*/
 .search-location-container,
 .search-history-container {
     display: flex;
@@ -42,18 +41,13 @@
     margin-top: 10px;
 }
 
-
-/*search-location style*/
-
-/*.add-stop-button {*/
-/*  background-color: cornflowerblue;*/
-/*  color: white;*/
-/*  border: none;*/
-/*  padding: 5px;*/
-/*  margin-left: 40px;*/
-/*  margin-top: -18px;*/
-/*  cursor: pointer;*/
-/*}*/
+.add-stop-component {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    margin-left: 60px;
+    color: #00BFFF;
+}
 
 .gray-text {
     color: gray;
