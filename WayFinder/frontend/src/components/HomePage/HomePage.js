@@ -1,14 +1,13 @@
 import React, {useEffect, useState} from "react"
-import {BrowserRouter as Router, Route, Routes,} from "react-router-dom"
-import OLMap from "../Map/Map"
-import SearchBar from "../SearchBar/SearchBar"
+import SearchBox from "../SearchBox/SearchBox.js"
 import {geocode} from "../../services/mapServices"
 import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
-import {faArrowCircleRight, faMinus, faPlus, faTimes} from "@fortawesome/free-solid-svg-icons"
-import {Checkbox, FormControlLabel, FormGroup, ListItemIcon, Typography} from "@material-ui/core";
-import {DirectionsBike, DriveEta} from "@material-ui/icons";
+import {faArrowCircleRight, faMinusCircle, faPlusCircle, faRightLeft, faTimes} from "@fortawesome/free-solid-svg-icons"
+import TransportOptions from "./TransportOptions/TransportOptions";
+import {Typography} from "@mui/material";
+import OLMap from "../Map/Map";
 
 const HomePage = () => {
     const [marker1, setMarker1] = useState(null)
@@ -27,7 +26,6 @@ const HomePage = () => {
     }
 
     const handleSearch = async (searchTerm, searchBarId) => {
-        // fixme add validation and display error when not found
         const data = await geocode(searchTerm)
         if (data && data.results.length > 0) {
             const {lat, lon} = data.results[0]
@@ -94,14 +92,6 @@ const HomePage = () => {
         }
     };
 
-    const isOptionSelected1 = (option) => {
-        return selectedOption1 === option;
-    };
-
-    const isOptionSelected2 = (option) => {
-        return selectedOption2 === option;
-    };
-
     useEffect(() => {
         if (isMinusIcon) {
             setSelectedOption1('')
@@ -110,192 +100,64 @@ const HomePage = () => {
     }, [isMinusIcon])
 
     return (
-            <div className="full-height-container">
-                <Sidebar
-                    isNotCollapsed={isSidebarNotCollapsed}
-                    toggleSidebar={toggleSidebar}
-                    onSearchHistoryClick={() => {
-                        setShowSearchHistory(true)
-                        setIsSidebarNotCollapsed(false)
-                    }}
-                />
-                <div className="search-container">
-                    {showSearchHistory ? (
-                        <div className="search-history-container">
-                            <div className="search-history-close" onClick={() => setShowSearchHistory(!showSearchHistory)}>
-                                <p>Close search history &nbsp;<FontAwesomeIcon icon={faTimes}/></p>
-                            </div>
-                            <div className="search-history-list">
-                                {JSON.parse(localStorage.getItem("searchHistory")) &&
-                                    JSON.parse(localStorage.getItem("searchHistory")).map((item, index) => (
-                                        <div key={index} className="search-history-item" onClick={() => {
-                                            setShowSearchHistory(false)
-                                            updateMarker2Name(item.searchTerm)
-                                            handleSearch(item.searchTerm, 2)
-                                        }}
-                                        >
+
+        <div className="full-height-container">
+            <Sidebar
+                isNotCollapsed={isSidebarNotCollapsed}
+                toggleSidebar={toggleSidebar}
+                onSearchHistoryClick={() => {
+                    setShowSearchHistory(true)
+                    setIsSidebarNotCollapsed(false)
+                }}
+            />
+            <div>
+                {showSearchHistory ? (
+                    <div className="search-history-container">
+                        <div className="search-history-close" onClick={() => setShowSearchHistory(!showSearchHistory)}>
+                            <p>Close search history &nbsp;<FontAwesomeIcon icon={faTimes}/></p>
+                        </div>
+                        <div className="search-history-list">
+                            {JSON.parse(localStorage.getItem("searchHistory")) &&
+                                JSON.parse(localStorage.getItem("searchHistory")).map((item, index) => (
+                                    <div key={index} className="search-history-item" onClick={() => {
+                                        setShowSearchHistory(false)
+                                        updateMarker2Name(item.searchTerm)
+                                        handleSearch(item.searchTerm, 2)
+                                    }}
+                                    >
                     <span>
                       {item.searchTerm}&nbsp;&nbsp;<FontAwesomeIcon icon={faArrowCircleRight}/>
                     </span>
-                                        </div>
-                                    ))}
-                            </div>
+                                    </div>
+                                ))}
                         </div>
-                    ) : (
-                        <>
-                            <div>
-                                <div className="search-bar-container">
-                                    <SearchBar placeholder="Search first location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
-                                    <button className="add-stop-button" onClick={handleAddStop}>
-                                        <FontAwesomeIcon icon={showAddStop ? faMinus : faPlus}/>
-                                    </button>
+                    </div>
+                ) : (
+                    <div className="search-location-container">
+                        <SearchBox placeholder="Your location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
+
+                        <button className="add-stop-component" onClick={handleAddStop}><FontAwesomeIcon icon={showAddStop ? faMinusCircle : faPlusCircle}/></button>
+
+                        {showAddStop && (
+                            <div className="stopover-container">
+                                <div className="search-box-container">
+                                    <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, 3)} grayText/>
                                 </div>
+                                <TransportOptions selectedOption={selectedOption2} handleOptionChange={handleOptionChange2}/>
+                                <FontAwesomeIcon className="add-stop-component" icon={faRightLeft} rotation={90} />
                             </div>
-                            {showAddStop && (
-                                <>
-                                    <div className="stop-transport-options-container">
-                                        <FormGroup>
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={isOptionSelected1('Car')}
-                                                        onChange={() => handleOptionChange('Car')}
-                                                        color="primary"
-                                                        disabled={selectedOption1 && !isOptionSelected1('Car')}
-                                                    />
-                                                }
-                                                label={
-                                                    <div>
-                                                        <ListItemIcon>
-                                                            <DriveEta/>
-                                                        </ListItemIcon>
-                                                        <span>Car</span>
-                                                    </div>
-                                                }
-                                            />
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={isOptionSelected1('Bicycle')}
-                                                        onChange={() => handleOptionChange('Bicycle')}
-                                                        disabled={selectedOption1 && !isOptionSelected1('Bicycle')}
-                                                        color="primary"
-                                                    />
-                                                }
-                                                label={
-                                                    <div>
-                                                        <ListItemIcon>
-                                                            <DirectionsBike/>
-                                                        </ListItemIcon>
-                                                        <span>Bicycle</span>
-                                                    </div>
-                                                }
-                                            />
-                                        </FormGroup>
-                                    </div>
+                        )}
 
-                                    <div className="add-stop-dots"/>
-                                    <div className="search-bar-container">
-                                        <SearchBar placeholder="Add stop" onSearch={(searchTerm) => handleSearch(searchTerm, 3)} grayText/>
-                                    </div>
+                        <SearchBox placeholder={marker2Name || "Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
 
-                                    <div className="stop-transport-options-container">
-                                        <FormGroup>
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={isOptionSelected2('Car')}
-                                                        onChange={() => handleOptionChange2('Car')}
-                                                        color="primary"
-                                                        disabled={selectedOption2 && !isOptionSelected2('Car')}
-                                                    />
-                                                }
-                                                label={
-                                                    <div>
-                                                        <ListItemIcon>
-                                                            <DriveEta/>
-                                                        </ListItemIcon>
-                                                        <span>Car</span>
-                                                    </div>
-                                                }
-                                            />
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox
-                                                        checked={isOptionSelected2('Bicycle')}
-                                                        onChange={() => handleOptionChange2('Bicycle')}
-                                                        disabled={selectedOption2 && !isOptionSelected2('Bicycle')}
-                                                        color="primary"
-                                                    />
-                                                }
-                                                label={
-                                                    <div>
-                                                        <ListItemIcon>
-                                                            <DirectionsBike/>
-                                                        </ListItemIcon>
-                                                        <span>Bicycle</span>
-                                                    </div>
-                                                }
-                                            />
-                                        </FormGroup>
-                                    </div>
-
-                                    <div className="add-stop-dots"/>
-                                </>
-                            )}
-
-
-                            <div className="search-bar-container2">
-                                <SearchBar placeholder={marker2Name || "Search second location"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
-                            </div>
-                            {!showAddStop && (<div className="transport-options-container">
-                                    <Typography variant="subtitle1">Select Transport Options:</Typography>
-                                    <FormGroup>
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    checked={isOptionSelected1('Car')}
-                                                    onChange={() => handleOptionChange('Car')}
-                                                    color="primary"
-                                                    disabled={selectedOption1 && !isOptionSelected1('Car')}
-                                                />
-                                            }
-                                            label={
-                                                <div>
-                                                    <ListItemIcon>
-                                                        <DriveEta/>
-                                                    </ListItemIcon>
-                                                    <span>Car</span>
-                                                </div>
-                                            }
-                                        />
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    checked={isOptionSelected1('Bicycle')}
-                                                    onChange={() => handleOptionChange('Bicycle')}
-                                                    disabled={selectedOption1 && !isOptionSelected1('Bicycle')}
-                                                    color="primary"
-                                                />
-                                            }
-                                            label={
-                                                <div>
-                                                    <ListItemIcon>
-                                                        <DirectionsBike/>
-                                                    </ListItemIcon>
-                                                    <span>Bicycle</span>
-                                                </div>
-                                            }
-                                        />
-                                    </FormGroup>
-                                    <Typography variant="subtitle2">Selected Options: {selectedOption1}</Typography>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-                <OLMap marker1={marker1} marker2={marker2} marker3={marker3} transportOption1={selectedOption1} transportOption2={selectedOption2} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
+                        <Typography style={{marginTop: '20px'}} variant="h2">Select Transport Options:</Typography>
+                        <TransportOptions selectedOption={selectedOption1} handleOptionChange={handleOptionChange}/>
+                        <Typography variant="h2">Selected Options: {selectedOption1}</Typography>
+                    </div>
+                )}
             </div>
+            <OLMap marker1={marker1} marker2={marker2} marker3={marker3} transportOption1={selectedOption1} transportOption2={selectedOption2} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
+        </div>
     )
 }
 

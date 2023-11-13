@@ -1,8 +1,8 @@
 import React, {useEffect, useRef, useState} from "react"
-import "./SearchBar.css"
-import {autocomplete} from "../../services/mapServices";
+import "./SearchBox.css"
+import {autocomplete} from "../../services/mapServices.js";
 
-const SearchBar = ({placeholder, onSearch}) => {
+const SearchBox = ({placeholder, onSearch}) => {
     const [searchValue, setSearchValue] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -54,13 +54,15 @@ const SearchBar = ({placeholder, onSearch}) => {
 
     const handleKeyPress = (event) => {
         if (event.key === "Enter") {
-            onSearch(searchValue)
+            event.preventDefault();
+            onSearch(searchValue);
         }
     }
 
     const handleSelectItem = (value) => {
         setSearchValue(value);
         setSelectedItem(value);
+        onSearch(value);
         setIsDropdownVisible(false);
     };
 
@@ -78,16 +80,18 @@ const SearchBar = ({placeholder, onSearch}) => {
     }, []);
 
     return (
-        <div className="search-bar">
-            <input
-                type="text"
-                className="search-input"
-                placeholder={placeholder}
-                value={searchValue}
-                onChange={handleInputChange}
-                ref={inputRef}
-                onKeyDown={handleKeyPress}
-            />
+        <div className="no-submit">
+            <form className="no-submit">
+                <input
+                    type="search"
+                    className="no-submit"
+                    placeholder={placeholder}
+                    value={searchValue}
+                    onChange={handleInputChange}
+                    ref={inputRef}
+                    onKeyDown={handleKeyPress}
+                />
+            </form>
             {isDropdownVisible && Array.isArray(searchResults) && searchValue.length > 0 && (
                 <ul className="dropdown-list">
                     {searchResults.map((item, index) => (
@@ -107,4 +111,4 @@ const SearchBar = ({placeholder, onSearch}) => {
     )
 }
 
-export default SearchBar
+export default SearchBox
