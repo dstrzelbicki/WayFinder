@@ -4,22 +4,25 @@ import {geocode} from "../../services/mapServices"
 import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
-import {faArrowCircleRight, faMinusCircle, faPlusCircle, faRightLeft, faTimes} from "@fortawesome/free-solid-svg-icons"
+import {faArrowCircleRight, faMinusCircle, faPlusCircle, faTimes} from "@fortawesome/free-solid-svg-icons"
 import TransportOptions from "./TransportOptions/TransportOptions";
 import {Typography} from "@mui/material";
 import OLMap from "../Map/Map";
+import StopoverContainer from "./StopoverContainer/StopoverContainer";
 
 const HomePage = () => {
     const [marker1, setMarker1] = useState(null)
     const [marker2, setMarker2] = useState(null)
     const [marker3, setMarker3] = useState(null)
+    const [markers, setMarkers] = useState([])
     const [marker2Name, setMarker2Name] = useState("")
+    const [isMinusIcon, setIsMinusIcon] = useState(false)
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
     const [showSearchHistory, setShowSearchHistory] = useState(false)
-    const [showAddStop, setShowAddStop] = useState(false);
-    const [isMinusIcon, setIsMinusIcon] = useState(false);
-    const [selectedOption1, setSelectedOption1] = useState('');
-    const [selectedOption2, setSelectedOption2] = useState('');
+    const [isStopoverToAdd, setIsStopoverToAdd] = useState(false)
+    const [selectedOption1, setSelectedOption1] = useState('')
+    const [selectedOption2, setSelectedOption2] = useState('')
+    const [stopovers, setStopovers] = useState([])
 
     const toggleSidebar = () => {
         setIsSidebarNotCollapsed(!isSidebarNotCollapsed)
@@ -71,26 +74,26 @@ const HomePage = () => {
         setMarker2Name(name)
     }
 
-    const handleAddStop = () => {
-        setShowAddStop(!showAddStop);
-        setIsMinusIcon(!isMinusIcon);
-    };
+    const handleOptionChange = (option, setSelectedOption) => {
+        setSelectedOption((prevSelectedOption) =>
+            prevSelectedOption === option ? '' : option
+        )
+    }
 
-    const handleOptionChange = (option) => {
-        if (selectedOption1 === option) {
-            setSelectedOption1('');
-        } else {
-            setSelectedOption1(option);
-        }
-    };
+    const addStopover = () => {
+        setIsStopoverToAdd(!isStopoverToAdd)
+        setIsMinusIcon(!isMinusIcon)
 
-    const handleOptionChange2 = (option) => {
-        if (selectedOption2 === option) {
-            setSelectedOption2('');
-        } else {
-            setSelectedOption2(option);
-        }
-    };
+        const initialStopovers = [{id: 1, searchTerm: '', coordinates: []}]
+        setStopovers(initialStopovers)
+    }
+
+    const addNewStopover = () => {
+        setStopovers((prevStopovers) => [
+            ...prevStopovers,
+            {id: prevStopovers.length + 1, searchTerm: '', coordinates: []},
+        ]);
+    }
 
     useEffect(() => {
         if (isMinusIcon) {
@@ -136,22 +139,26 @@ const HomePage = () => {
                     <div className="search-location-container">
                         <SearchBox placeholder="Your location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
 
-                        <button className="add-stop-component" onClick={handleAddStop}><FontAwesomeIcon icon={showAddStop ? faMinusCircle : faPlusCircle}/></button>
 
-                        {showAddStop && (
-                            <div className="stopover-container">
-                                <div className="search-box-container">
-                                    <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, 3)} grayText/>
-                                </div>
-                                <TransportOptions selectedOption={selectedOption2} handleOptionChange={handleOptionChange2}/>
-                                <FontAwesomeIcon className="add-stop-component" icon={faRightLeft} rotation={90} />
-                            </div>
+                        <button className="add-stop-component" onClick={addStopover}><FontAwesomeIcon icon={isStopoverToAdd ? faMinusCircle : faPlusCircle}/></button>
+
+                        {isStopoverToAdd && (
+                            stopovers.map((stopover) =>
+                                <StopoverContainer
+                                    key={stopover.id}
+                                    stopovers={stopovers}
+                                    handleSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)}
+                                    addNewStepover={addNewStopover}
+                                    selectedOption2={stopover.searchTerm}
+                                    handleOptionChange={(option) => handleOptionChange(option, (prevSelectedOption) => ({...prevSelectedOption, [stopover.id]: option}))}
+                                    setSelectedOption2={(selectedOption) => handleOptionChange(selectedOption, (prevSelectedOption) => ({...prevSelectedOption, [stopover.id]: selectedOption}))}
+                                />)
                         )}
 
                         <SearchBox placeholder={marker2Name || "Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
 
                         <Typography style={{marginTop: '20px'}} variant="h2">Select Transport Options:</Typography>
-                        <TransportOptions selectedOption={selectedOption1} handleOptionChange={handleOptionChange}/>
+                        <TransportOptions selectedOption={selectedOption1} handleOptionChange={(option) => handleOptionChange(option, setSelectedOption1)}/>
                         <Typography variant="h2">Selected Options: {selectedOption1}</Typography>
                     </div>
                 )}

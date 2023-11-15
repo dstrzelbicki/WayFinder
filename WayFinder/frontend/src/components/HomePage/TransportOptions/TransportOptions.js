@@ -12,8 +12,8 @@ function TransportOptions(props) {
     ]
 
     const handleOptionChange = (option) => {
-        props.handleOptionChange(option);
-    };
+        props.handleOptionChange(option)
+    }
 
     return (<FormGroup>
             {transportOptions.map((option) => (
@@ -36,7 +36,7 @@ function TransportOptions(props) {
                 />
             ))}
         </FormGroup>
-    );
+    )
 }
 
 export default TransportOptions;
