@@ -2,6 +2,8 @@ import "./RegisterPage.css";
 import { client } from "../../../shared";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { set } from "ol/transform";
+import validator from "validator";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -13,6 +15,7 @@ export default function RegisterPage() {
   const [passwordMatchError, setPasswordMatchError] = useState(false);
   const [passwordComplexityError, setPasswordComplexityError] = useState(false);
   const [loginError, setLoginError] = useState(false);
+  const [invalidEmailFormat, setInvalidEmailFormat] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn");
@@ -46,6 +49,12 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!validator.isEmail(email)) {
+      setInvalidEmailFormat(true);
+      console.log("Invalid email format");
+      return;
+    }
+
     try {
       const response = await client.post(
         "/api/register",
@@ -69,7 +78,7 @@ export default function RegisterPage() {
       }
     } catch (error) {
       setLoginError(true);
-      console.log(error.response);
+      console.log("Error registering user");
     }
   }
 
@@ -107,6 +116,7 @@ export default function RegisterPage() {
               required
             />
           </div>
+          {invalidEmailFormat && <p className="error-message">Invalid email format</p>}
           <div className="form-group">
             <label htmlFor="password">Password:</label>
             <input

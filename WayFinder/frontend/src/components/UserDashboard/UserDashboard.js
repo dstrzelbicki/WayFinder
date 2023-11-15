@@ -319,9 +319,14 @@ export function Profile ({currentUser}) {
                 setIsEditing(false)
             } else {
                 if (status === 400) {
-                    setPopupMessage("Password must include at least one number,\
-                    one lowercase and one uppercase letter, one special character,\
-                    and be at least 10 characters long.")
+                    if (response.old_password) {
+                        setPopupMessage("Old password is incorrect")
+                    }
+                    else {
+                        setPopupMessage("Password must include at least one number,\
+                        one lowercase and one uppercase letter, one special character,\
+                        and be at least 10 characters long.")
+                    }
                 } else {
                     setPopupMessage("An error occurred")
                     setIsPasswordEditing(false)

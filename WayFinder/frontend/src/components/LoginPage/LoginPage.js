@@ -2,6 +2,9 @@ import "./LoginPage.css";
 import { client } from "../../../shared";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { set } from "ol/transform";
+import DOMPurify from 'dompurify';
+import validator from "validator";
 
 export default function LoginPage() {
   const navigate = useNavigate();

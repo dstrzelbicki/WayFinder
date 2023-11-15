@@ -21,7 +21,7 @@ from rest_framework.response import Response
 from .serializers import (UserRegisterSerializer, UserLoginSerializer,
                           UserSerializer, UserChangePasswordSerializer, RouteSerializer)
 from rest_framework import permissions, status
-from .validations import custom_validation, validate_email, validate_password
+from .validations import custom_validation, validate_password
 from datetime import datetime, timedelta, timezone
 from django_ratelimit.decorators import ratelimit as django_ratelimit
 from django_ratelimit.exceptions import Ratelimited
@@ -36,6 +36,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django import forms
+from django.core.validators import validate_email
 
 token_generator = PasswordResetTokenGenerator()
 now_utc = datetime.now(timezone.utc)
@@ -94,7 +95,11 @@ class UserLogin(APIView):
     def post(self, request):
         data = request.data
         ip = request.META.get('REMOTE_ADDR')
-        assert validate_email(data)
+        print(data.get('email'))
+        try:
+            validate_email(data.get('email'))
+        except ValidationError:
+            return Response({"message": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
         assert validate_password(data)
 
         # check for rate limiting
@@ -163,12 +168,15 @@ class UserChangePassword(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def put(self, request):
-        serializer = UserChangePasswordSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.update(request.user, serializer.validated_data)
-            update_session_auth_hash(request, request.user)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer = UserChangePasswordSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                serializer.update(request.user, serializer.validated_data)
+                update_session_auth_hash(request, request.user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response({'detail': e}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RouteView(APIView):
@@ -191,6 +199,9 @@ class RouteView(APIView):
 def reset_password(request):
     if request.method == 'POST':
         email = request.POST.get('email')
+
+        if not validate_email(email):
+            return JsonResponse({'message': 'Invalid email'}, status=400)
 
         # Check if the user with the provided email exists
         try:
@@ -277,7 +288,7 @@ class VerifyTOTP(APIView):
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
-        otp = form.cleaned_data['otp'] # otp = request.data.get('otp')
+        otp = form.cleaned_data['otp']
         action = request.data.get('action')
 
         if action not in ['enable', 'disable']:
@@ -363,11 +374,21 @@ class UseRecoveryCode(APIView):
 
     def post(self, request):
         data = request.data
-        assert validate_email(data)
+
+        email = data.get('email', '').strip()
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({"detail": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.filter(email=data.get('email')).first()
+        if not user:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        code = data.get('recovery_code')
+        code = data.get('recovery_code', '').strip()
+        if not code.isalnum():
+            return Response({"detail": "Invalid recovery code format."}, status=status.HTTP_400_BAD_REQUEST)
+
         recovery_code = RecoveryCode.objects.filter(code=code, user=user, used=False).first()
 
         if recovery_code:
