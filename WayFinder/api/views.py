@@ -37,6 +37,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django import forms
 from django.core.validators import validate_email
+from django.middleware.csrf import rotate_token
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 token_generator = PasswordResetTokenGenerator()
 now_utc = datetime.now(timezone.utc)
@@ -123,12 +126,19 @@ class UserLogin(APIView):
                     totp = pyotp.TOTP(totp_device.key, digits=6)
                     if not totp.verify(otp.strip()):
                         return Response({"message": "Invalid OTP."}, status=status.HTTP_401_UNAUTHORIZED)
+                rotate_token(request) # tie new CSRF token to the user's session and refresh it appropriately
                 login(request, user)
                 # reset failed login attempts
                 user.failed_login_attempts = 0
                 user.save()
-                token, created = Token.objects.get_or_create(user=user)
-                return Response({'token': token.key}, status=status.HTTP_200_OK)
+                # token, created = Token.objects.get_or_create(user=user)
+                # return Response({'token': token.key}, status=status.HTTP_200_OK)
+                # create JWT token
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                }, status=status.HTTP_200_OK)
             else:
                 # increment failed login attempts
                 user.failed_login_attempts += 1
@@ -148,7 +158,7 @@ class UserLogout(APIView):
 
 class UserView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
 
     def get(self, request):
         serializer = UserSerializer(request.user)
@@ -165,7 +175,7 @@ class UserView(APIView):
 
 class UserChangePassword(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
 
     def put(self, request):
         try:
@@ -181,7 +191,7 @@ class UserChangePassword(APIView):
 
 class RouteView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
 
     def get(self, request):
         routes = Route.objects.filter(user=request.user)
@@ -235,7 +245,7 @@ def reset_password(request):
 
 class ResetPasswordConfirmView(APIView):
     # permission_classes = (permissions.AllowAny,)
-    # authentication_classes = (TokenAuthentication,)
+    # authentication_classes = (JWTAuthentication,)
 
     def post(self, request):
         token = request.POST.get('token')
@@ -260,7 +270,7 @@ class ResetPasswordConfirmView(APIView):
 
 class SetupTOTP(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
 
     def get(self, request):
         user = request.user
@@ -280,7 +290,7 @@ class SetupTOTP(APIView):
 
 class VerifyTOTP(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
 
     def post(self, request):
         form = OTPForm(request.data)
@@ -346,7 +356,7 @@ class VerifyTOTP(APIView):
 
 class DisableTOTP(APIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
 
     def post(self, request):
         user = request.user

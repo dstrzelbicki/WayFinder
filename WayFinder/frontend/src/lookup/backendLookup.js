@@ -1,4 +1,4 @@
-function getCookie(name) {
+function getToken(name) {
   let cookieValue = null
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";")
@@ -21,7 +21,7 @@ function backendLookup(method, endpoint, callback, data) {
   const xhr = new XMLHttpRequest()
   const url = `${process.env.REACT_APP_BASE_URL}/api${endpoint}`
   xhr.responseType = "json"
-  const csrftoken = getCookie("csrftoken")
+  const csrftoken = getToken("csrftoken")
   xhr.open(method, url)
   xhr.setRequestHeader("Content-Type", "application/json")
   if (csrftoken) {
@@ -38,6 +38,12 @@ function backendLookup(method, endpoint, callback, data) {
           window.location.href = "/login?showLoginRequired=true"
         }
       }
+    }
+    if (xhr.status === 401) {
+      // handle expired token
+      sessionStorage.removeItem("token")
+      window.location.href = "/login?showLoginRequired=true"
+      return
     }
     callback(xhr.response, xhr.status)
   }

@@ -18,6 +18,7 @@ django-ratelimit = "*"
 django-redis = "*"
 django-otp = "*"
 pyotp = "*"
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 
