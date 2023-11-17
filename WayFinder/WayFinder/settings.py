@@ -63,6 +63,14 @@ CORS_ORIGIN_WHITELIST = [
 CSRF_COOKIE_DOMAIN = '.localhost'
 CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
 
+# SameSite cookie attribute
+
+# for session cookies
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# for CSRF cookies
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 # Application definition
 
 INSTALLED_APPS = [
