@@ -39,7 +39,9 @@ export default function LoginPage() {
             // Login successful
             const token = res.data.token
             sessionStorage.setItem("isLoggedIn", "true")
-            sessionStorage.setItem("token", token)
+            // sessionStorage.setItem("token", token)
+            sessionStorage.setItem("accessToken", res.data.access)
+            sessionStorage.setItem("refreshToken", res.data.refresh)
             setLoggedIn(true)
             navigate("/home")
           }

@@ -35,7 +35,7 @@ class AppUserManager(BaseUserManager):
 
 
 class AppUser(AbstractBaseUser, PermissionsMixin):
-    user_id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True) # changed this field's name to 'id' because its needed for the JWT token creation in UserLogin view
     email = models.EmailField(max_length=50, unique=True)
     username = models.CharField(max_length=50, unique=True)
     # first_name = models.CharField(max_length=50, blank=False)

@@ -28,7 +28,11 @@ function backendLookup(method, endpoint, callback, data) {
     xhr.setRequestHeader("X-CSRFToken", csrftoken)
   }
   xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest")
-  xhr.setRequestHeader("Authorization", `Token ${sessionStorage.getItem("token")}`)
+  // xhr.setRequestHeader("Authorization", `Token ${sessionStorage.getItem("token")}`)
+  const accessToken = sessionStorage.getItem("accessToken")
+  if (accessToken) {
+    xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`)
+  }
   xhr.withCredentials = true
   xhr.onload = function() {
     if (xhr.status === 403) {
@@ -40,9 +44,15 @@ function backendLookup(method, endpoint, callback, data) {
       }
     }
     if (xhr.status === 401) {
-      // handle expired token
-      sessionStorage.removeItem("token")
-      window.location.href = "/login?showLoginRequired=true"
+      // handle expired access token
+
+      // attempt to refresh access token
+      const refreshToken = sessionStorage.getItem("refreshToken")
+      if (refreshToken) {
+        refreshAccessToken(refreshToken, method, endpoint, callback, data)
+      } else {
+        redirectToLogin()
+      }
       return
     }
     callback(xhr.response, xhr.status)
@@ -52,6 +62,38 @@ function backendLookup(method, endpoint, callback, data) {
     callback({"message": "An error occurred."}, 400)
   }
   xhr.send(jsonData)
+}
+
+function refreshAccessToken(refreshToken, originalMethod, originalEndpoint, originalCallback, originalData) {
+  const refreshUrl = `${process.env.REACT_APP_BASE_URL}/api/token/refresh/`
+  fetch(refreshUrl, {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ refresh: refreshToken })
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json()
+    }
+    throw new Error('Failed to refresh access token')
+  })
+  .then(data => {
+    sessionStorage.setItem("accessToken", data.access)
+    // retry the original request with the new access token
+    backendLookup(originalMethod, originalEndpoint, originalCallback, originalData)
+  })
+  .catch(error => {
+    console.error(error)
+    redirectToLogin()
+  })
+}
+
+function redirectToLogin() {
+  sessionStorage.removeItem("accessToken")
+  sessionStorage.removeItem("refreshToken")
+  window.location.href = "/login?showLoginRequired=true"
 }
 
 export function apiProfileDataChange(user, callback) {
