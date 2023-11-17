@@ -30,33 +30,21 @@ const HomePage = () => {
 
     const handleSearch = async (searchTerm, searchBarId) => {
         const data = await geocode(searchTerm)
+        const markerSetters = [setMarker1, setMarker2, setMarker3];
+        const sessionStorageKeys = ["start", "end", "mid"];
+
         if (data && data.results.length > 0) {
             const {lat, lon} = data.results[0]
             const coordinates = [parseFloat(lon), parseFloat(lat)]
-            console.log(
-                `SearchBar${searchBarId}: `,
-                searchTerm,
-                "Coordinates: ",
-                lat,
-                lon
-            )
+            console.log(`SearchBar${searchBarId}: `, searchTerm, "Coordinates: ", lat, lon)
 
-            if (searchBarId === 1) {
-                setMarker1(coordinates)
-                sessionStorage.setItem("start", searchTerm)
-                sessionStorage.setItem("startLat", lat)
-                sessionStorage.setItem("startLon", lon)
-            } else if (searchBarId === 2) {
-                setMarker2(coordinates)
-                sessionStorage.setItem("end", searchTerm)
-                sessionStorage.setItem("endLat", lat)
-                sessionStorage.setItem("endLon", lon)
-            } else {
-                setMarker3(coordinates)
-                sessionStorage.setItem("mid", searchTerm)
-                sessionStorage.setItem("midLat", lat)
-                sessionStorage.setItem("midLon", lon)
-            }
+            const markerIndex = searchBarId - 1
+
+            markerSetters[markerIndex](coordinates)
+
+            sessionStorage.setItem(sessionStorageKeys[markerIndex], searchTerm);
+            sessionStorage.setItem(`${sessionStorageKeys[markerIndex]}Lat`, lat);
+            sessionStorage.setItem(`${sessionStorageKeys[markerIndex]}Lon`, lon);
 
             // save search term to local storage
             let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || []
@@ -64,9 +52,7 @@ const HomePage = () => {
             localStorage.setItem("searchHistory", JSON.stringify(searchHistory))
         } else {
             console.error(
-                `No results found for SearchBar${searchBarId}: `,
-                searchTerm
-            )
+                `No results found for SearchBar${searchBarId}: `, searchTerm)
         }
     }
 
@@ -80,11 +66,11 @@ const HomePage = () => {
         )
     }
 
-    const addStopover = () => {
+    const initializeStopover = () => {
         setIsStopoverToAdd(!isStopoverToAdd)
         setIsMinusIcon(!isMinusIcon)
 
-        const initialStopovers = [{id: 1, searchTerm: '', coordinates: []}]
+        const initialStopovers = [{id: 0, searchTerm: '', coordinates: []}]
         setStopovers(initialStopovers)
     }
 
@@ -93,6 +79,10 @@ const HomePage = () => {
             ...prevStopovers,
             {id: prevStopovers.length + 1, searchTerm: '', coordinates: []},
         ]);
+    }
+
+    const removeStopover = (stopoverId) => {
+        setStopovers((prevStopovers) => prevStopovers.filter((stopover) => stopover.id !== stopoverId));
     }
 
     useEffect(() => {
@@ -140,15 +130,16 @@ const HomePage = () => {
                         <SearchBox placeholder="Your location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
 
 
-                        <button className="add-stop-component" onClick={addStopover}><FontAwesomeIcon icon={isStopoverToAdd ? faMinusCircle : faPlusCircle}/></button>
+                        <button className="add-stop-component" onClick={initializeStopover}><FontAwesomeIcon icon={isStopoverToAdd || stopovers.length === 0 ? faMinusCircle : faPlusCircle}/></button>
 
                         {isStopoverToAdd && (
                             stopovers.map((stopover) =>
                                 <StopoverContainer
-                                    key={stopover.id}
+                                    stopoverId={stopover.id}
                                     stopovers={stopovers}
                                     handleSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)}
                                     addNewStepover={addNewStopover}
+                                    removeStopover={removeStopover}
                                     selectedOption2={stopover.searchTerm}
                                     handleOptionChange={(option) => handleOptionChange(option, (prevSelectedOption) => ({...prevSelectedOption, [stopover.id]: option}))}
                                     setSelectedOption2={(selectedOption) => handleOptionChange(selectedOption, (prevSelectedOption) => ({...prevSelectedOption, [stopover.id]: selectedOption}))}
