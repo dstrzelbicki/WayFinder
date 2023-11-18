@@ -71,6 +71,8 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 # for CSRF cookies
 CSRF_COOKIE_SAMESITE = 'Lax'
 
+X_FRAME_OPTIONS = 'DENY'
+
 # Application definition
 
 INSTALLED_APPS = [
