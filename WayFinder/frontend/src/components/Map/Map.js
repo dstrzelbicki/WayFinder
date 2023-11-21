@@ -106,10 +106,10 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         }
     }, [map, marker])
 
-    // fixme
     useEffect(() => {
-        if (map && marker.isRemoved) {
-            removeMarker(marker.coordinates, marker.id)
+        if (map && marker.isToRemove) {
+            console.log(`Marker to remove ${marker.id}`)
+            removeMarker(marker.id)
         }
     }, [map, marker])
 
@@ -154,7 +154,12 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         markerSource.addFeature(markerFeature)
     }
 
-    const removeMarker = (coordinates, markerId) => {
+    const removeMarker = (markerId) => {
+        setMarkers((prevMarkers) => {
+            return prevMarkers.filter((marker) => marker.id !== markerId)
+        })
+
+        //view
         const markerSource = map.getLayers().item(2).getSource()
         const existingMarker = markerSource.getFeatureById(markerId)
         if (existingMarker) {
@@ -195,8 +200,8 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
 
     const route = async () => {
 
-        if (markers.length === 2) {
-            console.log("At least two markers must have values.")
+        if (markers.length < 2) {
+            console.log(`At least two markers must have values.`)
             return
         }
 

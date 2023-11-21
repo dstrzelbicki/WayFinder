@@ -5,7 +5,7 @@ import TransportOptions from "../TransportOptions/TransportOptions";
 import {faMinusCircle, faPlusCircle, faRightLeft} from "@fortawesome/free-solid-svg-icons";
 
 function StopoverContainer({
-                               handleSearch, handleOptionChange, setInitialStopoverState
+                               handleSearch, handleOptionChange, setInitialStopoverState, setMarkerToRemove
                            }) {
 
     const STOPOVER_LIMIT = 3
@@ -23,7 +23,8 @@ function StopoverContainer({
 
     const handleRemoveStopover = (stopoverId) => {
         removeStopover(stopoverId)
-        if(stopovers.length === 1) setInitialStopoverState()
+        setMarkerToRemove(stopoverId)
+        if (stopovers.length === 1) setInitialStopoverState()
     }
 
     const setShowAddStopStatus = (stopoverId) => {
@@ -43,7 +44,7 @@ function StopoverContainer({
         (stopovers.map((stopover) =>
                 <div className="stopover-container">
                     <div className="search-box-container">
-                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, stopover.id + 2)} grayText/>
+                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)} grayText/>
                     </div>
                     <button className="add-stop-component" onClick={stopover.showAddStop ? () => handleAddNewStopover(stopover.id) : () => handleRemoveStopover(stopover.id)}>
                         <FontAwesomeIcon icon={stopover.showAddStop ? faPlusCircle : faMinusCircle}/>

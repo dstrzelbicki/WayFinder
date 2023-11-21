@@ -11,7 +11,13 @@ import OLMap from "../Map/Map";
 import StopoverContainer from "./StopoverContainer/StopoverContainer";
 
 const HomePage = () => {
-    const [marker, setMarker] = useState({id: 0, coordinates: [], searchTerm: '', isRemoved: false})
+
+    const [marker, setMarker] = useState({
+        id: 0,
+        coordinates: [],
+        searchTerm: '',
+        isToRemove: false
+    })
     const [marker2Name, setMarker2Name] = useState("")
     const [isMinusIcon, setIsMinusIcon] = useState(false)
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
@@ -31,14 +37,15 @@ const HomePage = () => {
         if (data && data.results.length > 0) {
             const {lat, lon} = data.results[0]
             const coordinates = [parseFloat(lon), parseFloat(lat)]
-            console.log(`MarkerIndex${markerIndex}: `, searchTerm, "Coordinates: ", lat, lon)
+            console.log(`MarkerIndex: ${markerIndex}: `, searchTerm, "Coordinates: ", lat, lon)
 
-            setMarker({id: markerIndex, coordinates: coordinates, searchTerm: searchTerm, isRemoved: false})
-            // fixme
-            const storageIndex = markerIndex - 1
-            sessionStorage.setItem(sessionStorageKeys[storageIndex], searchTerm);
-            sessionStorage.setItem(`${sessionStorageKeys[storageIndex]}Lat`, lat);
-            sessionStorage.setItem(`${sessionStorageKeys[storageIndex]}Lon`, lon);
+            setMarker({id: markerIndex, coordinates: coordinates, searchTerm: searchTerm, isToRemove: false})
+
+            let storageIndex = markerIndex === 1 || markerIndex === 2 ? markerIndex - 1 : 2
+            const keyPrefix = sessionStorageKeys[storageIndex]
+            sessionStorage.setItem(keyPrefix, searchTerm)
+            sessionStorage.setItem(`${keyPrefix}Lat`, lat)
+            sessionStorage.setItem(`${keyPrefix}Lon`, lon)
 
             // save search term to local storage
             let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || []
@@ -58,6 +65,10 @@ const HomePage = () => {
         setSelectedOption((prevSelectedOption) =>
             prevSelectedOption === option ? '' : option
         )
+    }
+
+    const setMarkerToRemove = (markerIndex) => {
+        setMarker({id: markerIndex, coordinates: [], searchTerm: '', isToRemove: true})
     }
 
     const setInitialStopoverState = () => {
@@ -114,9 +125,10 @@ const HomePage = () => {
 
                         {isStopoverToAdd && (
                             <StopoverContainer
-                                handleSearch={(searchTerm, searchBarId) => handleSearch(searchTerm, searchBarId)}
+                                handleSearch={(searchTerm, markerIndex) => handleSearch(searchTerm, markerIndex + 2)}
                                 handleOptionChange={(option) => handleOptionChange(option, setSelectedOption2)}
                                 setInitialStopoverState={setInitialStopoverState}
+                                setMarkerToRemove={(markerIndex) => setMarkerToRemove(markerIndex + 2)}
                             />
                         )}
 
