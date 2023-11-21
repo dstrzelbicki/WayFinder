@@ -12,10 +12,8 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faTimes} from "@fortawesome/free-solid-svg-icons"
 
 const Notifications = () => <div>Notifications</div>
-const Shared = () => <div>Shared</div>
 const Places = () => <div>Saved places</div>
 const Routes = () => <div>Saved routes</div>
-const Timeline = () => <div>Timeline</div>
 
 const UserContext = createContext()
 
@@ -453,14 +451,10 @@ export function UserDashboard() {
                     return <Profile currentUser={currentUser} />
                 case "notifications":
                     return <Notifications />
-                case "shared":
-                    return <Shared />
                 case "places":
                     return <Places />
                 case "routes":
                     return <Routes />
-                case "timeline":
-                    return <Timeline />
                 case "history":
                     return <History />
                 case "settings":
@@ -481,10 +475,8 @@ export function UserDashboard() {
                 <ul className="centered-list">
                     <li><Link to="/user-dashboard/profile" className="full-width-link">Profile</Link></li>
                     <li><Link to="/user-dashboard/notifications" className="full-width-link">Notifications</Link></li>
-                    <li><Link to="/user-dashboard/shared" className="full-width-link">Shared</Link></li>
                     <li><Link to="/user-dashboard/places" className="full-width-link">Saved places</Link></li>
                     <li><Link to="/user-dashboard/routes" className="full-width-link">Saved routes</Link></li>
-                    <li><Link to="/user-dashboard/timeline" className="full-width-link">Timeline</Link></li>
                     <li><Link to="/user-dashboard/history" className="full-width-link">History</Link></li>
                     <li><Link to="/user-dashboard/settings" className="full-width-link">Settings</Link></li>
                 </ul>

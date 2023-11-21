@@ -192,7 +192,7 @@ class UserChangePassword(APIView):
 
 class SearchedLocationView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = (JWTAuthentication,)
 
     def get(self, request):
         locations = SearchedLocation.objects.filter(user=request.user)
