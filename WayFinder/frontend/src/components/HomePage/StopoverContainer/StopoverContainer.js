@@ -43,7 +43,7 @@ function StopoverContainer({
         (stopovers.map((stopover) =>
                 <div className="stopover-container">
                     <div className="search-box-container">
-                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, 3)} grayText/>
+                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, stopover.id + 2)} grayText/>
                     </div>
                     <button className="add-stop-component" onClick={stopover.showAddStop ? () => handleAddNewStopover(stopover.id) : () => handleRemoveStopover(stopover.id)}>
                         <FontAwesomeIcon icon={stopover.showAddStop ? faPlusCircle : faMinusCircle}/>

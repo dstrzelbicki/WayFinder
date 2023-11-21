@@ -9,12 +9,9 @@ import TransportOptions from "./TransportOptions/TransportOptions";
 import {Typography} from "@mui/material";
 import OLMap from "../Map/Map";
 import StopoverContainer from "./StopoverContainer/StopoverContainer";
-import {set} from "ol/transform";
 
 const HomePage = () => {
-    const [marker1, setMarker1] = useState(null)
-    const [marker2, setMarker2] = useState(null)
-    const [marker3, setMarker3] = useState(null)
+    const [marker, setMarker] = useState({id: 0, coordinates: [], searchTerm: '', isRemoved: false})
     const [marker2Name, setMarker2Name] = useState("")
     const [isMinusIcon, setIsMinusIcon] = useState(false)
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
@@ -27,31 +24,29 @@ const HomePage = () => {
         setIsSidebarNotCollapsed(!isSidebarNotCollapsed)
     }
 
-    const handleSearch = async (searchTerm, searchBarId) => {
+    const handleSearch = async (searchTerm, markerIndex) => {
         const data = await geocode(searchTerm)
-        const markerSetters = [setMarker1, setMarker2, setMarker3];
         const sessionStorageKeys = ["start", "end", "mid"];
 
         if (data && data.results.length > 0) {
             const {lat, lon} = data.results[0]
             const coordinates = [parseFloat(lon), parseFloat(lat)]
-            console.log(`SearchBar${searchBarId}: `, searchTerm, "Coordinates: ", lat, lon)
+            console.log(`MarkerIndex${markerIndex}: `, searchTerm, "Coordinates: ", lat, lon)
 
-            const markerIndex = searchBarId - 1
-
-            markerSetters[markerIndex](coordinates)
-
-            sessionStorage.setItem(sessionStorageKeys[markerIndex], searchTerm);
-            sessionStorage.setItem(`${sessionStorageKeys[markerIndex]}Lat`, lat);
-            sessionStorage.setItem(`${sessionStorageKeys[markerIndex]}Lon`, lon);
+            setMarker({id: markerIndex, coordinates: coordinates, searchTerm: searchTerm, isRemoved: false})
+            // fixme
+            const storageIndex = markerIndex - 1
+            sessionStorage.setItem(sessionStorageKeys[storageIndex], searchTerm);
+            sessionStorage.setItem(`${sessionStorageKeys[storageIndex]}Lat`, lat);
+            sessionStorage.setItem(`${sessionStorageKeys[storageIndex]}Lon`, lon);
 
             // save search term to local storage
             let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || []
-            searchHistory.push({searchTerm, searchBarId, timestamp: new Date()})
+            searchHistory.push({searchTerm, markerIndex, timestamp: new Date()})
             localStorage.setItem("searchHistory", JSON.stringify(searchHistory))
         } else {
             console.error(
-                `No results found for SearchBar${searchBarId}: `, searchTerm)
+                `No results found for SearchBar${markerIndex}: `, searchTerm)
         }
     }
 
@@ -119,9 +114,9 @@ const HomePage = () => {
 
                         {isStopoverToAdd && (
                             <StopoverContainer
-                                handleSearch={(searchTerm) => handleSearch(searchTerm, 3)}
+                                handleSearch={(searchTerm, searchBarId) => handleSearch(searchTerm, searchBarId)}
                                 handleOptionChange={(option) => handleOptionChange(option, setSelectedOption2)}
-                                setInitialStopoverStatus = {setInitialStopoverState}
+                                setInitialStopoverState={setInitialStopoverState}
                             />
                         )}
 
@@ -133,7 +128,7 @@ const HomePage = () => {
                     </div>
                 )}
             </div>
-            <OLMap marker1={marker1} marker2={marker2} marker3={marker3} transportOption1={selectedOption1} transportOption2={selectedOption2} onMarker2NameUpdate={updateMarker2Name} isPlusIcon={!isMinusIcon}/>
+            <OLMap marker={marker} transportOption1={selectedOption1} transportOption2={selectedOption2} onMarker2NameUpdate={updateMarker2Name}/>
         </div>
     )
 }
