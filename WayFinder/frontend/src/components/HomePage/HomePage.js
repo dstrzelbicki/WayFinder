@@ -9,12 +9,12 @@ import TransportOptions from "./TransportOptions/TransportOptions";
 import {Typography} from "@mui/material";
 import OLMap from "../Map/Map";
 import StopoverContainer from "./StopoverContainer/StopoverContainer";
+import {set} from "ol/transform";
 
 const HomePage = () => {
     const [marker1, setMarker1] = useState(null)
     const [marker2, setMarker2] = useState(null)
     const [marker3, setMarker3] = useState(null)
-    const [markers, setMarkers] = useState([])
     const [marker2Name, setMarker2Name] = useState("")
     const [isMinusIcon, setIsMinusIcon] = useState(false)
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
@@ -22,7 +22,6 @@ const HomePage = () => {
     const [isStopoverToAdd, setIsStopoverToAdd] = useState(false)
     const [selectedOption1, setSelectedOption1] = useState('')
     const [selectedOption2, setSelectedOption2] = useState('')
-    const [stopovers, setStopovers] = useState([])
 
     const toggleSidebar = () => {
         setIsSidebarNotCollapsed(!isSidebarNotCollapsed)
@@ -66,23 +65,9 @@ const HomePage = () => {
         )
     }
 
-    const initializeStopover = () => {
+    const setInitialStopoverStatus = () => {
         setIsStopoverToAdd(!isStopoverToAdd)
         setIsMinusIcon(!isMinusIcon)
-
-        const initialStopovers = [{id: 0, searchTerm: '', coordinates: []}]
-        setStopovers(initialStopovers)
-    }
-
-    const addNewStopover = () => {
-        setStopovers((prevStopovers) => [
-            ...prevStopovers,
-            {id: prevStopovers.length + 1, searchTerm: '', coordinates: []},
-        ]);
-    }
-
-    const removeStopover = (stopoverId) => {
-        setStopovers((prevStopovers) => prevStopovers.filter((stopover) => stopover.id !== stopoverId));
     }
 
     useEffect(() => {
@@ -130,20 +115,14 @@ const HomePage = () => {
                         <SearchBox placeholder="Your location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
 
 
-                        <button className="add-stop-component" onClick={initializeStopover}><FontAwesomeIcon icon={isStopoverToAdd || stopovers.length === 0 ? faMinusCircle : faPlusCircle}/></button>
+                        <button className="add-stop-component" onClick={setInitialStopoverStatus}><FontAwesomeIcon icon={isStopoverToAdd ? faMinusCircle : faPlusCircle}/></button>
 
                         {isStopoverToAdd && (
-                            stopovers.map((stopover) =>
-                                <StopoverContainer
-                                    stopoverId={stopover.id}
-                                    stopovers={stopovers}
-                                    handleSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)}
-                                    addNewStepover={addNewStopover}
-                                    removeStopover={removeStopover}
-                                    selectedOption2={stopover.searchTerm}
-                                    handleOptionChange={(option) => handleOptionChange(option, (prevSelectedOption) => ({...prevSelectedOption, [stopover.id]: option}))}
-                                    setSelectedOption2={(selectedOption) => handleOptionChange(selectedOption, (prevSelectedOption) => ({...prevSelectedOption, [stopover.id]: selectedOption}))}
-                                />)
+                            <StopoverContainer
+                                handleSearch={(searchTerm) => handleSearch(searchTerm, 3)}
+                                handleOptionChange={(option) => handleOptionChange(option, setSelectedOption2)}
+                                setInitialStopoverStatus = {setInitialStopoverStatus}
+                            />
                         )}
 
                         <SearchBox placeholder={marker2Name || "Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
