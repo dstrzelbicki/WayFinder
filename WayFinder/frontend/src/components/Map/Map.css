@@ -41,6 +41,17 @@ body {
   cursor: pointer;
 }
 
+.popup-card .popupcard-close {
+  background-color: #F4364C;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-left: 90%;
+  margin-bottom: 8px;
+}
+
 .map-button {
   position: absolute;
   bottom: 10px;

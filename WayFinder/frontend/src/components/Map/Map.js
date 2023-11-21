@@ -19,11 +19,16 @@ import {DEVICE_PIXEL_RATIO} from "ol/has";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import {apiPostRoute} from "../../lookup/backendLookup"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
-const PopupCard = ({data, onSelect}) => {
+const PopupCard = ({data, onSelect, onClose}) => {
     return (<div className="popup-card">
+        <button className="popupcard-close" onClick={() => onClose()}>
+            <FontAwesomeIcon icon={faTimes} />
+        </button>
         <h4>{data.name}</h4>
         <p>Coordinates: {data.lonLat.join(", ")}</p>
         <button onClick={() => onSelect(data)}>Use as Marker2</button>
@@ -348,19 +353,32 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
                 const mode = properties.mode;
 
                 const tooltipElement = tooltipOverlay.getElement();
-                tooltipElement.innerHTML = `<div>
-                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">distance:</span>
-                <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
-                  </div> 
-                  <div>
-                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">time:</span>
-                <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertSecToHours(time)}</span>
-                  </div>
-                <div>
-                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">transport mode: </span>
-                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${mode}</span>
-                  </div>
-                `;
+                // tooltipElement.innerHTML = `<div>
+                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">distance:</span>
+                // <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
+                //   </div>
+                //   <div>
+                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">time:</span>
+                // <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertSecToHours(time)}</span>
+                //   </div>
+                // <div>
+                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">transport mode: </span>
+                // <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${mode}</span>
+                //   </div>
+                // `;
+                tooltipElement.textContent = '';
+
+                const distanceDiv = document.createElement('div');
+                distanceDiv.appendChild(createLabel('distance:', convertMetersToKilometers(distance) + '[km]'));
+                tooltipElement.appendChild(distanceDiv);
+
+                const timeDiv = document.createElement('div');
+                timeDiv.appendChild(createLabel('time:', convertSecToHours(time)));
+                tooltipElement.appendChild(timeDiv);
+
+                const modeDiv = document.createElement('div');
+                modeDiv.appendChild(createLabel('transport mode: ', mode));
+                tooltipElement.appendChild(modeDiv);
 
                 tooltipOverlay.setPosition(event.coordinate);
                 tooltipOverlay.getElement().style.display = 'block';
@@ -373,6 +391,25 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         map.addOverlay(tooltipOverlay);
 
         console.log(map.getLayers())
+    }
+
+    // helper function to create labeled content
+    function createLabel(labelText, valueText) {
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'black-06 mat-caption';
+        labelSpan.style = 'width: 100px; display:inline-block';
+        labelSpan.textContent = labelText;
+
+        const valueSpan = document.createElement('span');
+        valueSpan.className = 'mat-body black-08';
+        valueSpan.style = 'color: #333333; font-weight: 500';
+        valueSpan.textContent = valueText;
+
+        const container = document.createElement('div');
+        container.appendChild(labelSpan);
+        container.appendChild(valueSpan);
+
+        return container;
     }
 
     function animateZoomAtLocation(routeSource) {
@@ -463,6 +500,10 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         setShowMessage(false)
     }
 
+    const closePopupCard = () => {
+        setPopupData(null)
+    }
+
     return (<div ref={mapRef} className="map-container" id="map-container">
         <div>
             <Snackbar open={showMessage} autoHideDuration={4000} onClose={handleCloseMessage}>
@@ -478,7 +519,7 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         {popupData && (<PopupCard data={popupData} onSelect={(data) => {
             addOrUpdateMarker(data.lonLat, "marker2")
             onMarker2NameUpdate(data.name)
-        }}/>)}
+        }} onClose={closePopupCard}/>)}
         <div className="copyright-caption" id="copyright-caption">©TomTom</div>
     </div>)
 }

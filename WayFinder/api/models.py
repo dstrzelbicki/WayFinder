@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+import secrets
 
 
 class AppUserManager(BaseUserManager):
@@ -34,7 +35,7 @@ class AppUserManager(BaseUserManager):
 
 
 class AppUser(AbstractBaseUser, PermissionsMixin):
-    user_id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True) # changed this field's name to 'id' because its needed for the JWT token creation in UserLogin view
     email = models.EmailField(max_length=50, unique=True)
     username = models.CharField(max_length=50, unique=True)
     # first_name = models.CharField(max_length=50, blank=False)
@@ -44,6 +45,7 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     failed_login_attempts = models.IntegerField(default=0)
     last_failed_login = models.DateTimeField(null=True)
+    is_2fa_enabled = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     objects = AppUserManager()
@@ -72,3 +74,19 @@ class Route(models.Model):
 
     def __str__(self):
         return f"{self.start_location_name} to {self.end_location_name}"
+
+
+class RecoveryCode(models.Model):
+    user = models.ForeignKey(AppUser, on_delete=models.CASCADE, related_name='recovery_codes')
+    code = models.CharField(max_length=10, unique=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = secrets.token_hex(5)
+        super(RecoveryCode, self).save(*args, **kwargs)
+
+    def mark_as_used(self):
+        self.used = True
+        self.save()
