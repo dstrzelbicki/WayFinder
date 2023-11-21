@@ -52,10 +52,44 @@ body {
   margin-bottom: 8px;
 }
 
+.traffic-card {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.traffic-info {
+  margin-top: 15px;
+  display: flex;
+  justify-content: right;
+  align-items: right;
+  flex-direction: column;
+}
+
 .map-button {
   position: absolute;
   bottom: 10px;
   left: 10px;
+  z-index: 1000;
+  background-color: white;
+  padding: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.traffic-info-button {
+  position: absolute;
+  bottom: 10px;
+  left: 120px;
   z-index: 1000;
   background-color: white;
   padding: 5px;
@@ -115,4 +149,35 @@ body {
   top: 5px;
   right: 5px;
   cursor: pointer;
+}
+
+.traffic-circle {
+  height: 10px;
+  width: 10px;
+  margin-right: 5px;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.red {
+  background-color: #ff0000;
+}
+
+.yellow {
+  background-color: #ffff00;
+}
+
+.green {
+  background-color: #008000;
+}
+
+.grey {
+  background-color: #808080;
+}
+
+.arrow::before {
+  content: "➡";
+  display: inline-block;
+  margin-right: 5px;
 }

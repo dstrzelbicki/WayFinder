@@ -156,3 +156,11 @@ export function apiVerifyRecoveryCode(recoveryCode, email, callback) {
   }
   backendLookup("POST", "/use-recovery-code/", callback, data)
 }
+
+export function apiPostSearchedLocation(data, callback) {
+  backendLookup("POST", "/location", callback, data)
+}
+
+export function apiGetSearchedLocations(callback) {
+  backendLookup("GET", "/location", callback)
+}

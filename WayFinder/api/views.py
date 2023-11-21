@@ -19,14 +19,15 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import (UserRegisterSerializer, UserLoginSerializer,
-                          UserSerializer, UserChangePasswordSerializer, RouteSerializer)
+                          UserSerializer, UserChangePasswordSerializer, RouteSerializer,
+                          SearchedLocationSerializer)
 from rest_framework import permissions, status
 from .validations import custom_validation, validate_password
 from datetime import datetime, timedelta, timezone
 from django_ratelimit.decorators import ratelimit as django_ratelimit
 from django_ratelimit.exceptions import Ratelimited
 from functools import wraps
-from .models import Route, RecoveryCode
+from .models import Route, RecoveryCode, SearchedLocation
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 import pyotp
@@ -187,6 +188,23 @@ class UserChangePassword(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as e:
             return Response({'detail': e}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SearchedLocationView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get(self, request):
+        locations = SearchedLocation.objects.filter(user=request.user)
+        serializer = SearchedLocationSerializer(locations, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = SearchedLocationSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RouteView(APIView):

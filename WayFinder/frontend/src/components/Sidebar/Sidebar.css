@@ -4,12 +4,11 @@
     left: 0;
     width: 300px;
     height: 100%;
-    background-color: #f8f9fa;
     overflow-y: auto;
     transition: all 0.3s;
     transform: translateX(-70%);
     z-index: 1001;
-    background-color: #00BFFF;
+    background-color: #007bff;
 }
 
 .sidebar.active {
@@ -23,7 +22,11 @@
     border: 1px solid black;
     padding: 5px 10px;
     cursor: pointer;
-    background-color: #009AD7;
+    background-color: #007bff;
+}
+
+.toggle-button:hover {
+    background-color: #006acd;
 }
 
 h2 {
@@ -35,7 +38,7 @@ h2 {
     position: absolute;
     margin-top: 10px;
     right: 30px;
-    background-color: #009AD7;
+    background-color: #007bff;
     border: 1px solid black;
     padding: 5px 9px;
     cursor: pointer;
@@ -45,11 +48,15 @@ h2 {
     display: none;
 }
 
+.search-history-icon:hover {
+    background-color: #006acd;
+}
+
 .user-icon.active {
     position: absolute;
     margin-top: 60px;
     right: 30px;
-    background-color: #009AD7;
+    background-color: #007bff;
     border: 1px solid black;
     padding: 5px 9px;
     cursor: pointer;
@@ -59,11 +66,15 @@ h2 {
     display: none;
 }
 
+.user-icon:hover {
+    background-color: #006acd;
+}
+
 .logout-icon.active {
     position: absolute;
     margin-top: 110px;
     right: 30px;
-    background-color: #009AD7;
+    background-color: #007bff;
     border: 1px solid black;
     padding: 3px;
     cursor: pointer;
@@ -71,6 +82,10 @@ h2 {
 
 .logout-icon.none {
     display: none;
+}
+
+.logout-icon:hover {
+    background-color: #006acd;
 }
 
 .sidebar-text.active {
@@ -90,5 +105,5 @@ h2 {
 }
 
 .sidebar-text.active:hover {
-    background-color: #009AD7;
+    background-color: #006acd;
 }
