@@ -65,7 +65,7 @@ const HomePage = () => {
         )
     }
 
-    const setInitialStopoverStatus = () => {
+    const setInitialStopoverState = () => {
         setIsStopoverToAdd(!isStopoverToAdd)
         setIsMinusIcon(!isMinusIcon)
     }
@@ -115,13 +115,13 @@ const HomePage = () => {
                         <SearchBox placeholder="Your location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
 
 
-                        <button className="add-stop-component" onClick={setInitialStopoverStatus}><FontAwesomeIcon icon={isStopoverToAdd ? faMinusCircle : faPlusCircle}/></button>
+                        <button className="add-stop-component" onClick={setInitialStopoverState}><FontAwesomeIcon icon={isStopoverToAdd ? faMinusCircle : faPlusCircle}/></button>
 
                         {isStopoverToAdd && (
                             <StopoverContainer
                                 handleSearch={(searchTerm) => handleSearch(searchTerm, 3)}
                                 handleOptionChange={(option) => handleOptionChange(option, setSelectedOption2)}
-                                setInitialStopoverStatus = {setInitialStopoverStatus}
+                                setInitialStopoverStatus = {setInitialStopoverState}
                             />
                         )}
 

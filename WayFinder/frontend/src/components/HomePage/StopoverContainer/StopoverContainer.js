@@ -5,7 +5,7 @@ import TransportOptions from "../TransportOptions/TransportOptions";
 import {faMinusCircle, faPlusCircle, faRightLeft} from "@fortawesome/free-solid-svg-icons";
 
 function StopoverContainer({
-                               handleSearch, handleOptionChange, setInitialStopoverStatus
+                               handleSearch, handleOptionChange, setInitialStopoverState
                            }) {
 
     const STOPOVER_LIMIT = 3
@@ -23,7 +23,7 @@ function StopoverContainer({
 
     const handleRemoveStopover = (stopoverId) => {
         removeStopover(stopoverId)
-        if(stopovers.length === 1) setInitialStopoverStatus()
+        if(stopovers.length === 1) setInitialStopoverState()
     }
 
     const setShowAddStopStatus = (stopoverId) => {
