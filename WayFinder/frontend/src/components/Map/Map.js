@@ -193,7 +193,7 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
 
             setIsPopupCardOpen(true)
         } else {
-            console.error(`No results found for coordinates: `, coordinates)
+            console.warn(`No results found for coordinates: `, coordinates)
         }
     }
 
