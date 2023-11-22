@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from "react"
 import "./SearchBox.css"
 import {autocomplete} from "../../services/mapServices.js";
+import DOMPurify from "dompurify";
 
 const SearchBox = ({placeholder, onSearch, marker2Name}) => {
     const [searchValue, setSearchValue] = useState("");
@@ -48,7 +49,8 @@ const SearchBox = ({placeholder, onSearch, marker2Name}) => {
 
     const handleInputChange = (event) => {
         const value = event.target.value;
-        setSearchValue(value);
+        const sanitizedValue = DOMPurify.sanitize(value)
+        setSearchValue(sanitizedValue);
         setIsDropdownVisible(true);
     }
 

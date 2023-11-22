@@ -26,7 +26,7 @@ export const geocode = async (searchTerm) => {
 // the clicked point to find out the corresponding address
 export const reverseGeocode = async (coordinates) => {
     const [lon, lat] = coordinates
-    const url = `${geoApifyBaseUrl}/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${API_KEY}`
+    const url = `${geoApifyBaseUrl}/v1/geocode/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&apiKey=${API_KEY}`
 
     try {
         const response = await axios.get(url)
@@ -51,7 +51,6 @@ export const placeDetails = async (coordinates) => {
             // fixme - improve error handling
             console.error("Error fetching geocoding data. Bad response from server: ", response)
         }
-
         return response.data
     } catch (error) {
         console.error("Error fetching geocoding data:", error)
@@ -72,7 +71,7 @@ export const routemap = async (waypoints, transportOption) => {
     } else mode = "bicycle"
 
     const waypointsString = waypoints.map((waypoint) => waypoint.join(',')).join('|');
-    const url = `${geoApifyBaseUrl}/v1/routing?waypoints=${waypointsString}&mode=${mode}&details=instruction_details,route_details,elevation&apiKey=${API_KEY}`;
+    const url = `${geoApifyBaseUrl}/v1/routing?waypoints=${encodeURIComponent(waypointsString)}&mode=${mode}&details=instruction_details,route_details,elevation&apiKey=${API_KEY}`;
 
     const requestOptions = {
         method: 'GET',

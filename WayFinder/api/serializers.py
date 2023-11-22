@@ -2,17 +2,24 @@ from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
-from .models import Route
+from django.core.validators import validate_email
+from .models import Route, SearchedLocation
 
 UserModel = get_user_model()
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+    email = serializers.EmailField(validators=[validate_email])
+    password = serializers.CharField(write_only=True, validators=[validate_password])
 
     class Meta:
         model = UserModel
         fields = ['email', 'username', 'password']
+
+    def validate_password(self, value):
+        # validate the password against Django's built-in validators as well as your custom validators
+        validate_password(value, self.instance)
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -32,16 +39,18 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(validators=[validate_email])
+
     class Meta:
         model = UserModel
-        fields = ('email', 'username')
+        fields = ('email', 'username', 'is_2fa_enabled')
         # fields = ('email', 'username', 'first_name', 'last_name')
 
 
 class UserChangePasswordSerializer(serializers.Serializer):
     model = get_user_model()
     old_password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password])
 
     def validate_old_password(self, value):
         user = self.context['request'].user
@@ -50,7 +59,8 @@ class UserChangePasswordSerializer(serializers.Serializer):
         return value
 
     def validate_new_password(self, value):
-        validate_password(value)
+        user = self.context['request'].user
+        validate_password(value, user=user)
         return value
 
     def update(self, instance, validated_data):
@@ -76,6 +86,23 @@ class RouteSerializer(serializers.ModelSerializer):
             'end_location_lng',
             'distance',
             'duration',
+            'created_at',
+            'user',
+        ]
+
+
+class SearchedLocationSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = SearchedLocation
+        fields = [
+            'id',
+            'name',
+            'lat',
+            'lng',
             'created_at',
             'user',
         ]

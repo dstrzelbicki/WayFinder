@@ -51,6 +51,8 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
 
     const TOMTOM_API_KEY = 'yaFyr0Achz6WGOGfk3r1PUIpMV7On6JE'
     const API_KEY = 'b716933a82ae4ee08317542b1ed2664c'
+    const [trafficHint, setTrafficHint] = useState("Show traffic")
+    const [trafficInfo, setTrafficInfo] = useState(false)
 
     const isRetina = DEVICE_PIXEL_RATIO > 1;
     const baseUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=" + API_KEY;
@@ -203,6 +205,10 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
             const visible = !layers[0].getVisible()
             layers.forEach((layer) => layer.setVisible(visible))
 
+            trafficHint === "Show traffic" ?
+                setTrafficHint("Hide traffic")
+                : setTrafficHint("Show traffic")
+
             const copyrightCaption = document.getElementById("copyright-caption")
             if (visible) {
                 copyrightCaption.style.display = "block"
@@ -329,19 +335,32 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
                 const mode = properties.mode;
 
                 const tooltipElement = tooltipOverlay.getElement();
-                tooltipElement.innerHTML = `<div>
-                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">distance:</span>
-                <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
-                  </div> 
-                  <div>
-                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">time:</span>
-                <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertSecToHours(time)}</span>
-                  </div>
-                <div>
-                <span class="black-06 mat-caption" style="width: 100px; display:inline-block">transport mode: </span>
-                <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${mode}</span>
-                  </div>
-                `;
+                // tooltipElement.innerHTML = `<div>
+                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">distance:</span>
+                // <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
+                //   </div>
+                //   <div>
+                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">time:</span>
+                // <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertSecToHours(time)}</span>
+                //   </div>
+                // <div>
+                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">transport mode: </span>
+                // <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${mode}</span>
+                //   </div>
+                // `;
+                tooltipElement.textContent = '';
+
+                const distanceDiv = document.createElement('div');
+                distanceDiv.appendChild(createLabel('distance:', convertMetersToKilometers(distance) + '[km]'));
+                tooltipElement.appendChild(distanceDiv);
+
+                const timeDiv = document.createElement('div');
+                timeDiv.appendChild(createLabel('time:', convertSecToHours(time)));
+                tooltipElement.appendChild(timeDiv);
+
+                const modeDiv = document.createElement('div');
+                modeDiv.appendChild(createLabel('transport mode: ', mode));
+                tooltipElement.appendChild(modeDiv);
 
                 tooltipOverlay.setPosition(event.coordinate);
                 tooltipOverlay.getElement().style.display = 'block';
@@ -354,6 +373,25 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         map.addOverlay(tooltipOverlay);
 
         console.log(map.getLayers())
+    }
+
+    // helper function to create labeled content
+    function createLabel(labelText, valueText) {
+        const labelSpan = document.createElement('span');
+        labelSpan.className = 'black-06 mat-caption';
+        labelSpan.style = 'width: 100px; display:inline-block';
+        labelSpan.textContent = labelText;
+
+        const valueSpan = document.createElement('span');
+        valueSpan.className = 'mat-body black-08';
+        valueSpan.style = 'color: #333333; font-weight: 500';
+        valueSpan.textContent = valueText;
+
+        const container = document.createElement('div');
+        container.appendChild(labelSpan);
+        container.appendChild(valueSpan);
+
+        return container;
     }
 
     function animateZoomAtLocation(routeSource) {
@@ -444,6 +482,14 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         setShowMessage(false)
     }
 
+    const closePopupCard = () => {
+        setPopupData(null)
+    }
+
+    const trafficInfoToggle = () => {
+        setTrafficInfo(!trafficInfo)
+    }
+
     const handlePopupCard = (data) => {
         const newMarker = {id: 2, coordinates: data.lonLat}
         handleAddOrUpdateMarker(newMarker)
@@ -461,10 +507,22 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         <div id="tooltip" className="tooltip"></div>
         <div id="instructionContainer" className="instructionContainer"></div>
         <button className="route-button" onClick={route}>Trace route</button>
-        <button className="map-button" onClick={toggleTraffic}>Show traffic</button>
+        <button className="map-button" onClick={toggleTraffic}>{trafficHint}</button>
+        {trafficHint === "Hide traffic" && <button className="traffic-info-button" onClick={trafficInfoToggle}>Traffic information</button>}
+        {trafficInfo && (<div className="traffic-card">
+            <h3>Traffic information</h3>
+            <div className="traffic-info">
+                <p><span className="traffic-circle red"></span>Very slow or stationary traffic</p>
+                <p><span className="traffic-circle yellow"></span>Slow-moving traffic</p>
+                <p><span className="traffic-circle green"></span>Free-flowing traffic</p>
+                <p><span className="traffic-circle grey"></span>Closed road</p>
+                <p><i className="arrow"></i>Direction the traffic jam is taking place</p>
+            </div>
+            <button className="btn btn-primary" onClick={trafficInfoToggle}>Close</button>
+        </div>)}
         {isPopupCardOpen && popupData && (<PopupCard data={popupData} onSelect={(data) => {
             handlePopupCard(data)
-        }} setIsPopupOpen = {setIsPopupCardOpen}/>)}
+        }} setIsPopupOpen={setIsPopupCardOpen}/>)}
         <div className="copyright-caption" id="copyright-caption">©TomTom</div>
     </div>)
 }

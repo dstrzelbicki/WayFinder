@@ -1,4 +1,4 @@
-import React, {useState} from "react"
+import React, {useEffect, useState} from "react"
 import SearchBox from "../SearchBox/SearchBox.js"
 import {geocode} from "../../services/mapServices"
 import Sidebar from "../Sidebar/Sidebar"
@@ -8,6 +8,7 @@ import {faArrowCircleRight, faTimes} from "@fortawesome/free-solid-svg-icons"
 import TransportOptions from "./TransportOptions/TransportOptions";
 import {Typography} from "@mui/material";
 import OLMap from "../Map/Map";
+import {apiGetSearchedLocations, apiPostSearchedLocation} from "../../lookup/backendLookup";
 import StopoverContainer from "./StopoverContainer/StopoverContainer";
 
 const HomePage = () => {
@@ -21,8 +22,9 @@ const HomePage = () => {
     const [marker2Name, setMarker2Name] = useState("")
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
     const [showSearchHistory, setShowSearchHistory] = useState(false)
-    const [selectedOption1, setSelectedOption1] = useState('')
-    const [selectedOption2, setSelectedOption2] = useState('')
+    const [searchHistory, setSearchHistory] = useState([])
+    const [selectedOption1, setSelectedOption1] = useState('');
+    const [selectedOption2, setSelectedOption2] = useState('');
 
     const toggleSidebar = () => {
         setIsSidebarNotCollapsed(!isSidebarNotCollapsed)
@@ -45,15 +47,34 @@ const HomePage = () => {
             sessionStorage.setItem(`${keyPrefix}Lat`, lat)
             sessionStorage.setItem(`${keyPrefix}Lon`, lon)
 
-            // save search term to local storage
+            // save searched location to db
             let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || []
             searchHistory.push({searchTerm, markerIndex, timestamp: new Date()})
             localStorage.setItem("searchHistory", JSON.stringify(searchHistory))
+
+            let locationData = {
+                name: searchTerm,
+                lat: lat,
+                lng: lon
+            }
+            apiPostSearchedLocation(locationData, (response, status) => {
+                console.log(response, status)
+            })
         } else {
             console.error(
                 `No results found for SearchBar${markerIndex}: `, searchTerm)
         }
     }
+
+    useEffect(() => {
+        apiGetSearchedLocations((response, status) => {
+            if (status === 200) {
+                setSearchHistory(response)
+            } else {
+                console.log(response, status)
+            }
+        })
+    }, [showSearchHistory])
 
     const updateMarker2Name = (name) => {
         setMarker2Name(name)
@@ -70,7 +91,6 @@ const HomePage = () => {
     }
 
     return (
-
         <div className="full-height-container">
             <Sidebar
                 isNotCollapsed={isSidebarNotCollapsed}
@@ -80,26 +100,26 @@ const HomePage = () => {
                     setIsSidebarNotCollapsed(false)
                 }}
             />
-            <div>
+            <div className="search-container">
                 {showSearchHistory ? (
                     <div className="search-history-container">
                         <div className="search-history-close" onClick={() => setShowSearchHistory(!showSearchHistory)}>
-                            <p>Close search history &nbsp;<FontAwesomeIcon icon={faTimes}/></p>
+                            <p>Close history &nbsp;<FontAwesomeIcon icon={faTimes}/></p>
                         </div>
                         <div className="search-history-list">
-                            {JSON.parse(localStorage.getItem("searchHistory")) &&
-                                JSON.parse(localStorage.getItem("searchHistory")).map((item, index) => (
-                                    <div key={index} className="search-history-item" onClick={() => {
-                                        setShowSearchHistory(false)
-                                        updateMarker2Name(item.searchTerm)
-                                        handleSearch(item.searchTerm, 2)
-                                    }}
-                                    >
+                            {searchHistory && searchHistory.map((item, index) => (
+                                <div key={item.id} className="search-history-item" onClick={() => {
+                                    setShowSearchHistory(false)
+                                    updateMarker2Name(item.name)
+                                    handleSearch(item.name, 2)
+                                }}
+                                >
                     <span>
-                      {item.searchTerm}&nbsp;&nbsp;<FontAwesomeIcon icon={faArrowCircleRight}/>
+                        {item.name.length > 20 ? item.name.substring(0, 35) + "..." : item.name}
+                        &nbsp;&nbsp;<FontAwesomeIcon icon={faArrowCircleRight}/>
                     </span>
-                                    </div>
-                                ))}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 ) : (

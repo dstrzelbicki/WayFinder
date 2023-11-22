@@ -18,7 +18,7 @@
 
 .user-dashboard {
     color: black;
-    background-color: white;
+    background-color: #F3E7D3;
     height: 100%;
     width: 100%;
     display: flex;
@@ -27,7 +27,7 @@
 
 .user-dashboard .dashboard-sidebar {
     color: black;
-    background-color: #00BFFF;
+    background-color: #007bff;
     height: 100%;
     width: 20%;
     overflow: auto;
@@ -47,12 +47,19 @@
 .centered-list li {
     border: 1px solid black;
     border-radius: 10px;
-    padding: 10px;
+    padding: 0px;
     margin-bottom: 10px;
 }
 
+.full-width-link {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+
 .centered-list li:hover {
-    background-color: #009AD7;
+    background-color: #006acd;
 }
 
 p {
@@ -85,6 +92,11 @@ p {
     width: 80%;
 }
 
+.user-dashboard .content .recovery-codes {
+    text-align: justify;
+  text-justify: inter-word;
+}
+
 .data-field {
     border: 1px solid #CCCCCC;
     border-radius: 5px;
@@ -92,6 +104,7 @@ p {
     display: inline-block;
     width: 65%;
     text-align: center;
+    background-color: #FFFAED;
 }
 
 .data-row {
@@ -122,14 +135,43 @@ p {
     margin-bottom: 10px;
 }
 
+.user-dashboard form input[type="password"] {
+    background-color: #FFFAED;
+}
+
 .user-dashboard form input[type="text"],
 .user-dashboard form input[type="email"] {
+    border: 1px solid #CCCCCC;
+    background-color: #FFFAED;
+    border-radius: 5px;
+    padding: 5px;
+    display: inline-block;
+    width: 65%;
+    text-align: center;
+}
+
+.user-dashboard .content input[type="text"] {
     border: 1px solid #CCCCCC;
     border-radius: 5px;
     padding: 5px;
     display: inline-block;
     width: 65%;
     text-align: center;
+}
+
+.user-dashboard .content input {
+    display: flex;
+    flex-direction: column;
+    margin-left: 18%;
+    text-align: center;
+    margin-top: 5%;
+}
+
+.user-dashboard .content .qr-code {
+    display: flex;
+    flex-direction: column;
+    margin-left: 34%;
+    width: 100%;
 }
 
 .user-dashboard form input[type="submit"] {
@@ -183,6 +225,21 @@ p {
     border: 1px solid #0D6EFD;
 }
 
+.dashboard-sidebar .toggle-button {
+    position: absolute;
+    width: 35px;
+    top: 10px;
+    left: 30px;
+    border: 1px solid black;
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #007bff;
+}
+
+.dashboard-sidebar .toggle-button:hover {
+    background-color: #006acd;
+}
+
 tr th {
     border: 1px solid #CCCCCC;
     padding: 10px;
@@ -201,7 +258,7 @@ table {
     border-radius: 30px;
     border-style: hidden;
     box-shadow: 0 0 0 1px #CCCCCC;
-    background-color: #F7F7F7;
+    background-color: #FFFAED;
 }
 
 .history-message {

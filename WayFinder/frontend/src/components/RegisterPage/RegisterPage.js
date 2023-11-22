@@ -2,6 +2,8 @@ import "./RegisterPage.css";
 import { client } from "../../../shared";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { set } from "ol/transform";
+import validator from "validator";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -11,8 +13,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMatchError, setPasswordMatchError] = useState(false);
-  const [passwordLengthError, setPasswordLengthError] = useState(false);
+  const [passwordComplexityError, setPasswordComplexityError] = useState(false);
   const [loginError, setLoginError] = useState(false);
+  const [invalidEmailFormat, setInvalidEmailFormat] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn");
@@ -22,9 +25,16 @@ export default function RegisterPage() {
   }, [navigate]);
 
   function handlePasswordChange(e) {
-    setPassword(e.target.value);
+    const value = e.target.value;
+    setPassword(value);
     setPasswordMatchError(false);
-    setPasswordLengthError(false);
+  }
+
+  function validatePasswordComplexity(password) {
+    // ensure password length is 10 or more characters
+    // includes at least one number, one lowercase and one uppercase letter, and one special character
+    const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{10,}$/;
+    return regex.test(password);
   }
 
   async function register(e) {
@@ -34,11 +44,17 @@ export default function RegisterPage() {
       setPasswordMatchError(true);
       return;
     }
-    if (password.length < 8) {
-      setPasswordLengthError(true);
+    if (!validatePasswordComplexity(password)) {
+      setPasswordComplexityError(true);
       return;
     }
-    
+
+    if (!validator.isEmail(email)) {
+      setInvalidEmailFormat(true);
+      console.log("Invalid email format");
+      return;
+    }
+
     try {
       const response = await client.post(
         "/api/register",
@@ -62,7 +78,7 @@ export default function RegisterPage() {
       }
     } catch (error) {
       setLoginError(true);
-      console.log(error.response);
+      console.log("Error registering user");
     }
   }
 
@@ -100,6 +116,7 @@ export default function RegisterPage() {
               required
             />
           </div>
+          {invalidEmailFormat && <p className="error-message">Invalid email format</p>}
           <div className="form-group">
             <label htmlFor="password">Password:</label>
             <input
@@ -124,9 +141,12 @@ export default function RegisterPage() {
               required
             />
             {passwordMatchError && <p className="error-message">Passwords do not match</p>}
-            {passwordLengthError && <p className="error-message">Password should be at least 8 characters</p>}
+            {passwordComplexityError && <p className="error-message">
+                                          Password must include at least one number,
+                                          one lowercase and one uppercase letter, one special character,
+                                          and be at least 10 characters long.</p>}
           </div>
-          <button type="submit">Register</button>
+          <button className="btn btn-primary" type="submit">Register</button>
         </form>
         <a href="/" className="login-link">
           Back to Login
