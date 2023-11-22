@@ -1,7 +1,7 @@
 import React from 'react';
 import {Checkbox, FormControlLabel, FormGroup, Typography} from "@material-ui/core";
 import {DirectionsBike, DriveEta} from "@material-ui/icons";
-import {Box, IconButton} from "@mui/material";
+import {Box, Icon} from "@mui/material";
 
 function TransportOptions(props) {
 
@@ -29,8 +29,8 @@ function TransportOptions(props) {
                     label={
                         <Box display="flex"
                              alignItems="center">
-                            <IconButton style={{minWidth: '25px'}}>{option.icon}</IconButton>
-                            <Typography style={{fontSize: 9, color: '#424242'}}>{option.label}</Typography>
+                            <Icon style={{blockSize: 40}}>{option.icon}</Icon>
+                            <Typography style={{fontSize: 9, color: '#424242', marginLeft: 10}}>{option.label}</Typography>
                         </Box>
                     }
                 />

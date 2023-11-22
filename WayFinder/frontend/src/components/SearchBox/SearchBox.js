@@ -75,7 +75,6 @@ const SearchBox = ({placeholder, onSearch, marker2Name}) => {
 
     useEffect(() => {
         if (marker2Name) {
-            console.log("Weszło")
             handleSelectItem(marker2Name)}
     }, [marker2Name])
 
