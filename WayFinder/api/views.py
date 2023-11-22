@@ -100,7 +100,7 @@ class UserLogin(APIView):
     def post(self, request):
         data = request.data
         ip = request.META.get('REMOTE_ADDR')
-        print(data.get('email'))
+
         try:
             validate_email(data.get('email'))
         except ValidationError:
