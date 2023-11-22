@@ -4,7 +4,7 @@ import {geocode} from "../../services/mapServices"
 import Sidebar from "../Sidebar/Sidebar"
 import "./HomePage.css"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
-import {faArrowCircleRight, faMinusCircle, faPlusCircle, faTimes} from "@fortawesome/free-solid-svg-icons"
+import {faArrowCircleRight, faTimes} from "@fortawesome/free-solid-svg-icons"
 import TransportOptions from "./TransportOptions/TransportOptions";
 import {Typography} from "@mui/material";
 import OLMap from "../Map/Map";
@@ -19,10 +19,8 @@ const HomePage = () => {
         isToRemove: false
     })
     const [marker2Name, setMarker2Name] = useState("")
-    const [isMinusIcon, setIsMinusIcon] = useState(false)
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
     const [showSearchHistory, setShowSearchHistory] = useState(false)
-    const [isStopoverToAdd, setIsStopoverToAdd] = useState(false)
     const [selectedOption1, setSelectedOption1] = useState('')
     const [selectedOption2, setSelectedOption2] = useState('')
 
@@ -71,18 +69,6 @@ const HomePage = () => {
         setMarker({id: markerIndex, coordinates: [], searchTerm: '', isToRemove: true})
     }
 
-    const setInitialStopoverState = () => {
-        setIsStopoverToAdd(!isStopoverToAdd)
-        setIsMinusIcon(!isMinusIcon)
-    }
-
-    useEffect(() => {
-        if (isMinusIcon) {
-            setSelectedOption1('')
-            setSelectedOption2('')
-        }
-    }, [isMinusIcon])
-
     return (
 
         <div className="full-height-container">
@@ -120,17 +106,11 @@ const HomePage = () => {
                     <div className="search-location-container">
                         <SearchBox placeholder="Your location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
 
-
-                        <button className="add-stop-component" onClick={setInitialStopoverState}><FontAwesomeIcon icon={isStopoverToAdd ? faMinusCircle : faPlusCircle}/></button>
-
-                        {isStopoverToAdd && (
-                            <StopoverContainer
-                                handleSearch={(searchTerm, markerIndex) => handleSearch(searchTerm, markerIndex + 2)}
-                                handleOptionChange={(option) => handleOptionChange(option, setSelectedOption2)}
-                                setInitialStopoverState={setInitialStopoverState}
-                                setMarkerToRemove={(markerIndex) => setMarkerToRemove(markerIndex + 2)}
-                            />
-                        )}
+                        <StopoverContainer
+                            handleSearch={(searchTerm, markerIndex) => handleSearch(searchTerm, markerIndex + 2)}
+                            handleOptionChange={(option) => handleOptionChange(option, setSelectedOption2)}
+                            setMarkerToRemove={(markerIndex) => setMarkerToRemove(markerIndex + 2)}
+                        />
 
                         <SearchBox placeholder={marker2Name || "Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
 

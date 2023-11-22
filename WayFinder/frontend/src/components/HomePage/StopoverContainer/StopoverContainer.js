@@ -1,20 +1,28 @@
 import SearchBox from "../../SearchBox/SearchBox";
-import React, {useState} from "react"
+import React, {useEffect, useState} from "react"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import TransportOptions from "../TransportOptions/TransportOptions";
 import {faMinusCircle, faPlusCircle, faRightLeft} from "@fortawesome/free-solid-svg-icons";
 
 function StopoverContainer({
-                               handleSearch, handleOptionChange, setInitialStopoverState, setMarkerToRemove
+                               handleSearch, handleOptionChange, setMarkerToRemove
                            }) {
 
     const STOPOVER_LIMIT = 3
-    const [stopovers, setStopovers] = useState([{id: 1, searchTerm: '', coordinates: [], showAddStop: true}])
+    const [stopovers, setStopovers] = useState([])
+    const [isStopoverToAdd, setIsStopoverToAdd] = useState(true)
+
+    const setInitialStopoverState = () => {
+        if (stopovers.length === 0) {
+            addNewStopover()
+            setIsStopoverToAdd(!isStopoverToAdd)
+        }
+    }
 
     const handleAddNewStopover = (stopoverId) => {
         setShowAddStopStatus(stopoverId)
         if (stopovers.length < STOPOVER_LIMIT) {
-            const shouldShowAddStop = stopovers.length !== STOPOVER_LIMIT - 1
+            const shouldShowAddStop = stopovers.length < STOPOVER_LIMIT - 1
             addNewStopover(shouldShowAddStop)
         } else {
             console.log(`Stopover limit reached (${STOPOVER_LIMIT}). Cannot add more stopovers.`)
@@ -24,24 +32,40 @@ function StopoverContainer({
     const handleRemoveStopover = (stopoverId) => {
         removeStopover(stopoverId)
         setMarkerToRemove(stopoverId)
-        if (stopovers.length === 1) setInitialStopoverState()
+        setIsStopoverToAdd(!isStopoverToAdd)
     }
 
     const setShowAddStopStatus = (stopoverId) => {
-        setStopovers((prevStopovers) => prevStopovers.map((stopover) => stopover.id === stopoverId ? {...stopover, showAddStop: false} : stopover)
-        )
+        setStopovers((prevStopovers) => {
+            return prevStopovers.map((stopover) => stopover.id === stopoverId ? {...stopover, showAddStop: false} : stopover)
+        })
     }
 
     const addNewStopover = (status = true) => {
-        setStopovers((prevStopovers) => [...prevStopovers, {id: prevStopovers.length + 1, searchTerm: '', coordinates: [], showAddStop: status}])
+        setStopovers((prevStopovers) => {
+            return [...prevStopovers, {id: prevStopovers.length + 1, searchTerm: '', coordinates: [], showAddStop: status}]
+        })
     }
+
+    useEffect(() => {
+        console.log(`stopover length: ${stopovers.length}`)
+        console.log(`stopovers after remove: ${JSON.stringify(stopovers)}`)
+    }, [stopovers])
 
     const removeStopover = (stopoverId) => {
-        setStopovers((prevStopovers) => prevStopovers.filter((stopover) => stopover.id !== stopoverId));
+        setStopovers((prevStopovers) => {
+            // Update IDs to be consecutive
+            return prevStopovers.filter((stopover) => stopover.id !== stopoverId)
+                .map((stopover, index) => ({
+                    ...stopover,
+                    id: index + 1
+                }))
+        })
     }
 
-    return (
-        (stopovers.map((stopover) =>
+    return (<>
+            <button className="add-stop-component" onClick={setInitialStopoverState}><FontAwesomeIcon icon={isStopoverToAdd ? faPlusCircle : faMinusCircle}/></button>
+            {stopovers.map((stopover) =>
                 <div className="stopover-container">
                     <div className="search-box-container">
                         <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)} grayText/>
@@ -51,8 +75,10 @@ function StopoverContainer({
                     </button>
                     <TransportOptions selectedOption={stopover.searchTerm} handleOptionChange={handleOptionChange}/>
                     <FontAwesomeIcon className="add-stop-component" icon={faRightLeft} rotation={90}/>
-                </div>)
-        ))
+                </div>
+            )}
+        </>
+    )
 }
 
 export default StopoverContainer
