@@ -17,7 +17,12 @@ export default function LoginPage() {
   const [requiresOtp, setRequiresOtp] = useState(false)
 
   function submitLogin(e) {
-    e.preventDefault();
+    e.preventDefault()
+
+    if (!validator.isEmail(email)) {
+      return
+    }
+
     const data = {
       email: email,
       password: password,
@@ -90,9 +95,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => {
                 const sanitizedEmail = DOMPurify.sanitize(e.target.value)
-                if (validator.isEmail(sanitizedEmail)) {
-                  setEmail(sanitizedEmail)
-                }
+                setEmail(sanitizedEmail)
               }}
             />
           </div>
