@@ -11,6 +11,7 @@ function StopoverContainer({
     const STOPOVER_LIMIT = 3
     const [stopovers, setStopovers] = useState([])
     const [isStopoverToAdd, setIsStopoverToAdd] = useState(true)
+    const [marker2Name, setMarker2Name] = useState("")
 
     const setInitialStopoverState = () => {
         if (stopovers.length === 0) {
@@ -32,6 +33,7 @@ function StopoverContainer({
     const handleRemoveStopover = (stopoverId) => {
         removeStopover(stopoverId)
         setMarkerToRemove(stopoverId)
+        updateMarker2Name('')
         setIsStopoverToAdd(!isStopoverToAdd)
     }
 
@@ -47,11 +49,6 @@ function StopoverContainer({
         })
     }
 
-    useEffect(() => {
-        console.log(`stopover length: ${stopovers.length}`)
-        console.log(`stopovers after remove: ${JSON.stringify(stopovers)}`)
-    }, [stopovers])
-
     const removeStopover = (stopoverId) => {
         setStopovers((prevStopovers) => {
             // Update IDs to be consecutive
@@ -63,12 +60,16 @@ function StopoverContainer({
         })
     }
 
+    const updateMarker2Name = (name) => {
+        setMarker2Name(name)
+    }
+
     return (<>
             <button className="add-stop-component" onClick={setInitialStopoverState}><FontAwesomeIcon icon={isStopoverToAdd ? faPlusCircle : faMinusCircle}/></button>
             {stopovers.map((stopover) =>
                 <div className="stopover-container">
                     <div className="search-box-container">
-                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)} grayText/>
+                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)} marker2Name={marker2Name}/>
                     </div>
                     <button className="add-stop-component" onClick={stopover.showAddStop ? () => handleAddNewStopover(stopover.id) : () => handleRemoveStopover(stopover.id)}>
                         <FontAwesomeIcon icon={stopover.showAddStop ? faPlusCircle : faMinusCircle}/>

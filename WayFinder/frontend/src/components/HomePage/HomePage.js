@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react"
+import React, {useState} from "react"
 import SearchBox from "../SearchBox/SearchBox.js"
 import {geocode} from "../../services/mapServices"
 import Sidebar from "../Sidebar/Sidebar"
@@ -112,7 +112,7 @@ const HomePage = () => {
                             setMarkerToRemove={(markerIndex) => setMarkerToRemove(markerIndex + 2)}
                         />
 
-                        <SearchBox placeholder={marker2Name || "Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)}/>
+                        <SearchBox placeholder={"Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)} marker2Name={marker2Name}/>
 
                         <Typography style={{marginTop: '20px'}} variant="h2">Select Transport Options:</Typography>
                         <TransportOptions selectedOption={selectedOption1} handleOptionChange={(option) => handleOptionChange(option, setSelectedOption1)}/>
