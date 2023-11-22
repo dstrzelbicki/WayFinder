@@ -19,6 +19,8 @@ import {DEVICE_PIXEL_RATIO} from "ol/has";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import {apiPostRoute} from "../../lookup/backendLookup"
+import {faTimes} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
@@ -30,10 +32,11 @@ const PopupCard = ({data, onSelect, setIsPopupOpen}) => {
     }
 
     return (<div className="popup-card">
+        <button className="close-button" onClick={() => setIsPopupOpen(false)}><FontAwesomeIcon icon={faTimes}/></button>
         <h4>{data.address}</h4>
         <p>Categories: {data.categories}</p>
         <p>Coordinates: {data.lonLat.join(", ")}</p>
-        <button onClick={handleUseAsMarker}>Use as Marker</button>
+        <button className="popup-card-button" onClick={handleUseAsMarker}>Use as Marker</button>
     </div>)
 }
 
