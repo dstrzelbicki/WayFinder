@@ -10,13 +10,15 @@ function StopoverContainer({
 
     const STOPOVER_LIMIT = 3
     const [stopovers, setStopovers] = useState([])
-    const [isStopoverToAdd, setIsStopoverToAdd] = useState(true)
+    const [isStopoverToAdd, setIsStopoverToAdd] = useState(false)
     const [marker2Name, setMarker2Name] = useState("")
 
     const setInitialStopoverState = () => {
-        if (stopovers.length === 0) {
+        if (stopovers.length === 0 ) {
             addNewStopover()
-            setIsStopoverToAdd(!isStopoverToAdd)
+            setIsStopoverToAdd(false)
+        } else {
+            removeAllStopovers()
         }
     }
 
@@ -33,8 +35,7 @@ function StopoverContainer({
     const handleRemoveStopover = (stopoverId) => {
         removeStopover(stopoverId)
         setMarkerToRemove(stopoverId)
-        updateMarker2Name('')
-        setIsStopoverToAdd(!isStopoverToAdd)
+        updateMarker2Name("stopover test")
     }
 
     const setShowAddStopStatus = (stopoverId) => {
@@ -49,6 +50,10 @@ function StopoverContainer({
         })
     }
 
+    const removeAllStopovers = () => {
+        setStopovers([])
+    }
+
     const removeStopover = (stopoverId) => {
         setStopovers((prevStopovers) => {
             // Update IDs to be consecutive
@@ -59,6 +64,10 @@ function StopoverContainer({
                 }))
         })
     }
+
+    useEffect(() => {
+        if (stopovers.length === 0) setIsStopoverToAdd(true)
+    }, [stopovers])
 
     const updateMarker2Name = (name) => {
         setMarker2Name(name)
