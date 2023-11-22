@@ -4,8 +4,8 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.contrib.auth.views import LoginView
-from django.utils.encoding import force_str
-from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str, force_bytes
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.views import View
 from django.core.mail import send_mail
@@ -22,7 +22,8 @@ from .serializers import (UserRegisterSerializer, UserLoginSerializer,
                           UserSerializer, UserChangePasswordSerializer, RouteSerializer,
                           SearchedLocationSerializer)
 from rest_framework import permissions, status
-from .validations import custom_validation, validate_password
+from .validations import custom_validation
+from django.contrib.auth.password_validation import validate_password
 from datetime import datetime, timedelta, timezone
 from django_ratelimit.decorators import ratelimit as django_ratelimit
 from django_ratelimit.exceptions import Ratelimited
@@ -104,7 +105,11 @@ class UserLogin(APIView):
             validate_email(data.get('email'))
         except ValidationError:
             return Response({"message": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
-        assert validate_password(data)
+
+        try:
+            validate_password(data.get('password'))
+        except ValidationError as e:
+            return Response({"message": e.messages}, status=status.HTTP_400_BAD_REQUEST)
 
         # check for rate limiting
         user = User.objects.filter(email=data.get('email')).first()
@@ -224,64 +229,71 @@ class RouteView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def reset_password(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
+class ForgottenPassword(APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = (SessionAuthentication,)
 
-        if not validate_email(email):
-            return JsonResponse({'message': 'Invalid email'}, status=400)
+    def post(self, request):
+        email = request.data.get('email')
 
-        # Check if the user with the provided email exists
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({"message": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # check if the user with the provided email exists
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return JsonResponse({'message': 'User does not exist'}, status=404)
 
-        # Generate a reset token
-        reset_token = get_random_string(length=32)
+        # generate a reset token
+        token = token_generator.make_token(user)
+        uidb64 = urlsafe_base64_encode(force_bytes(user.id))
 
-        # Save the reset token to the user's profile
-        user.profile.reset_token = reset_token
-        user.profile.save()
-
-        # Prepare the email content
-        subject = 'Password Reset'
-        message = f'Click the link to reset your password: https://example.com/reset-password/{reset_token}'
+        # prepare the email content
+        subject = 'WayFinder - Password Reset'
+        message = f'Click the link to reset your password: http://localhost:3000/reset-password/{uidb64}/{token}'
         from_email = 'wayfinder.no.response@gmail.com'
         recipient_list = [email]
 
-        # Send the email
+        # send the email
         try:
             send_mail(subject, message, from_email, recipient_list, fail_silently=False)
         except Exception as e:
             return JsonResponse({'message': str(e)}, status=500)
 
-        return JsonResponse({'message': 'Email sent successfully'})
-    else:
-        return JsonResponse({'message': 'Invalid request method'}, status=405)
+        return JsonResponse({'message': 'Email sent successfully'}, status=200)
 
 
-class ResetPasswordConfirmView(APIView):
-    # permission_classes = (permissions.AllowAny,)
-    # authentication_classes = (JWTAuthentication,)
+class ResetPassword(APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = (SessionAuthentication,)
 
     def post(self, request):
-        token = request.POST.get('token')
-        password = request.POST.get('password')
-        uidb64 = request.POST.get('uidb64')
+        token = request.data.get('token')
+        password = request.data.get('password')
+        uidb64 = request.data.get('uidb64')
 
-        # Decode the token and get the user
+        # validate password with all AUTH_PASSWORD_VALIDATORS
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            return HttpResponse(e.messages, status=422)
+
+        # decode uidb64 and get the user
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = get_user_model().objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist):
             user = None
 
-        if user is not None and token_generator.check_token(user, token):
-            # Reset the user's password
+        # check if the user exists and the token is valid
+        if user and token_generator.check_token(user, token):
+            # set new password
             user.set_password(password)
             user.save()
-            return redirect('login')
+            return HttpResponse('Password reset successful', status=204)
         else:
             return HttpResponse('Invalid or expired token', status=400)
 

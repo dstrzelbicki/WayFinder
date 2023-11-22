@@ -50,6 +50,7 @@
     "dompurify": "^3.0.6",
     "dotenv": "^16.0.3",
     "dotenv-webpack": "^8.0.1",
+    "js-cookie": "^3.0.5",
     "ol": "^7.3.0",
     "ol-mapbox-style": "^10.6.0",
     "osrm-rest-client": "^0.1.7",

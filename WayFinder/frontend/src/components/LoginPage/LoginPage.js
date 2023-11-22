@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { set } from "ol/transform";
 import DOMPurify from 'dompurify';
 import validator from "validator";
+import {Link} from "react-router-dom";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -131,9 +132,7 @@ export default function LoginPage() {
           </div>
         </form>
         {!requiresOtp ?
-            <a href="http://127.0.0.1:8000/api/password_reset" className="forgot-password-link">
-              Forgotten Password?
-            </a> :
+            <Link to="/forgotten-password" className="forgot-password-link">Forgotten Password?</Link> :
             <button className="btn btn-primary" onClick={navigateToRecoveryCodePage}>
               Lost access to OTP device?
             </button>

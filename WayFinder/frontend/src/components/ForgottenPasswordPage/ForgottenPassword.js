@@ -4,38 +4,30 @@ import { client } from "../../../shared";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import validator from "validator";
+import DOMPurify from "dompurify";
+import { apiForgottenPassword } from "../../lookup/backendLookup";
+import { set } from "ol/transform";
 
-function ForgotPasswordPage() {
+function ForgottenPasswordPage() {
   const [isPopupVisible, setPopupVisible] = useState(false)
   const [popupMessage, setPopupMessage] = useState("")
+  const [email, setEmail] = useState("")
+  const [status, setStatus] = useState(0)
 
   const sendPasswordResetEmail = (email) => {
-    fetch('/api/reset-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }),
+    apiForgottenPassword(email, (response, status) => {
+      setStatus(status)
     })
-      .then((response) => response.json())
-      .then((data) => {
-        // Handle the response from the server
-        console.log(data); // You can log or display a success message here
-      })
-      .catch((error) => {
-        // Handle any errors
-        console.error(error);
-      });
-  };
+  }
 
   const handleSubmit = (event) => {
-    event.preventDefault(); // Prevent the default form submission
+    event.preventDefault()
 
-    const email = event.target.email.value; // Get the value of the email input field
-    const sanitizedEmail = DOMPurify.sanitize(email)
+    const sanitizedEmail = DOMPurify.sanitize(event.target.email.value)
 
     if (validator.isEmail(sanitizedEmail)) {
-      setSearchValue(sanitizedEmail)
+      setEmail(sanitizedEmail)
+      sendPasswordResetEmail(sanitizedEmail)
     } else {
       setPopupMessage("Invalid email address")
       setPopupVisible(true)
@@ -43,10 +35,7 @@ function ForgotPasswordPage() {
           setPopupVisible(false)
         }, 3000)
     }
-
-    // Call a function to send the email to the server
-    sendPasswordResetEmail(email);
-  };
+  }
 
   return (
       <>
@@ -61,17 +50,22 @@ function ForgotPasswordPage() {
         >
           <div className="login-form-container">
             <h1>WayFinder</h1>
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="email">Email:</label>
-                <input type="email" id="email" name="email" required />
-              </div>
-              <div className="button-container">
-                <button className="send-email-btn" type="submit">
-                  Send Email
-                </button>
-              </div>
-            </form>
+            {status !== 200 ?
+              <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                  <label htmlFor="email">Email:</label>
+                  <input type="email" id="email" name="email" required />
+                </div>
+                <div className="button-container">
+                  <button className="send-email-btn" type="submit">
+                    Send email
+                  </button>
+                </div>
+              </form>
+              : <div>
+                  <p>If your email is registered, you will receive a password reset link.</p>
+                  <p>Check your inbox</p>
+                </div>}
             <a href="/" className="back-to-login-link">Back to Login</a>
           </div>
         </div>
@@ -79,4 +73,4 @@ function ForgotPasswordPage() {
     );
   }
 
-export default ForgotPasswordPage;
+export default ForgottenPasswordPage

@@ -164,3 +164,19 @@ export function apiPostSearchedLocation(data, callback) {
 export function apiGetSearchedLocations(callback) {
   backendLookup("GET", "/location", callback)
 }
+
+export function apiForgottenPassword(email, callback) {
+  const data = {
+    email: email
+  }
+  backendLookup("POST", "/forgotten-password", callback, data)
+}
+
+export function apiPasswordReset(uidb64, token, password, callback) {
+  const data = {
+    uidb64: uidb64,
+    token: token,
+    password: password
+  }
+  backendLookup("POST", "/password-reset", callback, data)
+}
