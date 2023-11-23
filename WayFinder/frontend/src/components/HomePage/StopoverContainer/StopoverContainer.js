@@ -9,8 +9,11 @@ function StopoverContainer({
                            }) {
 
     const STOPOVER_LIMIT = 3
+    const INITIAL_STOPOVER_STATE = 3
     const [stopovers, setStopovers] = useState([])
     const [isStopoverToAdd, setIsStopoverToAdd] = useState(false)
+    const [stopoverSearchTerm, setStopoverSearchTerm] = useState(null)
+    const [updatedStopoverId, setUpdatedStopoverId] = useState(null)
 
     const setInitialStopoverState = () => {
         if (stopovers.length === 0) {
@@ -35,16 +38,18 @@ function StopoverContainer({
     const handleRemoveStopover = (stopoverId) => {
         removeStopover(stopoverId)
         setMarkerToRemove(stopoverId)
+        setUpdatedStopoverId(stopoverId)
     }
 
+    // TODO - hardcoded initial stopover state should be fixed in future - different indexing mechanism
     const removeStopoversMarkers = async () => {
-        console.log(`stopovers to remove: ${stopovers}`)
-
         const removeMarkers = async () => {
-            for (const stopover of stopovers) {
-                await setMarkerToRemove(stopover.id)
+            for (let i = 0; i < stopovers.length; i++) {
+                const stopover = stopovers[i]
+                const decreasedId = i === 0 ? stopover.id : stopover.id - 1
+                await setMarkerToRemove(decreasedId)
             }
-        };
+        }
 
         await removeMarkers()
     }
@@ -57,18 +62,32 @@ function StopoverContainer({
 
     const addNewStopover = (status = true) => {
         setStopovers((prevStopovers) => {
-            return [...prevStopovers, {id: prevStopovers.length + 1, searchTerm: '', coordinates: [], showAddStop: status}]
+            const newStopoverId = prevStopovers.length + INITIAL_STOPOVER_STATE;
+            const newStopovers = [
+                ...prevStopovers,
+                {id: newStopoverId, searchTerm: '', coordinates: [], showAddStop: status}
+            ];
+            setUpdatedStopoverId(newStopoverId)
+            setStopoverSearchTerm(''); // Reset the stopoverSearchTerm when adding a new stopover
+            return newStopovers
         })
     }
 
     const removeStopover = (stopoverId) => {
         setStopovers((prevStopovers) => {
             // Update IDs to be consecutive
-            return prevStopovers.filter((stopover) => stopover.id !== stopoverId)
+            return prevStopovers
+                .filter((stopover) => stopover.id !== stopoverId)
                 .map((stopover, index) => ({
                     ...stopover,
-                    id: index + 1
+                    id: index + INITIAL_STOPOVER_STATE,
                 }))
+        })
+    }
+
+    const updateStopoverWithSearchTerm = (searchTerm, stopoverId) => {
+        setStopovers((prevStopovers) => {
+            return prevStopovers.map((stopover) => stopover.id === stopoverId ? {...stopover, searchTerm: searchTerm} : stopover)
         })
     }
 
@@ -78,12 +97,23 @@ function StopoverContainer({
         }
     }, [stopovers])
 
+    useEffect(() => {
+        console.log(`stopovers state: ${JSON.stringify(stopovers)}`)
+    }, [stopovers])
+
+    useEffect(() => {
+        setStopoverSearchTerm(stopovers.find((stopover) => stopover.id === updatedStopoverId)?.searchTerm || '')
+    }, [updatedStopoverId])
+
     return (<>
             <button className="add-stop-component" onClick={setInitialStopoverState}><FontAwesomeIcon icon={isStopoverToAdd ? faPlusCircle : faMinusCircle}/></button>
             {stopovers.map((stopover) =>
                 <div className="stopover-container">
                     <div className="search-box-container">
-                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)}/>
+                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => {
+                            handleSearch(searchTerm, stopover.id)
+                            updateStopoverWithSearchTerm(searchTerm, stopover.id)
+                        }} marker2Name={stopoverSearchTerm}/>
                     </div>
                     <button className="add-stop-component" onClick={stopover.showAddStop ? () => handleAddNewStopover(stopover.id) : () => handleRemoveStopover(stopover.id)}>
                         <FontAwesomeIcon icon={stopover.showAddStop ? faPlusCircle : faMinusCircle}/>

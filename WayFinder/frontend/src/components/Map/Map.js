@@ -114,14 +114,14 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
     }, [])
 
     useEffect(() => {
-        if (map && marker.coordinates.length !== 0) {
+        if (map && marker.coordinates.length !== 0 && !marker.isToRemove) {
             handleAddOrUpdateMarker(marker)
         }
     }, [map, marker])
 
     useEffect(() => {
         if (map && marker.isToRemove) {
-            removeMarker(marker.id)
+            removeMarker(marker)
         }
     }, [map, marker])
 
@@ -142,18 +142,7 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         })
 
         // view
-        const transformedCoordinates = fromLonLat(markerToAdd.coordinates)
-
-        const markerFeature = new Feature({
-            geometry: new Point(transformedCoordinates)
-        })
-        markerFeature.setId(markerToAdd.id)
-
-        const iconStyle = new Style({
-            image: new Icon({anchor: [0.5, 1], anchorXUnits: "fraction", anchorYUnits: "fraction", src: markerIcon}),
-        })
-
-        markerFeature.setStyle(iconStyle)
+        const markerFeature = createMarkerFeature(markerToAdd)
 
         // replace existing marker or add new marker
         const markerSource = map.getLayers().item(2).getSource()
@@ -164,17 +153,63 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         markerSource.addFeature(markerFeature)
     }
 
-    const removeMarker = (markerId) => {
+    // TODO - hardcoded initial stopover state should be fixed in future - different indexing mechanism
+    const removeMarker = (markerToRemove) => {
         setMarkers((prevMarkers) => {
-            return prevMarkers.filter((marker) => marker.id !== markerId)
+            const updatedMarkers = prevMarkers
+                .filter((marker) => marker.id !== markerToRemove.id)
+                .map((marker, index) => {
+                    if (marker.id > 2) {
+                        return {
+                            ...marker,
+                            id: index + 3,
+                        };
+                    } else {
+                        return marker
+                    }
+                })
+
+            // Update the source of the layer on your map
+            updateMapMarkers(updatedMarkers)
+
+            return updatedMarkers
         })
 
         //view
         const markerSource = map.getLayers().item(2).getSource()
-        const existingMarker = markerSource.getFeatureById(markerId)
+        const existingMarker = markerSource.getFeatureById(markerToRemove.id)
         if (existingMarker) {
             markerSource.removeFeature(existingMarker)
         }
+    }
+
+    const updateMapMarkers = (updatedMarkers) => {
+        const markerSource = map.getLayers().item(2).getSource()
+
+        // Clear the existing features in the source
+        markerSource.clear()
+
+        // Add the updated markers to the source
+        console.log(`updated: ${JSON.stringify(updatedMarkers)}`)
+        updatedMarkers.forEach((marker) => {
+            markerSource.addFeature(createMarkerFeature(marker))
+        })
+    }
+
+    const createMarkerFeature = (marker) => {
+        const transformedCoordinates = fromLonLat(marker.coordinates)
+        const markerFeature = new Feature({
+            geometry: new Point(transformedCoordinates),
+            id: marker.id,
+            // Add other properties if needed
+        })
+
+        const iconStyle = new Style({
+            image: new Icon({anchor: [0.5, 1], anchorXUnits: "fraction", anchorYUnits: "fraction", src: markerIcon}),
+        })
+        markerFeature.setStyle(iconStyle)
+
+        return markerFeature
     }
 
     const handleMapClick = async (event) => {
@@ -335,19 +370,6 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
                 const mode = properties.mode;
 
                 const tooltipElement = tooltipOverlay.getElement();
-                // tooltipElement.innerHTML = `<div>
-                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">distance:</span>
-                // <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
-                //   </div>
-                //   <div>
-                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">time:</span>
-                // <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertSecToHours(time)}</span>
-                //   </div>
-                // <div>
-                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">transport mode: </span>
-                // <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${mode}</span>
-                //   </div>
-                // `;
                 tooltipElement.textContent = '';
 
                 const distanceDiv = document.createElement('div');
@@ -480,10 +502,6 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
 
     const handleCloseMessage = () => {
         setShowMessage(false)
-    }
-
-    const closePopupCard = () => {
-        setPopupData(null)
     }
 
     const trafficInfoToggle = () => {

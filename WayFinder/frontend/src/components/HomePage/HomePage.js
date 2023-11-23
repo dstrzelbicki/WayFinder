@@ -127,9 +127,9 @@ const HomePage = () => {
                         <SearchBox placeholder="Your location" onSearch={(searchTerm) => handleSearch(searchTerm, 1)}/>
 
                         <StopoverContainer
-                            handleSearch={(searchTerm, markerIndex) => handleSearch(searchTerm, markerIndex + 2)}
+                            handleSearch={(searchTerm, markerIndex) => handleSearch(searchTerm, markerIndex)}
                             handleOptionChange={(option) => handleOptionChange(option, setSelectedOption2)}
-                            setMarkerToRemove={(markerIndex) => setMarkerToRemove(markerIndex + 2)}
+                            setMarkerToRemove={(markerIndex) => setMarkerToRemove(markerIndex)}
                         />
 
                         <SearchBox placeholder={"Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, 2)} marker2Name={marker2Name}/>
