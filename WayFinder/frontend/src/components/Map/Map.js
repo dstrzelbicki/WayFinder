@@ -174,13 +174,6 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
 
             return updatedMarkers
         })
-
-        //view
-        const markerSource = map.getLayers().item(2).getSource()
-        const existingMarker = markerSource.getFeatureById(markerToRemove.id)
-        if (existingMarker) {
-            markerSource.removeFeature(existingMarker)
-        }
     }
 
     const updateMapMarkers = (updatedMarkers) => {

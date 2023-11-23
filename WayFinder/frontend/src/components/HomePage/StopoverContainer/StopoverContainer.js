@@ -21,7 +21,6 @@ function StopoverContainer({
             setIsStopoverToAdd(false)
         } else {
             removeStopoversMarkers()
-                .then(() => setStopovers([]))
         }
     }
 
@@ -35,23 +34,19 @@ function StopoverContainer({
         }
     }
 
-    const handleRemoveStopover = (stopoverId) => {
+    // TODO - should be fixed in future - different indexing mechanism
+    const removeStopoversMarkers = () => {
+        for (const stopover of stopovers) {
+            removeStopover(stopover.id)
+            console.log(`removing : ${stopover.id}`)
+            setMarkerToRemove(stopover.id)
+        }
+    }
+
+    const handleRemoveStopover = async (stopoverId) => {
         removeStopover(stopoverId)
         setMarkerToRemove(stopoverId)
         setUpdatedStopoverId(stopoverId)
-    }
-
-    // TODO - hardcoded initial stopover state should be fixed in future - different indexing mechanism
-    const removeStopoversMarkers = async () => {
-        const removeMarkers = async () => {
-            for (let i = 0; i < stopovers.length; i++) {
-                const stopover = stopovers[i]
-                const decreasedId = i === 0 ? stopover.id : stopover.id - 1
-                await setMarkerToRemove(decreasedId)
-            }
-        }
-
-        await removeMarkers()
     }
 
     const setShowAddStopStatus = (stopoverId) => {
