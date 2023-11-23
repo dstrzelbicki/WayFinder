@@ -3,7 +3,7 @@ import "./SearchBox.css"
 import {autocomplete} from "../../services/mapServices.js";
 import DOMPurify from "dompurify";
 
-const SearchBox = ({placeholder, onSearch}) => {
+const SearchBox = ({placeholder, onSearch, marker2Name}) => {
     const [searchValue, setSearchValue] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -64,7 +64,6 @@ const SearchBox = ({placeholder, onSearch}) => {
     const handleSelectItem = (value) => {
         setSearchValue(value);
         setSelectedItem(value);
-        onSearch(value);
         setIsDropdownVisible(false);
     };
 
@@ -75,42 +74,41 @@ const SearchBox = ({placeholder, onSearch}) => {
     };
 
     useEffect(() => {
+        if (marker2Name) {
+            handleSelectItem(marker2Name)}
+    }, [marker2Name])
+
+    useEffect(() => {
         document.addEventListener("click", handleOutsideClick);
         return () => {
             document.removeEventListener("click", handleOutsideClick);
         };
     }, []);
 
-    return (
-        <div className="no-submit">
-            <form className="no-submit">
-                <input
-                    type="search"
-                    className="no-submit"
-                    placeholder={placeholder}
-                    value={searchValue}
-                    onChange={handleInputChange}
-                    ref={inputRef}
-                    onKeyDown={handleKeyPress}
-                />
-            </form>
-            {isDropdownVisible && Array.isArray(searchResults) && searchValue.length > 0 && (
-                <ul className="dropdown-list">
-                    {searchResults.map((item, index) => (
-                        <li
-                            key={index}
-                            className={`dropdown-item ${
-                                item === selectedItem ? "selected" : ""
-                            }`}
-                            onClick={() => handleSelectItem(item)}
-                        >
-                            {item}
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    )
+    return (<div className="no-submit">
+        <form className="no-submit">
+            <input
+                type="search"
+                className="no-submit"
+                placeholder={placeholder}
+                value={searchValue}
+                onChange={handleInputChange}
+                ref={inputRef}
+                onKeyDown={handleKeyPress}
+            />
+        </form>
+        {isDropdownVisible && Array.isArray(searchResults) && searchValue.length > 0 && (<ul className="dropdown-list">
+            {searchResults.map((item, index) => (<li
+                key={index}
+                className={`dropdown-item ${item === selectedItem ? "selected" : ""}`}
+                onClick={() => {
+                    onSearch(item)
+                    handleSelectItem(item)
+                }}>
+                {item}
+            </li>))}
+        </ul>)}
+    </div>)
 }
 
 export default SearchBox

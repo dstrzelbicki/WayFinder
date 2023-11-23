@@ -8,8 +8,8 @@ import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
 import {Circle, Fill, Icon, Stroke, Style} from "ol/style"
 import {fromLonLat, toLonLat, transform} from "ol/proj"
+import {placeDetails, routemap} from "../../services/mapServices"
 import markerIcon from "../../assets/img/marker-icon.png"
-import {reverseGeocode, routemap} from "../../services/mapServices"
 import XYZ from "ol/source/XYZ"
 import {Group} from "ol/layer"
 import {LineString} from "ol/geom";
@@ -19,29 +19,36 @@ import {DEVICE_PIXEL_RATIO} from "ol/has";
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import {apiPostRoute} from "../../lookup/backendLookup"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { set } from "ol/transform"
+import {faTimes} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
-const PopupCard = ({data, onSelect, onClose}) => {
+const PopupCard = ({data, onSelect, setIsPopupOpen}) => {
+    const handleUseAsMarker = () => {
+        onSelect(data)
+        // Close the popup by updating the state
+        setIsPopupOpen(false)
+    }
+
     return (<div className="popup-card">
-        <button className="popupcard-close" onClick={() => onClose()}>
-            <FontAwesomeIcon icon={faTimes} />
-        </button>
-        <h4>{data.name}</h4>
+        <button className="close-button" onClick={() => setIsPopupOpen(false)}><FontAwesomeIcon icon={faTimes}/></button>
+        <h4>{data.address}</h4>
+        <p>Categories: {data.categories}</p>
         <p>Coordinates: {data.lonLat.join(", ")}</p>
-        <button onClick={() => onSelect(data)}>Use as Marker2</button>
+        <button className="popup-card-button" onClick={handleUseAsMarker}>Use as Marker</button>
     </div>)
 }
 
-const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, onMarker2NameUpdate, isPlusIcon}) => {
+const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}) => {
     const mapRef = useRef()
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
     const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
     const [showMessage, setShowMessage] = useState(false)
+    const [markers, setMarkers] = useState([])
+    const [isPopupCardOpen, setIsPopupCardOpen] = useState(true)
+
     const TOMTOM_API_KEY = 'yaFyr0Achz6WGOGfk3r1PUIpMV7On6JE'
     const API_KEY = 'b716933a82ae4ee08317542b1ed2664c'
     const [trafficHint, setTrafficHint] = useState("Show traffic")
@@ -107,75 +114,116 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
     }, [])
 
     useEffect(() => {
-        if (map && marker1) {
-            addOrUpdateMarker(marker1, "marker1")
+        if (map && marker.coordinates.length !== 0 && !marker.isToRemove) {
+            handleAddOrUpdateMarker(marker)
         }
-    }, [map, marker1])
+    }, [map, marker])
 
     useEffect(() => {
-        if (map && marker2) {
-            addOrUpdateMarker(marker2, "marker2")
+        if (map && marker.isToRemove) {
+            removeMarker(marker)
         }
-    }, [map, marker2])
+    }, [map, marker])
 
-    useEffect(() => {
-        if (map && marker3) {
-            addOrUpdateMarker(marker3, "marker3")
-        }
-    }, [map, marker3])
-
-    useEffect(() => {
-        if (map && isPlusIcon) {
-            removeMarker(marker3, "marker3")
-        }
-    }, [map, marker3, isPlusIcon])
-
-    const addOrUpdateMarker = (coordinates, markerId) => {
-        const transformedCoordinates = fromLonLat(coordinates)
-
-        const marker = new Feature({
-            geometry: new Point(transformedCoordinates)
-        })
-        marker.setId(markerId)
-
-        const iconStyle = new Style({
-            image: new Icon({
-                anchor: [0.5, 1], anchorXUnits: "fraction", anchorYUnits: "fraction", src: markerIcon,
-            }),
+    const handleAddOrUpdateMarker = (markerToAdd) => {
+        setMarkers((prevMarkers) => {
+            const existingMarkerIndex = prevMarkers.findIndex((m) => m.id === markerToAdd.id);
+            if (existingMarkerIndex !== -1) {
+                // Replace existing marker with the new one
+                return [
+                    ...prevMarkers.slice(0, existingMarkerIndex),
+                    markerToAdd,
+                    ...prevMarkers.slice(existingMarkerIndex + 1),
+                ];
+            } else {
+                // Add the new marker to the array
+                return [...prevMarkers, markerToAdd];
+            }
         })
 
-        marker.setStyle(iconStyle)
+        // view
+        const markerFeature = createMarkerFeature(markerToAdd)
 
         // replace existing marker or add new marker
         const markerSource = map.getLayers().item(2).getSource()
-        const existingMarker = markerSource.getFeatureById(markerId)
+        const existingMarker = markerSource.getFeatureById(markerToAdd.id)
         if (existingMarker) {
             markerSource.removeFeature(existingMarker)
         }
-        markerSource.addFeature(marker)
+        markerSource.addFeature(markerFeature)
     }
 
-    const removeMarker = (coordinates, markerId) => {
+    // TODO - hardcoded initial stopover state should be fixed in future - different indexing mechanism
+    const removeMarker = (markerToRemove) => {
+        setMarkers((prevMarkers) => {
+            const updatedMarkers = prevMarkers
+                .filter((marker) => marker.id !== markerToRemove.id)
+                .map((marker, index) => {
+                    if (marker.id > 2) {
+                        return {
+                            ...marker,
+                            id: index + 3,
+                        };
+                    } else {
+                        return marker
+                    }
+                })
+
+            // Update the source of the layer on your map
+            updateMapMarkers(updatedMarkers)
+
+            return updatedMarkers
+        })
+    }
+
+    const updateMapMarkers = (updatedMarkers) => {
         const markerSource = map.getLayers().item(2).getSource()
-        const existingMarker = markerSource.getFeatureById(markerId)
-        if (existingMarker) {
-            markerSource.removeFeature(existingMarker)
-        }
+
+        // Clear the existing features in the source
+        markerSource.clear()
+
+        // Add the updated markers to the source
+        console.log(`updated: ${JSON.stringify(updatedMarkers)}`)
+        updatedMarkers.forEach((marker) => {
+            markerSource.addFeature(createMarkerFeature(marker))
+        })
+    }
+
+    const createMarkerFeature = (marker) => {
+        const transformedCoordinates = fromLonLat(marker.coordinates)
+        const markerFeature = new Feature({
+            geometry: new Point(transformedCoordinates),
+            id: marker.id,
+            // Add other properties if needed
+        })
+
+        const iconStyle = new Style({
+            image: new Icon({anchor: [0.5, 1], anchorXUnits: "fraction", anchorYUnits: "fraction", src: markerIcon}),
+        })
+        markerFeature.setStyle(iconStyle)
+
+        return markerFeature
     }
 
     const handleMapClick = async (event) => {
         const coordinates = event.coordinate
         const lonLat = toLonLat(coordinates)
 
-        const data = await reverseGeocode(lonLat)
+        const placeDetailsData = await placeDetails(lonLat)
 
-        if (data.features.length > 0) {
-            const locationProperties = data.features[0].properties
+        if (placeDetailsData.features.length > 0) {
+            const placeDetailsProperties = placeDetailsData.features[0].properties
+
             setPopupData({
-                coordinates, lonLat, name: locationProperties.formatted,
+                coordinates,
+                lonLat,
+                address: placeDetailsProperties.formatted ?? "",
+                categories: placeDetailsProperties.categories[0] ?? ""
             })
+
+            setIsPopupCardOpen(true)
         } else {
-            console.error(`No results found for coordinates: `, coordinates)
+            console.warn(`No results found for coordinates: `, coordinates)
         }
     }
 
@@ -199,9 +247,8 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
     }
 
     const route = async () => {
-
-        if (marker1 === null || marker2 === null) {
-            console.log("Both markers must have values.")
+        if (markers.length < 2) {
+            console.log(`At least two markers must have values.`)
             return
         }
 
@@ -213,37 +260,29 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
 
         removeRouteFeatures()
 
-        if (marker3) {
+        const reversedMarkers = markers.map((marker) => [marker.coordinates[1], marker.coordinates[0]])
 
-            const reversedMarker1 = [marker1[1], marker1[0]]
-            const reversedMarker2 = [marker2[1], marker2[0]]
-            const reversedMarker3 = [marker3[1], marker3[0]]
+        if (markers.length > 2) {
+            const promises = []
+            for (let i = 0; i < markers.length - 1; i++) {
+                promises.push(routemap([reversedMarkers[i], reversedMarkers[i + 1]], transportOption1))
+            }
 
-            const [data1, data2] = await Promise.all([
-                routemap(reversedMarker1, reversedMarker3, transportOption1),
-                routemap(reversedMarker3, reversedMarker2, transportOption2 || transportOption1)
-            ]);
-
-            drawRouteWithStop(data1, data2);
-
+            const routeDataArray = await Promise.all(promises)
+            drawRoutes(routeDataArray)
         } else {
-            const reversedMarker1 = [marker1[1], marker1[0]]
-            const reversedMarker2 = [marker2[1], marker2[0]]
-
-            const data = await routemap(reversedMarker1, reversedMarker2, transportOption1)
-
-            drawRoute(data)
+            const routeData = await routemap(reversedMarkers, transportOption1)
+            drawRoutes([routeData])
         }
+
         apiPostRoute((response, status) => console.log(response, status))
-        sessionStorage.removeItem("start")
-        sessionStorage.removeItem("startLat")
-        sessionStorage.removeItem("startLon")
-        sessionStorage.removeItem("mid")
-        sessionStorage.removeItem("midLat")
-        sessionStorage.removeItem("midLon")
-        sessionStorage.removeItem("end")
-        sessionStorage.removeItem("endLat")
-        sessionStorage.removeItem("endLon")
+
+        const sessionStorageKeys = ["start", "mid", "end"]
+        sessionStorageKeys.forEach((key) => {
+            sessionStorage.removeItem(key)
+            sessionStorage.removeItem(`${key}Lat`)
+            sessionStorage.removeItem(`${key}Lon`)
+        })
     }
 
     function removeRouteFeatures() {
@@ -258,21 +297,15 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         map.removeLayer(tooltipOverlay);
     }
 
-    // fixme -doesnt display road details for first part of road
-    function drawRouteWithStop(data1, data2) {
-        const coordinates1 = data1.features[0].geometry.coordinates[0]
-        const coordinates2 = data2.features[0].geometry.coordinates[0]
+    function drawRoutes(routeDataArray) {
 
-        // Transform the coordinates to the projection used by the map
-        const transformedCoordinates1 = coordinates1.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
-        const transformedCoordinates2 = coordinates2.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
+        const routeFeatures = routeDataArray.map((data, index) => {
+            const coordinates = data.features[0].geometry.coordinates[0]
+            const transformedCoordinates = coordinates.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'))
+            return createRouteLayerFeatures(transformedCoordinates, data, index)
+        })
 
-        const routeFeature1 = createRouteLayerFeatures(transformedCoordinates1, data1)
-        const routeFeature2 = createRouteLayerFeatures(transformedCoordinates2, data2)
-
-        const routeSource = new VectorSource({
-            features: [routeFeature1, routeFeature2],
-        });
+        const routeSource = new VectorSource({features: routeFeatures})
 
         const routeLayer = new VectorLayer({
             name: routeLayerName,
@@ -287,40 +320,10 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         if (map && routeLayer) {
             map.addLayer(routeLayer)
 
-            showRoadDetails(routeFeature1)
-            showRoadDetails(routeFeature2)
-            showTurnByTurnDetails(data1)
-            showTurnByTurnDetails(data2)
-        }
-
-        animateZoomAtLocation(routeSource)
-    }
-
-    function drawRoute(data) {
-        const coordinates = data.features[0].geometry.coordinates[0]
-
-        // Transform the coordinates to the projection used by the map
-        const transformedCoordinates = coordinates.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'));
-
-        const routeFeature = createRouteLayerFeatures(transformedCoordinates, data)
-
-        const routeSource = new VectorSource({
-            features: [routeFeature],
-        });
-
-        const routeLayer = new VectorLayer({
-            name: routeLayerName,
-            source: routeSource, style: new Style({
-                stroke: new Stroke({
-                    color: "rgba(20, 137, 255, 0.7)", width: 5,
-                }),
-            }),
-        });
-
-        if (map && routeLayer) {
-            map.addLayer(routeLayer)
-            showRoadDetails(routeFeature)
-            showTurnByTurnDetails(data)
+            routeFeatures.forEach((routeFeature, index) => {
+                showRoadDetails(routeFeature, index)
+                showTurnByTurnDetails(routeDataArray[index], index)
+            })
         }
 
         animateZoomAtLocation(routeSource)
@@ -360,19 +363,6 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
                 const mode = properties.mode;
 
                 const tooltipElement = tooltipOverlay.getElement();
-                // tooltipElement.innerHTML = `<div>
-                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">distance:</span>
-                // <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertMetersToKilometers(distance)}[km]</span>
-                //   </div>
-                //   <div>
-                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">time:</span>
-                // <span className="mat-body black-08" style="color: #333333; fontWeight: 500">${convertSecToHours(time)}</span>
-                //   </div>
-                // <div>
-                // <span class="black-06 mat-caption" style="width: 100px; display:inline-block">transport mode: </span>
-                // <span className="mat-body black-08" style="color: #009933; fontWeight: 500">${mode}</span>
-                //   </div>
-                // `;
                 tooltipElement.textContent = '';
 
                 const distanceDiv = document.createElement('div');
@@ -479,12 +469,12 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         map.on('click', function (event) {
             const clickedCoordinate = event.coordinate;
             const feature = map.forEachFeatureAtPixel(event.pixel, function (feature) {
-                return feature;
-            });
+                return feature
+            })
 
             if (feature && feature.values_.properties.instruction !== undefined) {
                 document.getElementById('instructionContainer').innerHTML = feature.values_.properties.instruction.text
-                tooltipOverlay.setPosition(clickedCoordinate);
+                tooltipOverlay.setPosition(clickedCoordinate)
             }
         });
     }
@@ -507,12 +497,14 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         setShowMessage(false)
     }
 
-    const closePopupCard = () => {
-        setPopupData(null)
-    }
-
     const trafficInfoToggle = () => {
         setTrafficInfo(!trafficInfo)
+    }
+
+    const handlePopupCard = (data) => {
+        const newMarker = {id: 2, coordinates: data.lonLat}
+        handleAddOrUpdateMarker(newMarker)
+        onMarker2NameUpdate(data.address)
     }
 
     return (<div ref={mapRef} className="map-container" id="map-container">
@@ -529,20 +521,19 @@ const OLMap = ({marker1, marker2, marker3, transportOption1, transportOption2, o
         <button className="map-button" onClick={toggleTraffic}>{trafficHint}</button>
         {trafficHint === "Hide traffic" && <button className="traffic-info-button" onClick={trafficInfoToggle}>Traffic information</button>}
         {trafficInfo && (<div className="traffic-card">
-                            <h3>Traffic information</h3>
-                            <div className="traffic-info">
-                                <p><span className="traffic-circle red"></span>Very slow or stationary traffic</p>
-                                <p><span className="traffic-circle yellow"></span>Slow-moving traffic</p>
-                                <p><span className="traffic-circle green"></span>Free-flowing traffic</p>
-                                <p><span className="traffic-circle grey"></span>Closed road</p>
-                                <p><i className="arrow"></i>Direction the traffic jam is taking place</p>
-                            </div>
-                            <button className="btn btn-primary" onClick={trafficInfoToggle}>Close</button>
-                        </div>)}
-        {popupData && (<PopupCard data={popupData} onSelect={(data) => {
-            addOrUpdateMarker(data.lonLat, "marker2")
-            onMarker2NameUpdate(data.name)
-        }} onClose={closePopupCard}/>)}
+            <h3>Traffic information</h3>
+            <div className="traffic-info">
+                <p><span className="traffic-circle red"></span>Very slow or stationary traffic</p>
+                <p><span className="traffic-circle yellow"></span>Slow-moving traffic</p>
+                <p><span className="traffic-circle green"></span>Free-flowing traffic</p>
+                <p><span className="traffic-circle grey"></span>Closed road</p>
+                <p><i className="arrow"></i>Direction the traffic jam is taking place</p>
+            </div>
+            <button className="btn btn-primary" onClick={trafficInfoToggle}>Close</button>
+        </div>)}
+        {isPopupCardOpen && popupData && (<PopupCard data={popupData} onSelect={(data) => {
+            handlePopupCard(data)
+        }} setIsPopupOpen={setIsPopupCardOpen}/>)}
         <div className="copyright-caption" id="copyright-caption">©TomTom</div>
     </div>)
 }
