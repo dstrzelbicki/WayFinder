@@ -11,14 +11,14 @@ function StopoverContainer({
     const STOPOVER_LIMIT = 3
     const [stopovers, setStopovers] = useState([])
     const [isStopoverToAdd, setIsStopoverToAdd] = useState(false)
-    const [marker2Name, setMarker2Name] = useState("")
 
     const setInitialStopoverState = () => {
-        if (stopovers.length === 0 ) {
+        if (stopovers.length === 0) {
             addNewStopover()
             setIsStopoverToAdd(false)
         } else {
-            removeAllStopovers()
+            removeStopoversMarkers()
+                .then(() => setStopovers([]))
         }
     }
 
@@ -35,7 +35,18 @@ function StopoverContainer({
     const handleRemoveStopover = (stopoverId) => {
         removeStopover(stopoverId)
         setMarkerToRemove(stopoverId)
-        updateMarker2Name("stopover test")
+    }
+
+    const removeStopoversMarkers = async () => {
+        console.log(`stopovers to remove: ${stopovers}`)
+
+        const removeMarkers = async () => {
+            for (const stopover of stopovers) {
+                await setMarkerToRemove(stopover.id)
+            }
+        };
+
+        await removeMarkers()
     }
 
     const setShowAddStopStatus = (stopoverId) => {
@@ -50,10 +61,6 @@ function StopoverContainer({
         })
     }
 
-    const removeAllStopovers = () => {
-        setStopovers([])
-    }
-
     const removeStopover = (stopoverId) => {
         setStopovers((prevStopovers) => {
             // Update IDs to be consecutive
@@ -66,19 +73,17 @@ function StopoverContainer({
     }
 
     useEffect(() => {
-        if (stopovers.length === 0) setIsStopoverToAdd(true)
+        if (stopovers.length === 0) {
+            setIsStopoverToAdd(true)
+        }
     }, [stopovers])
-
-    const updateMarker2Name = (name) => {
-        setMarker2Name(name)
-    }
 
     return (<>
             <button className="add-stop-component" onClick={setInitialStopoverState}><FontAwesomeIcon icon={isStopoverToAdd ? faPlusCircle : faMinusCircle}/></button>
             {stopovers.map((stopover) =>
                 <div className="stopover-container">
                     <div className="search-box-container">
-                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)} marker2Name={marker2Name}/>
+                        <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => handleSearch(searchTerm, stopover.id)}/>
                     </div>
                     <button className="add-stop-component" onClick={stopover.showAddStop ? () => handleAddNewStopover(stopover.id) : () => handleRemoveStopover(stopover.id)}>
                         <FontAwesomeIcon icon={stopover.showAddStop ? faPlusCircle : faMinusCircle}/>
