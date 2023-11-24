@@ -56,6 +56,7 @@
     "osrm-rest-client": "^0.1.7",
     "qrcode.react": "^3.1.0",
     "react-password-strength-bar": "^0.4.1",
-    "react-router-dom": "^6.11.1"
+    "react-router-dom": "^6.11.1",
+    "validator": "^13.11.0"
   }
 }
