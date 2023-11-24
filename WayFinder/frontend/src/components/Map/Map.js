@@ -417,7 +417,7 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         const center = getCenter(extent);
 
         view.animate({
-            center: center, zoom: 7, duration: 2000 // Animation duration in milliseconds
+            center: center, zoom: 9, duration: 500 // Animation duration in milliseconds
         });
     }
 
