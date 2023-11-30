@@ -114,6 +114,29 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
     }, [])
 
     useEffect(() => {
+        // get user location and zoom in
+        navigator.geolocation.getCurrentPosition((position) => {
+            const userLocation = [position.coords.longitude, position.coords.latitude]
+            zoomToLocation(userLocation)
+        }, (error) => {
+            console.error("Error getting user's location:", error)
+        })
+    }, [map])
+
+    // add a new function to handle zooming to a specific location
+    const zoomToLocation = (location) => {
+        const view = map.getView()
+        const zoomLevel = 15
+        const locationInMapProjection = fromLonLat(location)
+
+        view.animate({
+            center: locationInMapProjection,
+            zoom: zoomLevel,
+            duration: 2000
+        })
+    }
+
+    useEffect(() => {
         if (map && marker.coordinates.length !== 0 && !marker.isToRemove) {
             handleAddOrUpdateMarker(marker)
         }
