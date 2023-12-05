@@ -71,7 +71,11 @@ class UserRegister(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        clean_data = custom_validation(request.data)
+        try:
+            clean_data = custom_validation(request.data)
+        except ValidationError as e:
+            print(e.messages[0])
+            return Response({"message": e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)
         serializer = UserRegisterSerializer(data=clean_data)
         if serializer.is_valid():
             user = serializer.save()

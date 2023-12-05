@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [passwordMatchError, setPasswordMatchError] = useState(false);
   const [passwordComplexityError, setPasswordComplexityError] = useState(false);
   const [loginError, setLoginError] = useState(false);
+  const [existingEmailError, setExistingEmailError] = useState(false);
   const [invalidEmailFormat, setInvalidEmailFormat] = useState(false);
 
   useEffect(() => {
@@ -77,6 +78,9 @@ export default function RegisterPage() {
         setLoginError(true);
       }
     } catch (error) {
+      if (error.response.data.message == "choose another email") {
+        setExistingEmailError(true)
+      }
       setLoginError(true);
       console.log("Error registering user");
     }
@@ -140,6 +144,7 @@ export default function RegisterPage() {
               }}
               required
             />
+            {existingEmailError && <p className="error-message">User associated with this email already exists</p>}
             {passwordMatchError && <p className="error-message">Passwords do not match</p>}
             {passwordComplexityError && <p className="error-message">
                                           Password must include at least one number,
