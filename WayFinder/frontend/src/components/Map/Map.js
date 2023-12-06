@@ -16,11 +16,11 @@ import {LineString} from "ol/geom";
 import {getCenter} from "ol/extent";
 import {Attribution} from "ol/control";
 import {DEVICE_PIXEL_RATIO} from "ol/has";
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
 import {apiPostRoute} from "../../lookup/backendLookup"
 import {faTimes} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
@@ -40,14 +40,15 @@ const PopupCard = ({data, onSelect, setIsPopupOpen}) => {
     </div>)
 }
 
-const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}) => {
+const OLMap = ({marker, routePoint, onMarker2NameUpdate}) => {
     const mapRef = useRef()
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
     const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
-    const [showMessage, setShowMessage] = useState(false)
-    const [markers, setMarkers] = useState([])
     const [isPopupCardOpen, setIsPopupCardOpen] = useState(true)
+    const [showMessage, setShowMessage] = useState(false)
+
+    const [routePoints, setRoutePoints] = useState([])
 
     const TOMTOM_API_KEY = 'yaFyr0Achz6WGOGfk3r1PUIpMV7On6JE'
     const API_KEY = 'b716933a82ae4ee08317542b1ed2664c'
@@ -114,87 +115,40 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
     }, [])
 
     useEffect(() => {
-        if (map && marker.coordinates.length !== 0 && !marker.isToRemove) {
-            handleAddOrUpdateMarker(marker)
+        if (marker && map && marker.coordinates.length !== 0) {
+            addMarkerFeature()
         }
     }, [map, marker])
 
     useEffect(() => {
-        if (map && marker.isToRemove) {
-            removeMarker(marker)
+        if (marker && map && marker.isToRemove) {
+            removeMarkerFeature()
         }
     }, [map, marker])
 
-    const handleAddOrUpdateMarker = (markerToAdd) => {
-        setMarkers((prevMarkers) => {
-            const existingMarkerIndex = prevMarkers.findIndex((m) => m.id === markerToAdd.id);
-            if (existingMarkerIndex !== -1) {
-                // Replace existing marker with the new one
-                return [
-                    ...prevMarkers.slice(0, existingMarkerIndex),
-                    markerToAdd,
-                    ...prevMarkers.slice(existingMarkerIndex + 1),
-                ];
-            } else {
-                // Add the new marker to the array
-                return [...prevMarkers, markerToAdd];
-            }
-        })
-
-        // view
-        const markerFeature = createMarkerFeature(markerToAdd)
-
-        // replace existing marker or add new marker
-        const markerSource = map.getLayers().item(2).getSource()
-        const existingMarker = markerSource.getFeatureById(markerToAdd.id)
-        if (existingMarker) {
-            markerSource.removeFeature(existingMarker)
+    useEffect(() => {
+        if (map && routePoint) {
+            addOrUpdateRoutePoint()
         }
-        markerSource.addFeature(markerFeature)
-    }
+    }, [map, routePoint])
 
-    // TODO - hardcoded initial stopover state should be fixed in future - different indexing mechanism
-    const removeMarker = (markerToRemove) => {
-        setMarkers((prevMarkers) => {
-            const updatedMarkers = prevMarkers
-                .filter((marker) => marker.id !== markerToRemove.id)
-                .map((marker, index) => {
-                    if (marker.id > 2) {
-                        return {
-                            ...marker,
-                            id: index + 3,
-                        };
-                    } else {
-                        return marker
-                    }
-                })
+    useEffect(() => {
+        if (routePoint && map && routePoint.isToRemove) {
+            removeRoutePoint()
+        }
+    }, [map, routePoint])
 
-            // Update the source of the layer on your map
-            updateMapMarkers(updatedMarkers)
+    useEffect(() => {
+        if (routePoints.length !== 0)
+            console.log(`route points: ${JSON.stringify(routePoints)}`)
+    }, [routePoints])
 
-            return updatedMarkers
-        })
-    }
 
-    const updateMapMarkers = (updatedMarkers) => {
-        const markerSource = map.getLayers().item(2).getSource()
-
-        // Clear the existing features in the source
-        markerSource.clear()
-
-        // Add the updated markers to the source
-        console.log(`updated: ${JSON.stringify(updatedMarkers)}`)
-        updatedMarkers.forEach((marker) => {
-            markerSource.addFeature(createMarkerFeature(marker))
-        })
-    }
-
-    const createMarkerFeature = (marker) => {
+    const addMarkerFeature = () => {
+        // view
         const transformedCoordinates = fromLonLat(marker.coordinates)
         const markerFeature = new Feature({
-            geometry: new Point(transformedCoordinates),
-            id: marker.id,
-            // Add other properties if needed
+            geometry: new Point(transformedCoordinates)
         })
 
         const iconStyle = new Style({
@@ -202,78 +156,70 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         })
         markerFeature.setStyle(iconStyle)
 
-        return markerFeature
+        const markerSource = map.getLayers().item(2).getSource()
+        markerSource.addFeature(markerFeature)
     }
 
-    const handleMapClick = async (event) => {
-        const coordinates = event.coordinate
-        const lonLat = toLonLat(coordinates)
+    const removeMarkerFeature = () => {
+        const markerSource = map.getLayers().item(2).getSource()
 
-        const placeDetailsData = await placeDetails(lonLat)
+        const coordinatesToRemove = fromLonLat(marker.coordinates)
 
-        if (placeDetailsData.features.length > 0) {
-            const placeDetailsProperties = placeDetailsData.features[0].properties
+        markerSource.getFeatures().forEach((feature) => {
+            const featureCoordinates = feature.getGeometry().getCoordinates()
+            if (coordinatesToRemove[0] === featureCoordinates[0] && coordinatesToRemove[1] === featureCoordinates[1]) {
+                markerSource.removeFeature(feature)
+            }
+        })
+    }
 
-            setPopupData({
-                coordinates,
-                lonLat,
-                address: placeDetailsProperties.formatted ?? "",
-                categories: placeDetailsProperties.categories[0] ?? ""
+    const addOrUpdateRoutePoint = () => {
+        setRoutePoints((prevRoutePoints) => {
+            const existingMarkerIndex = prevRoutePoints.findIndex((p) => {
+                const [lat, lon] = p.coordinates
+                const [newLat, newLon] = routePoint.coordinates
+                return lat === newLat && lon === newLon
             })
 
-            setIsPopupCardOpen(true)
-        } else {
-            console.warn(`No results found for coordinates: `, coordinates)
-        }
+            if (existingMarkerIndex !== -1) {
+                // Replace existing marker with the new one
+                return [
+                    ...prevRoutePoints.slice(0, existingMarkerIndex),
+                    routePoint,
+                    ...prevRoutePoints.slice(existingMarkerIndex + 1),
+                ]
+            } else {
+                // Add the new marker to the array
+                return [...prevRoutePoints, routePoint]
+            }
+        })
     }
 
-    const toggleTraffic = () => {
-        if (trafficLayerGroup) {
-            const layers = trafficLayerGroup.getLayers().getArray()
-            const visible = !layers[0].getVisible()
-            layers.forEach((layer) => layer.setVisible(visible))
-
-            trafficHint === "Show traffic" ?
-                setTrafficHint("Hide traffic")
-                : setTrafficHint("Show traffic")
-
-            const copyrightCaption = document.getElementById("copyright-caption")
-            if (visible) {
-                copyrightCaption.style.display = "block"
-            } else {
-                copyrightCaption.style.display = "none"
-            }
-        }
+    const removeRoutePoint = () => {
+        setRoutePoints((prevRoutePoints) => {
+            return prevRoutePoints.filter((point) => point !== routePoint)
+        })
     }
 
     const route = async () => {
-        if (markers.length < 2) {
-            console.log(`At least two markers must have values.`)
+        if (routePoints.length < 2) {
+            handleShowMessage()
             return
-        }
-
-        if (transportOption1 === '') {
-            console.log("Transport need to be selected.");
-            handleShowMessage();
-            return;
         }
 
         removeRouteFeatures()
 
-        const reversedMarkers = markers.map((marker) => [marker.coordinates[1], marker.coordinates[0]])
+        const reversedCoordinates = routePoints.map((point) => [point.coordinates[1], point.coordinates[0]])
 
-        if (markers.length > 2) {
-            const promises = []
-            for (let i = 0; i < markers.length - 1; i++) {
-                promises.push(routemap([reversedMarkers[i], reversedMarkers[i + 1]], transportOption1))
-            }
+        const promises = []
+        routePoints.forEach((point, index) => {
+            console.log(`transport option: ${point.transportOption}`)
+            if (index + 1 < reversedCoordinates.length)
+                promises.push(routemap([reversedCoordinates[index], reversedCoordinates[index + 1]], point.transportOption))
+        })
 
-            const routeDataArray = await Promise.all(promises)
-            drawRoutes(routeDataArray)
-        } else {
-            const routeData = await routemap(reversedMarkers, transportOption1)
-            drawRoutes([routeData])
-        }
+        const routeData = await Promise.all(promises)
+        drawRoutes(routeData)
 
         apiPostRoute((response, status) => console.log(response, status))
 
@@ -479,6 +425,47 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         });
     }
 
+    const handleMapClick = async (event) => {
+        const coordinates = event.coordinate
+        const lonLat = toLonLat(coordinates)
+
+        const placeDetailsData = await placeDetails(lonLat)
+
+        if (placeDetailsData.features.length > 0) {
+            const placeDetailsProperties = placeDetailsData.features[0].properties
+
+            setPopupData({
+                coordinates,
+                lonLat,
+                address: placeDetailsProperties.formatted ?? "",
+                categories: placeDetailsProperties.categories[0] ?? ""
+            })
+
+            setIsPopupCardOpen(true)
+        } else {
+            console.warn(`No results found for coordinates: `, coordinates)
+        }
+    }
+
+    const toggleTraffic = () => {
+        if (trafficLayerGroup) {
+            const layers = trafficLayerGroup.getLayers().getArray()
+            const visible = !layers[0].getVisible()
+            layers.forEach((layer) => layer.setVisible(visible))
+
+            trafficHint === "Show traffic" ?
+                setTrafficHint("Hide traffic")
+                : setTrafficHint("Show traffic")
+
+            const copyrightCaption = document.getElementById("copyright-caption")
+            if (visible) {
+                copyrightCaption.style.display = "block"
+            } else {
+                copyrightCaption.style.display = "none"
+            }
+        }
+    }
+
     function convertSecToHours(seconds) {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
@@ -489,6 +476,10 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         return meters / 1000
     }
 
+    const trafficInfoToggle = () => {
+        setTrafficInfo(!trafficInfo)
+    }
+
     const handleShowMessage = () => {
         setShowMessage(true)
     }
@@ -497,13 +488,10 @@ const OLMap = ({marker, transportOption1, transportOption2, onMarker2NameUpdate}
         setShowMessage(false)
     }
 
-    const trafficInfoToggle = () => {
-        setTrafficInfo(!trafficInfo)
-    }
-
+    // fixme - przeniesc do Homepage prawdpodopobnie
     const handlePopupCard = (data) => {
-        const newMarker = {id: 2, coordinates: data.lonLat}
-        handleAddOrUpdateMarker(newMarker)
+        const marker = {id: 2, coordinates: data.lonLat}
+        addMarkerFeature(marker)
         onMarker2NameUpdate(data.address)
     }
 

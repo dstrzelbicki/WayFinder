@@ -5,10 +5,9 @@
 
 .search-location-container,
 .search-history-container {
-    display: flex;
     flex-direction: column;
-    align-items: flex-start;
     position: absolute;
+    padding: 40px;
     margin-left: 100px;
 }
 

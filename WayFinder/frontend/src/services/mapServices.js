@@ -64,14 +64,26 @@ export const autocomplete = async (searchTerm) => {
 }
 
 export const routemap = async (waypoints, transportOption) => {
-    let mode
 
-    if (transportOption === 'Car') {
-        mode = "drive"
-    } else mode = "bicycle"
+    function getTravelMode(transportOption) {
+        switch (transportOption) {
+            case 'Car':
+                return 'drive'
+            case 'Bicycle':
+                return 'bicycle'
+            case 'Truck':
+                return 'truck'
+            case 'Motorcycle':
+                return 'motorcycle'
+            case 'Walk':
+                return 'walk'
+            default:
+                return 'unknown'
+        }
+    }
 
     const waypointsString = waypoints.map((waypoint) => waypoint.join(',')).join('|');
-    const url = `${geoApifyBaseUrl}/v1/routing?waypoints=${encodeURIComponent(waypointsString)}&mode=${mode}&details=instruction_details,route_details,elevation&apiKey=${API_KEY}`;
+    const url = `${geoApifyBaseUrl}/v1/routing?waypoints=${encodeURIComponent(waypointsString)}&mode=${getTravelMode(transportOption)}&details=instruction_details,route_details,elevation&apiKey=${API_KEY}`;
 
     const requestOptions = {
         method: 'GET',
