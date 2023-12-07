@@ -94,10 +94,6 @@ function StopoverContainer({handleSearch, setMarkerToRemove}) {
     }, [stopovers])
 
     useEffect(() => {
-        console.log(`stopovers state: ${JSON.stringify(stopovers)}`)
-    }, [stopovers])
-
-    useEffect(() => {
         setStopoverSearchTerm(stopovers.find((stopover) => stopover.id === updatedStopoverId)?.searchTerm || '')
     }, [updatedStopoverId])
 

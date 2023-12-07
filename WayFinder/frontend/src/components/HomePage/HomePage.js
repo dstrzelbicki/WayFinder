@@ -18,7 +18,7 @@ const HomePage = () => {
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
     const [showSearchHistory, setShowSearchHistory] = useState(false)
     const [searchHistory, setSearchHistory] = useState([])
-    const [routePoint, setRoutePoint] = useState(null)
+    const [routePoints, setRoutePoints] = useState([])
 
     // internal
     const [originRoutePoints, setOriginRoutePoints] = useState(new Map())
@@ -49,8 +49,9 @@ const HomePage = () => {
             const routeCoordinates = [parseFloat(lon), parseFloat(lat)]
             let newMarker = createMarker(routeCoordinates)
             setMarker(newMarker)
-            setMarkersToRemove(markersToRemove.set(keyPrefix, newMarker))
             console.log(`Marker:`, searchTerm, "Coordinates: ", lat, lon)
+
+            setMarkersToRemove(markersToRemove.set(keyPrefix, newMarker))
 
             if (!isStopover) {
                 updateOriginRoutePointWithCoordinates(keyPrefix, routeCoordinates)
@@ -79,8 +80,7 @@ const HomePage = () => {
         setOriginRoutePoints((prevRoutePoints) => {
             const prevValue = prevRoutePoints.get(keyPrefix)
             const updatedValue = {
-                ...prevValue,
-                coordinates: coordinates
+                ...prevValue, coordinates: coordinates
             }
 
             const newRoutePoints = new Map(prevRoutePoints)
@@ -106,7 +106,7 @@ const HomePage = () => {
             updatedRoutePoints.delete(keyPrefix)
             setRoutePointsToRemove(updatedRoutePoints)
 
-            setRoutePoint(createRoutePoint(existingRoutePoint.coordinates, existingRoutePoint.transportOption, true))
+            setRoutePoints((prevRoutePoints) => [...prevRoutePoints, createRoutePoint(existingRoutePoint.coordinates, existingRoutePoint.transportOption, true)])
         }
     }
 
@@ -137,11 +137,17 @@ const HomePage = () => {
     }
 
     useEffect(() => {
-        originRoutePoints.forEach((originRoutePoint) => {
+        const newRoutePoints = []
+
+        originRoutePoints.forEach((originRoutePoint, key) => {
             if (originRoutePoint.coordinates && originRoutePoint.transportOption) {
-                setRoutePoint(createRoutePoint(originRoutePoint.coordinates, originRoutePoint.transportOption))
+                let newRoutePoint = createRoutePoint(originRoutePoint.coordinates, originRoutePoint.transportOption)
+                setRoutePointsToRemove(routePointsToRemove.set(key, newRoutePoint))
+                newRoutePoints.push(newRoutePoint)
             }
         })
+
+        setRoutePoints((prevRoutePoints) => [...prevRoutePoints, ...newRoutePoints])
     }, [originRoutePoints])
 
     useEffect(() => {
@@ -198,7 +204,7 @@ const HomePage = () => {
                 }} isStopoverOption={false}/>
             </div>)}
         </div>
-        <OLMap marker={marker} routePoint={routePoint} onMarker2NameUpdate={updateMarker2Name}/>
+        <OLMap marker={marker} newRoutePoints={routePoints} onMarker2NameUpdate={updateMarker2Name}/>
     </div>)
 }
 

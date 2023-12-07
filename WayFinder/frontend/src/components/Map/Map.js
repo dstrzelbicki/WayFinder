@@ -40,7 +40,7 @@ const PopupCard = ({data, onSelect, setIsPopupOpen}) => {
     </div>)
 }
 
-const OLMap = ({marker, routePoint, onMarker2NameUpdate}) => {
+const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
     const mapRef = useRef()
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
@@ -127,16 +127,11 @@ const OLMap = ({marker, routePoint, onMarker2NameUpdate}) => {
     }, [map, marker])
 
     useEffect(() => {
-        if (map && routePoint) {
-            addOrUpdateRoutePoint()
+        if (map && newRoutePoints.length > 0) {
+            addOrUpdateRoutePoints()
+            removeRoutePoints()
         }
-    }, [map, routePoint])
-
-    useEffect(() => {
-        if (routePoint && map && routePoint.isToRemove) {
-            removeRoutePoint()
-        }
-    }, [map, routePoint])
+    }, [map, newRoutePoints])
 
     useEffect(() => {
         if (routePoints.length !== 0)
@@ -173,31 +168,33 @@ const OLMap = ({marker, routePoint, onMarker2NameUpdate}) => {
         })
     }
 
-    const addOrUpdateRoutePoint = () => {
+    const addOrUpdateRoutePoints = () => {
         setRoutePoints((prevRoutePoints) => {
-            const existingMarkerIndex = prevRoutePoints.findIndex((p) => {
-                const [lat, lon] = p.coordinates
-                const [newLat, newLon] = routePoint.coordinates
-                return lat === newLat && lon === newLon
+            const updatedRoutePoints = [...prevRoutePoints]
+
+            newRoutePoints.forEach((point) => {
+                const existingIndex = updatedRoutePoints.findIndex((p) => {
+                    const [lat, lon] = p.coordinates
+                    const [newLat, newLon] = point.coordinates
+                    return lat === newLat && lon === newLon
+                })
+
+                if (existingIndex !== -1) {
+                    // Replace existing route point with the new one
+                    updatedRoutePoints[existingIndex] = point
+                } else {
+                    // Add the new route point to the array
+                    updatedRoutePoints.push(point)
+                }
             })
 
-            if (existingMarkerIndex !== -1) {
-                // Replace existing marker with the new one
-                return [
-                    ...prevRoutePoints.slice(0, existingMarkerIndex),
-                    routePoint,
-                    ...prevRoutePoints.slice(existingMarkerIndex + 1),
-                ]
-            } else {
-                // Add the new marker to the array
-                return [...prevRoutePoints, routePoint]
-            }
+            return updatedRoutePoints
         })
     }
 
-    const removeRoutePoint = () => {
+    const removeRoutePoints = () => {
         setRoutePoints((prevRoutePoints) => {
-            return prevRoutePoints.filter((point) => point !== routePoint)
+            return prevRoutePoints.filter((point) => !point.isToRemove)
         })
     }
 
