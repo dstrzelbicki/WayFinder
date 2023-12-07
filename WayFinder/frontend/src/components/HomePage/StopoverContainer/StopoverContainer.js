@@ -17,12 +17,12 @@ function StopoverContainer({handleSearch, setMapFeaturesToRemove, updateOriginTr
             addNewStopover()
             setIsStopoverToAdd(false)
         } else {
-            removeStopoversMarkers()
+            removeAllStopovers()
         }
     }
 
-    const handleAddNewStopover = (stopoverId) => {
-        setShowAddStopStatus(stopoverId)
+    const handleAddNewStopover = (stopover) => {
+        setShowAddStopStatus(stopover.id)
         if (stopovers.length < STOPOVER_LIMIT) {
             const shouldShowAddStop = stopovers.length < STOPOVER_LIMIT - 1
             addNewStopover(shouldShowAddStop)
@@ -37,9 +37,9 @@ function StopoverContainer({handleSearch, setMapFeaturesToRemove, updateOriginTr
         if (stopover.searchTerm !== '') setMapFeaturesToRemove(stopover)
     }
 
-    const removeStopoversMarkers = () => {
+    const removeAllStopovers = () => {
+        setStopovers([])
         for (const stopover of stopovers) {
-            removeStopover(stopover.id)
             if (stopover.searchTerm !== '') setMapFeaturesToRemove(stopover)
         }
     }
