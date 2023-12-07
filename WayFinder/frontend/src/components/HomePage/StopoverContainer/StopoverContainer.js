@@ -4,7 +4,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import TransportOptions from "../TransportOptions/TransportOptions";
 import {faMinusCircle, faPlusCircle, faRightLeft} from "@fortawesome/free-solid-svg-icons";
 
-function StopoverContainer({handleSearch, setMarkerToRemove}) {
+function StopoverContainer({handleSearch, setMapFeaturesToRemove, updateOriginTransportOption}) {
 
     const STOPOVER_LIMIT = 3
     const [stopovers, setStopovers] = useState([])
@@ -34,13 +34,13 @@ function StopoverContainer({handleSearch, setMarkerToRemove}) {
     const handleRemoveStopover = (stopover) => {
         removeStopover(stopover.id)
         setUpdatedStopoverId(stopover.id)
-        if (stopover.searchTerm !== '') setMarkerToRemove(stopover.searchTerm)
+        if (stopover.searchTerm !== '') setMapFeaturesToRemove(stopover)
     }
 
     const removeStopoversMarkers = () => {
         for (const stopover of stopovers) {
             removeStopover(stopover.id)
-            if (stopover.searchTerm !== '') setMarkerToRemove(stopover.searchTerm)
+            if (stopover.searchTerm !== '') setMapFeaturesToRemove(stopover)
         }
     }
 
@@ -85,6 +85,7 @@ function StopoverContainer({handleSearch, setMarkerToRemove}) {
         setStopovers((prevStopovers) => {
             return prevStopovers.map((stopover) => stopover.id === stopoverId ? {...stopover, transportOption: option} : stopover)
         })
+        updateOriginTransportOption(stopoverId, option)
     }
 
     useEffect(() => {

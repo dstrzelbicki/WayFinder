@@ -37,7 +37,7 @@ const HomePage = () => {
         setIsSidebarNotCollapsed(!isSidebarNotCollapsed)
     }
 
-    const handleSearch = async (searchTerm, keyPrefix, isStopover = false) => {
+    const handleSearch = async (searchTerm, keyPrefix) => {
         removeOldMarkerWithTheSameKey(keyPrefix)
         removeOldRoutePointWithTheSameKey(keyPrefix)
 
@@ -53,12 +53,10 @@ const HomePage = () => {
 
             setMarkersToRemove(markersToRemove.set(keyPrefix, newMarker))
 
-            if (!isStopover) {
-                updateOriginRoutePointWithCoordinates(keyPrefix, routeCoordinates)
-                sessionStorage.setItem(keyPrefix, searchTerm)
-                sessionStorage.setItem(`${keyPrefix}Lat`, lat)
-                sessionStorage.setItem(`${keyPrefix}Lon`, lon)
-            }
+            updateOriginRoutePointWithCoordinates(keyPrefix, routeCoordinates)
+            sessionStorage.setItem(keyPrefix, searchTerm)
+            sessionStorage.setItem(`${keyPrefix}Lat`, lat)
+            sessionStorage.setItem(`${keyPrefix}Lon`, lon)
 
             // save searched location to db
             let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || []
@@ -109,12 +107,13 @@ const HomePage = () => {
         }
     }
 
-    const removeMarkerBySearchTerm = async (searchTerm) => {
-        const data = await geocode(searchTerm)
+    const setStopoverMapFeaturesToRemove = async (stopover) => {
+        const data = await geocode(stopover.searchTerm)
         if (data && data.results.length > 0) {
             const {lat, lon} = data.results[0]
             const coordinates = [parseFloat(lon), parseFloat(lat)]
             setMarker(createMarker(coordinates, true))
+            setRoutePoints((prevRoutePoints) => [...prevRoutePoints, createRoutePoint(stopover.coordinates, stopover.transportOption, true)])
         }
     }
 
@@ -190,8 +189,9 @@ const HomePage = () => {
                 <SearchBox placeholder="Your location" onSearch={(searchTerm) => handleSearch(searchTerm, "start")}/>
 
                 <StopoverContainer
-                    handleSearch={(searchTerm, keyPrefix) => handleSearch(searchTerm, keyPrefix, true)}
-                    setMarkerToRemove={(searchTerm) => removeMarkerBySearchTerm(searchTerm)}
+                    handleSearch={(searchTerm, keyPrefix) => handleSearch(searchTerm, keyPrefix)}
+                    setMapFeaturesToRemove={(stopover) => setStopoverMapFeaturesToRemove(stopover)}
+                    updateOriginTransportOption={(keyPrefix, option) => updateOriginTransportOption(keyPrefix, option)}
                 />
 
                 <SearchBox placeholder={"Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, "end")} marker2Name={marker2Name}/>
