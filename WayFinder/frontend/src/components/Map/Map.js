@@ -123,6 +123,7 @@ const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
     useEffect(() => {
         if (marker && map && marker.isToRemove) {
             removeMarkerFeature()
+            removeRouteFeatures()
         }
     }, [map, marker])
 
