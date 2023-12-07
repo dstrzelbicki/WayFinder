@@ -55,11 +55,10 @@ const HomePage = () => {
 
             if (!isStopover) {
                 updateOriginRoutePointWithCoordinates(keyPrefix, routeCoordinates)
+                sessionStorage.setItem(keyPrefix, searchTerm)
+                sessionStorage.setItem(`${keyPrefix}Lat`, lat)
+                sessionStorage.setItem(`${keyPrefix}Lon`, lon)
             }
-
-            sessionStorage.setItem(keyPrefix, searchTerm)
-            sessionStorage.setItem(`${keyPrefix}Lat`, lat)
-            sessionStorage.setItem(`${keyPrefix}Lon`, lon)
 
             // save searched location to db
             let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || []
@@ -191,7 +190,7 @@ const HomePage = () => {
                 <SearchBox placeholder="Your location" onSearch={(searchTerm) => handleSearch(searchTerm, "start")}/>
 
                 <StopoverContainer
-                    handleSearch={(searchTerm) => handleSearch(searchTerm, "mid", true)}
+                    handleSearch={(searchTerm, keyPrefix) => handleSearch(searchTerm, keyPrefix, true)}
                     setMarkerToRemove={(searchTerm) => removeMarkerBySearchTerm(searchTerm)}
                 />
 

@@ -103,7 +103,7 @@ function StopoverContainer({handleSearch, setMarkerToRemove}) {
                 <div>
                     <div className="search-box-container">
                         <SearchBox placeholder="Search stopover" onSearch={(searchTerm) => {
-                            handleSearch(searchTerm)
+                            handleSearch(searchTerm, stopover.id)
                             updateStopoverWithSearchTerm(searchTerm, stopover.id)
                         }} marker2Name={stopoverSearchTerm}/>
                     </div>
