@@ -205,6 +205,9 @@ class SearchedLocationView(APIView):
 
     def get(self, request):
         locations = SearchedLocation.objects.filter(user=request.user)
+        if not locations:
+            return Response({"message": "No locations found"},
+                            status=status.HTTP_404_NOT_FOUND)
         serializer = SearchedLocationSerializer(locations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
