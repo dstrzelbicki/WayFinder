@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Checkbox, FormControlLabel, FormGroup, Typography} from "@material-ui/core";
 import {DirectionsBike, DirectionsWalk, DriveEta, LocalShipping, Motorcycle} from "@material-ui/icons";
 import {Box, Icon, IconButton} from "@mui/material";
@@ -19,11 +19,20 @@ function TransportOptions(props) {
     const [originSelectedOption, setOriginSelectedOption] = useState('')
 
     const handleOptionChange = (option) => {
-        props.handleOptionChange(option)
-        if (props.isStopoverOption)
+        if (props.isStopoverOption) {
             setSelectedOption(option)
-        else setOriginSelectedOption((prevState) => prevState === option ? '' : option)
+        } else {
+            setOriginSelectedOption((prevState) => prevState === option ? '' : option)
+        }
     }
+
+    useEffect(() => {
+        props.handleOptionChange(originSelectedOption)
+    }, [originSelectedOption])
+
+    useEffect(() => {
+        props.handleOptionChange(selectedOption)
+    }, [selectedOption])
 
     return (props.isStopoverOption ? (
             <div className="stopover-container">
@@ -47,23 +56,23 @@ function TransportOptions(props) {
             </div>
         ) : (<FormGroup>
                 {transportOptions.map((option) => (
-                        <FormControlLabel
-                            control={
-                                <Checkbox size='small'
-                                          checked={originSelectedOption === option.value}
-                                          onChange={() => handleOptionChange(option.value)}
-                                          color="default"
-                                          disabled={originSelectedOption && originSelectedOption !== option.value}
-                                />
-                            }
-                            label={
-                                <Box display="flex"
-                                     alignItems="center">
-                                    <Icon style={{blockSize: 40}}>{option.icon}</Icon>
-                                    <Typography style={{fontSize: 9, color: '#424242', marginLeft: 10}}>{option.label}</Typography>
-                                </Box>
-                            }
-                        />
+                    <FormControlLabel
+                        control={
+                            <Checkbox size='small'
+                                      checked={originSelectedOption === option.value}
+                                      onChange={() => handleOptionChange(option.value)}
+                                      color="default"
+                                      disabled={originSelectedOption && originSelectedOption !== option.value}
+                            />
+                        }
+                        label={
+                            <Box display="flex"
+                                 alignItems="center">
+                                <Icon style={{blockSize: 40}}>{option.icon}</Icon>
+                                <Typography style={{fontSize: 9, color: '#424242', marginLeft: 10}}>{option.label}</Typography>
+                            </Box>
+                        }
+                    />
                 ))}
                 <Typography variant="h2">Selected Option: {originSelectedOption}</Typography>
             </FormGroup>

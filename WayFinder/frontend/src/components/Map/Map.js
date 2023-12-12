@@ -32,7 +32,8 @@ const PopupCard = ({data, onSelect, setIsPopupOpen}) => {
     }
 
     return (<div className="popup-card">
-        <button className="close-button" onClick={() => setIsPopupOpen(false)}><FontAwesomeIcon icon={faTimes}/></button>
+        <button className="close-button" onClick={() => setIsPopupOpen(false)}><FontAwesomeIcon icon={faTimes}/>
+        </button>
         <h4>{data.address}</h4>
         <p>Categories: {data.categories}</p>
         <p>Coordinates: {data.lonLat.join(", ")}</p>
@@ -76,13 +77,17 @@ const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
         // create TomTom traffic flow and incidents layers
         const trafficFlowLayer = new TileLayer({
             source: new XYZ({
-                url: `https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`, maxZoom: 22, tileSize: 256,
+                url: `https://api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`,
+                maxZoom: 22,
+                tileSize: 256,
             }), visible: false,
         })
 
         const trafficIncidentsLayer = new TileLayer({
             source: new XYZ({
-                url: `https://api.tomtom.com/traffic/map/4/tile/incidents/s3/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`, maxZoom: 22, tileSize: 256,
+                url: `https://api.tomtom.com/traffic/map/4/tile/incidents/s3/{z}/{x}/{y}.png?key=${TOMTOM_API_KEY}`,
+                maxZoom: 22,
+                tileSize: 256,
             }), visible: false,
         })
 
@@ -128,16 +133,8 @@ const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
     }, [map, marker])
 
     useEffect(() => {
-        if (map && newRoutePoints.length > 0) {
-            addOrUpdateRoutePoints()
-            removeRoutePoints()
-        }
-    }, [map, newRoutePoints])
-
-    useEffect(() => {
-        if (routePoints.length !== 0)
-            console.log(`route points: ${JSON.stringify(routePoints)}`)
-    }, [routePoints])
+        console.log(`new route points: ${JSON.stringify(newRoutePoints)}`)
+    }, [newRoutePoints])
 
 
     const addMarkerFeature = () => {
@@ -169,49 +166,18 @@ const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
         })
     }
 
-    const addOrUpdateRoutePoints = () => {
-        setRoutePoints((prevRoutePoints) => {
-            const updatedRoutePoints = [...prevRoutePoints]
-
-            newRoutePoints.forEach((point) => {
-                const existingIndex = updatedRoutePoints.findIndex((p) => {
-                    const [lat, lon] = p.coordinates
-                    const [newLat, newLon] = point.coordinates
-                    return lat === newLat && lon === newLon
-                })
-
-                if (existingIndex !== -1) {
-                    // Replace existing route point with the new one
-                    updatedRoutePoints[existingIndex] = point
-                } else {
-                    // Add the new route point to the array
-                    updatedRoutePoints.push(point)
-                }
-            })
-
-            return updatedRoutePoints
-        })
-    }
-
-    const removeRoutePoints = () => {
-        setRoutePoints((prevRoutePoints) => {
-            return prevRoutePoints.filter((point) => !point.isToRemove)
-        })
-    }
-
     const route = async () => {
-        if (routePoints.length < 2) {
+        if (newRoutePoints.length < 2) {
             handleShowMessage()
             return
         }
 
         removeRouteFeatures()
 
-        const reversedCoordinates = routePoints.map((point) => [point.coordinates[1], point.coordinates[0]])
+        const reversedCoordinates = newRoutePoints.map((point) => [point.coordinates[1], point.coordinates[0]])
 
         const promises = []
-        routePoints.forEach((point, index) => {
-            console.log(`transport option: ${point.transportOption}`)
+        newRoutePoints.forEach((point, index) => {
             if (index + 1 < reversedCoordinates.length)
                 promises.push(routemap([reversedCoordinates[index], reversedCoordinates[index + 1]], point.transportOption))
         })
@@ -505,7 +471,8 @@ const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
         <div id="instructionContainer" className="instructionContainer"></div>
         <button className="route-button" onClick={route}>Trace route</button>
         <button className="map-button" onClick={toggleTraffic}>{trafficHint}</button>
-        {trafficHint === "Hide traffic" && <button className="traffic-info-button" onClick={trafficInfoToggle}>Traffic information</button>}
+        {trafficHint === "Hide traffic" &&
+            <button className="traffic-info-button" onClick={trafficInfoToggle}>Traffic information</button>}
         {trafficInfo && (<div className="traffic-card">
             <h3>Traffic information</h3>
             <div className="traffic-info">
