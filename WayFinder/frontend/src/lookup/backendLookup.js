@@ -1,8 +1,8 @@
 import axios from 'axios'
 
-function backendLookup(method, endpoint, callback, data) {
+const requestToBackend = (method, endpoint, callback, data) => {
   const url = `${process.env.REACT_APP_BASE_URL}/api${endpoint}`
-  const accessToken = sessionStorage.getItem("accessToken")
+  const accessToken = sessionStorage.getItem('accessToken')
 
   const headers = {
     'Content-Type': 'application/json',
@@ -27,13 +27,9 @@ function backendLookup(method, endpoint, callback, data) {
       const status = error.response.status
       const data = error.response.data
 
-      if (status === 403 && data.detail === "Authentication credentials were not provided.") {
-        if (window.location.href.indexOf("login") === -1) {
-          window.location.href = "/login?showLoginRequired=true"
-        }
-      } else if (status === 401) {
+      if (status === 401) {
         // handle expired access token
-        const refreshToken = sessionStorage.getItem("refreshToken")
+        const refreshToken = sessionStorage.getItem('refreshToken')
         if (refreshToken) {
           refreshAccessToken(refreshToken, method, endpoint, callback, data)
         } else {
@@ -43,8 +39,7 @@ function backendLookup(method, endpoint, callback, data) {
         callback(data, status)
       }
     } else {
-      console.log(error)
-      callback({ "message": "An error occurred." }, 400)
+      callback({'message': 'An error occurred'}, error.response.status)
     }
   })
 }
@@ -54,7 +49,7 @@ function refreshAccessToken(refreshToken, originalMethod, originalEndpoint, orig
   fetch(refreshUrl, {
     method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ refresh: refreshToken })
   })
@@ -65,12 +60,12 @@ function refreshAccessToken(refreshToken, originalMethod, originalEndpoint, orig
     throw new Error('Failed to refresh access token')
   })
   .then(data => {
-    sessionStorage.setItem("accessToken", data.access)
+    sessionStorage.setItem('refreshToken', data.refresh)
+    sessionStorage.setItem('accessToken', data.access)
     // retry the original request with the new access token
-    backendLookup(originalMethod, originalEndpoint, originalCallback, originalData)
+    requestToBackend(originalMethod, originalEndpoint, originalCallback, originalData)
   })
-  .catch(error => {
-    console.error(error)
+  .catch(() => {
     redirectToLogin()
   })
 }
@@ -88,19 +83,19 @@ export function apiProfileDataChange(user, callback) {
     // first_name: user.first_name,
     // last_name: user.last_name
   }
-  backendLookup("PUT", "/user", callback, data)
+  requestToBackend("PUT", "/user", callback, data)
 }
 
 export function apiPasswordChange(passwords, callback) {
-  backendLookup("PUT", "/change-password", callback, passwords)
+  requestToBackend("PUT", "/change-password", callback, passwords)
 }
 
 export function apiUserRoutes(callback) {
-  backendLookup("GET", "/route", callback)
+  requestToBackend("GET", "/route", callback)
 }
 
 export function apiProfileData(callback) {
-  backendLookup("GET", "/user", callback)
+  requestToBackend("GET", "/user", callback)
 }
 
 export function apiPostRoute(callback) {
@@ -115,11 +110,11 @@ export function apiPostRoute(callback) {
     duration: 0
   }
 
-  backendLookup("POST", "/route", callback, routeData)
+  requestToBackend("POST", "/route", callback, routeData)
 }
 
 export function apiSetupTOTP(callback) {
-  backendLookup("GET", "/setup-totp/", callback)
+  requestToBackend("GET", "/setup-totp/", callback)
 }
 
 export function apiVerifyTOTP(otp, action, callback) {
@@ -127,11 +122,11 @@ export function apiVerifyTOTP(otp, action, callback) {
     otp: otp,
     action: action
   }
-  backendLookup("POST", "/verify-totp/", callback, data)
+  requestToBackend("POST", "/verify-totp/", callback, data)
 }
 
 export function apiDisableTOTP(callback) {
-  backendLookup("POST", "/disable-totp/", callback)
+  requestToBackend("POST", "/disable-totp/", callback)
 }
 
 export function apiVerifyRecoveryCode(recoveryCode, email, callback) {
@@ -139,22 +134,22 @@ export function apiVerifyRecoveryCode(recoveryCode, email, callback) {
     recovery_code: recoveryCode,
     email: email
   }
-  backendLookup("POST", "/use-recovery-code/", callback, data)
+  requestToBackend("POST", "/use-recovery-code/", callback, data)
 }
 
 export function apiPostSearchedLocation(data, callback) {
-  backendLookup("POST", "/location", callback, data)
+  requestToBackend("POST", "/location", callback, data)
 }
 
 export function apiGetSearchedLocations(callback) {
-  backendLookup("GET", "/location", callback)
+  requestToBackend("GET", "/location", callback)
 }
 
 export function apiForgottenPassword(email, callback) {
   const data = {
     email: email
   }
-  backendLookup("POST", "/forgotten-password", callback, data)
+  requestToBackend("POST", "/forgotten-password", callback, data)
 }
 
 export function apiPasswordReset(uidb64, token, password, callback) {
@@ -163,5 +158,5 @@ export function apiPasswordReset(uidb64, token, password, callback) {
     token: token,
     password: password
   }
-  backendLookup("POST", "/password-reset", callback, data)
+  requestToBackend("POST", "/password-reset", callback, data)
 }

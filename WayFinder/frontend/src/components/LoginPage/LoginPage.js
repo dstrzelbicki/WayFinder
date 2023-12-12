@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [otp, setOtp] = useState("")
   const [requiresOtp, setRequiresOtp] = useState(false)
 
-  function submitLogin(e) {
+  const submitLogin = (e) => {
     e.preventDefault()
 
     if (!validator.isEmail(email)) {
@@ -43,9 +43,7 @@ export default function LoginPage() {
             setRequiresOtp(true)
           } else {
             // Login successful
-            const token = res.data.token
             sessionStorage.setItem("isLoggedIn", "true")
-            // sessionStorage.setItem("token", token)
             sessionStorage.setItem("accessToken", res.data.access)
             sessionStorage.setItem("refreshToken", res.data.refresh)
             setLoggedIn(true)
