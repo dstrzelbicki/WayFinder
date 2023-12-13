@@ -19,6 +19,7 @@ django-redis = "*"
 django-otp = "*"
 pyotp = "*"
 djangorestframework-simplejwt = "*"
+django-csp = "*"
 
 [dev-packages]
 

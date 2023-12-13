@@ -71,7 +71,11 @@ class UserRegister(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        clean_data = custom_validation(request.data)
+        try:
+            clean_data = custom_validation(request.data)
+        except ValidationError as e:
+            print(e.messages[0])
+            return Response({"message": e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)
         serializer = UserRegisterSerializer(data=clean_data)
         if serializer.is_valid():
             user = serializer.save()
@@ -121,7 +125,9 @@ class UserLogin(APIView):
 
         serializer = UserLoginSerializer(data=data)
         if serializer.is_valid():
-            user = authenticate(request, email=data['email'], password=data['password'])
+            user = authenticate(request,
+                                email=data['email'],
+                                password=data['password'])
             if user and user.is_authenticated:
                 totp_device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
                 if totp_device:
@@ -132,13 +138,11 @@ class UserLogin(APIView):
                     totp = pyotp.TOTP(totp_device.key, digits=6)
                     if not totp.verify(otp.strip()):
                         return Response({"message": "Invalid OTP."}, status=status.HTTP_401_UNAUTHORIZED)
-                rotate_token(request) # tie new CSRF token to the user's session and refresh it appropriately
+                rotate_token(request)
                 login(request, user)
                 # reset failed login attempts
                 user.failed_login_attempts = 0
                 user.save()
-                # token, created = Token.objects.get_or_create(user=user)
-                # return Response({'token': token.key}, status=status.HTTP_200_OK)
                 # create JWT token
                 refresh = RefreshToken.for_user(user)
                 return Response({
@@ -201,6 +205,9 @@ class SearchedLocationView(APIView):
 
     def get(self, request):
         locations = SearchedLocation.objects.filter(user=request.user)
+        if not locations:
+            return Response({"message": "No locations found"},
+                            status=status.HTTP_404_NOT_FOUND)
         serializer = SearchedLocationSerializer(locations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

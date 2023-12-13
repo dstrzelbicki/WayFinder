@@ -15,7 +15,9 @@ export default function RegisterPage() {
   const [passwordMatchError, setPasswordMatchError] = useState(false);
   const [passwordComplexityError, setPasswordComplexityError] = useState(false);
   const [loginError, setLoginError] = useState(false);
+  const [existingEmailError, setExistingEmailError] = useState(false);
   const [invalidEmailFormat, setInvalidEmailFormat] = useState(false);
+  const [invalidUsernameFormat, setInvalidUsernameFormat] = useState(false);
 
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem("isLoggedIn");
@@ -30,6 +32,12 @@ export default function RegisterPage() {
     setPasswordMatchError(false);
   }
 
+  function sanitizeUsername(username) {
+    // allow only alphanumeric characters, underscores, and hyphens
+    const regex = /^[a-zA-Z0-9_-]*$/
+    return username.match(regex) ? username : null
+  }
+
   function validatePasswordComplexity(password) {
     // ensure password length is 10 or more characters
     // includes at least one number, one lowercase and one uppercase letter, and one special character
@@ -38,21 +46,27 @@ export default function RegisterPage() {
   }
 
   async function register(e) {
-    e.preventDefault();
+    e.preventDefault()
     
     if (password !== confirmPassword) {
-      setPasswordMatchError(true);
-      return;
+      setPasswordMatchError(true)
+      return
     }
+
     if (!validatePasswordComplexity(password)) {
-      setPasswordComplexityError(true);
-      return;
+      setPasswordComplexityError(true)
+      return
     }
 
     if (!validator.isEmail(email)) {
-      setInvalidEmailFormat(true);
-      console.log("Invalid email format");
-      return;
+      setInvalidEmailFormat(true)
+      console.log("Invalid email format")
+      return
+    }
+
+    if (!sanitizeUsername(username)) {
+      setInvalidUsernameFormat(true)
+      return
     }
 
     try {
@@ -77,6 +91,9 @@ export default function RegisterPage() {
         setLoginError(true);
       }
     } catch (error) {
+      if (error.response.data.message == "choose another email") {
+        setExistingEmailError(true)
+      }
       setLoginError(true);
       console.log("Error registering user");
     }
@@ -140,6 +157,8 @@ export default function RegisterPage() {
               }}
               required
             />
+            {invalidUsernameFormat && <p className="error-message">Username can only contain alphanumeric characters, underscores, and hyphens</p>}
+            {existingEmailError && <p className="error-message">User associated with this email already exists</p>}
             {passwordMatchError && <p className="error-message">Passwords do not match</p>}
             {passwordComplexityError && <p className="error-message">
                                           Password must include at least one number,
@@ -153,5 +172,5 @@ export default function RegisterPage() {
         </a>
       </div>
     </div>
-  );
+  )
 }
