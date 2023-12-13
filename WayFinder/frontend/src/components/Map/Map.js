@@ -41,15 +41,13 @@ const PopupCard = ({data, onSelect, setIsPopupOpen}) => {
     </div>)
 }
 
-const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
+const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
     const mapRef = useRef()
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
     const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
     const [isPopupCardOpen, setIsPopupCardOpen] = useState(true)
     const [showMessage, setShowMessage] = useState(false)
-
-    const [routePoints, setRoutePoints] = useState([])
 
     const TOMTOM_API_KEY = 'yaFyr0Achz6WGOGfk3r1PUIpMV7On6JE'
     const API_KEY = 'b716933a82ae4ee08317542b1ed2664c'
@@ -120,49 +118,38 @@ const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
     }, [])
 
     useEffect(() => {
-        if (marker && map && marker.coordinates.length !== 0) {
+        if (newMarkers && map && newMarkers.size > 0) {
+            removeRouteFeatures()
             addMarkerFeature()
         }
-    }, [map, marker])
-
-    useEffect(() => {
-        if (marker && map && marker.isToRemove) {
-            removeMarkerFeature()
-            removeRouteFeatures()
-        }
-    }, [map, marker])
-
-    useEffect(() => {
-        console.log(`new route points: ${JSON.stringify(newRoutePoints)}`)
-    }, [newRoutePoints])
+    }, [map, newMarkers])
 
 
     const addMarkerFeature = () => {
-        // view
-        const transformedCoordinates = fromLonLat(marker.coordinates)
-        const markerFeature = new Feature({
-            geometry: new Point(transformedCoordinates)
-        })
-
-        const iconStyle = new Style({
-            image: new Icon({anchor: [0.5, 1], anchorXUnits: "fraction", anchorYUnits: "fraction", src: markerIcon}),
-        })
-        markerFeature.setStyle(iconStyle)
-
         const markerSource = map.getLayers().item(2).getSource()
-        markerSource.addFeature(markerFeature)
-    }
+        markerSource.clear()
 
-    const removeMarkerFeature = () => {
-        const markerSource = map.getLayers().item(2).getSource()
+        const addFeatureForCoordinates = (coordinates) => {
+            const transformedCoordinates = fromLonLat(coordinates)
+            const markerFeature = new Feature({
+                geometry: new Point(transformedCoordinates)
+            })
+            const iconStyle = new Style({
+                image: new Icon({
+                    anchor: [0.5, 1],
+                    anchorXUnits: "fraction",
+                    anchorYUnits: "fraction",
+                    src: markerIcon
+                }),
+            })
 
-        const coordinatesToRemove = fromLonLat(marker.coordinates)
+            markerFeature.setStyle(iconStyle)
+            markerSource.addFeature(markerFeature)
+        }
 
-        markerSource.getFeatures().forEach((feature) => {
-            const featureCoordinates = feature.getGeometry().getCoordinates()
-            if (coordinatesToRemove[0] === featureCoordinates[0] && coordinatesToRemove[1] === featureCoordinates[1]) {
-                markerSource.removeFeature(feature)
-            }
+
+        newMarkers.forEach((value) => {
+            addFeatureForCoordinates(value.coordinates)
         })
     }
 
@@ -174,12 +161,13 @@ const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
 
         removeRouteFeatures()
 
-        const reversedCoordinates = newRoutePoints.map((point) => [point.coordinates[1], point.coordinates[0]])
+        const reversedCoordinates = Array.from(newRoutePoints.values()).map((point) => [point.coordinates[1], point.coordinates[0]])
 
         const promises = []
-        newRoutePoints.forEach((point, index) => {
-            if (index + 1 < reversedCoordinates.length)
+        Array.from(newRoutePoints.values()).forEach((point, index) => {
+            if (index + 1 < reversedCoordinates.length) {
                 promises.push(routemap([reversedCoordinates[index], reversedCoordinates[index + 1]], point.transportOption))
+            }
         })
 
         const routeData = await Promise.all(promises)
@@ -452,7 +440,7 @@ const OLMap = ({marker, newRoutePoints, onMarker2NameUpdate}) => {
         setShowMessage(false)
     }
 
-    // fixme - przeniesc do Homepage prawdpodopobnie
+    // fixme - move to homepage
     const handlePopupCard = (data) => {
         const marker = {id: 2, coordinates: data.lonLat}
         addMarkerFeature(marker)

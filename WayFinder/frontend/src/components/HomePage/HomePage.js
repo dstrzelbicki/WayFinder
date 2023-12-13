@@ -13,17 +13,14 @@ import StopoverContainer from "./StopoverContainer/StopoverContainer";
 
 const HomePage = () => {
 
-    const [marker, setMarker] = useState(null)
     const [marker2Name, setMarker2Name] = useState("")
     const [isSidebarNotCollapsed, setIsSidebarNotCollapsed] = useState(false)
     const [showSearchHistory, setShowSearchHistory] = useState(false)
     const [searchHistory, setSearchHistory] = useState([])
-    const [routePoints, setRoutePoints] = useState([])
-
+    const [routePoints, setRoutePoints] = useState(new Map())
+    const [markers, setMarkers] = useState(new Map())
     // internal
     const [originRoutePoints, setOriginRoutePoints] = useState(new Map())
-    const [markersToRemove, setMarkersToRemove] = useState(new Map())
-    const [routePointsToRemove, setRoutePointsToRemove] = useState(new Map())
 
     const createMarker = (coordinates = [], isToRemove = false) => ({
         coordinates, isToRemove
@@ -38,19 +35,15 @@ const HomePage = () => {
     }
 
     const handleSearch = async (searchTerm, keyPrefix) => {
-        removeOldMarkerWithTheSameKey(keyPrefix)
-
         const data = await geocode(searchTerm)
 
         if (data.results && data.results.length > 0) {
 
             const {lat, lon} = data.results[0]
             const routeCoordinates = [parseFloat(lon), parseFloat(lat)]
-            let newMarker = createMarker(routeCoordinates)
-            setMarker(newMarker)
+            const newMarker = createMarker(routeCoordinates)
+            setMarkers(prevMarkers => new Map([...prevMarkers, [keyPrefix, newMarker]]))
             console.log(`Marker:`, searchTerm, "Coordinates: ", lat, lon)
-
-            setMarkersToRemove(markersToRemove.set(keyPrefix, newMarker))
 
             updateOriginRoutePointWithCoordinates(keyPrefix, routeCoordinates)
 
@@ -69,50 +62,63 @@ const HomePage = () => {
             })
 
         } else {
+            updateOriginRoutePointWithCoordinates(keyPrefix, null)
             console.error(`No geocode results found for: `, searchTerm)
         }
     }
 
     const removeOldMarkerWithTheSameKey = (keyPrefix) => {
-        let existingMarker = markersToRemove.get(keyPrefix)
+        let existingMarker = markers.get(keyPrefix)
         if (existingMarker) {
-            const updatedMarkers = new Map(markersToRemove)
+            const updatedMarkers = new Map(markers)
             updatedMarkers.delete(keyPrefix)
-            setMarkersToRemove(updatedMarkers)
-
-            setMarker(createMarker(existingMarker.coordinates, true))
+            setMarkers(updatedMarkers)
         }
     }
 
     const removeOldRoutePointWithTheSameKey = (keyPrefix) => {
-        let existingRoutePoint = routePointsToRemove.get(keyPrefix)
+        let existingRoutePoint = routePoints.get(keyPrefix)
         if (existingRoutePoint) {
-            const updatedRoutePoints = new Map(routePointsToRemove)
+            const updatedRoutePoints = new Map(routePoints)
             updatedRoutePoints.delete(keyPrefix)
-            setRoutePointsToRemove(updatedRoutePoints)
-            console.log(`existingRoutePoint: ${JSON.stringify(existingRoutePoint)}`)
-            setRoutePoints((prevRoutePoints) =>
-                prevRoutePoints.filter((point) => (
-                    point.coordinates !== existingRoutePoint.coordinates || point.transportOption !== existingRoutePoint.transportOption
-                ))
-            )
+            setRoutePoints(updatedRoutePoints)
         }
     }
 
-    const setStopoverRoutePointsToRemove = async (stopovers) => {
-        await Promise.all(
-            stopovers.map(async (stopover) => {
-                removeOldRoutePointWithTheSameKey(stopover.id)
-                removeOldMarkerWithTheSameKey(stopover.id)
-            })
-        )
+    const removeOldOriginRoutePointWithTheSameKey = (keyPrefix) => {
+        let existingRoutePoint = originRoutePoints.get(keyPrefix)
+        if (existingRoutePoint) {
+            const updatedRoutePoints = new Map(originRoutePoints)
+            updatedRoutePoints.delete(keyPrefix)
+            setOriginRoutePoints(updatedRoutePoints)
+        }
     }
 
-    const updateOriginTransportOption = (keyPrefix, option) => {
-        console.log(`WHAT is happening: ${option} for keyPrefix: ${keyPrefix}`)
+    const removeAllStopoversFeatures = () => {
+
+        const removeRouteItems = (map, setMap) => {
+            const filterMapByKeys = (map, predicate) => {
+                return new Map(Array.from(map.entries()).filter(([key]) => predicate(key)))
+            }
+            const updatedMap = filterMapByKeys(map, (key) => key === 'start' || key === 'end')
+            setMap(updatedMap)
+        }
+
+
+        removeRouteItems(routePoints, setRoutePoints)
+        removeRouteItems(originRoutePoints, setOriginRoutePoints)
+        removeRouteItems(markers, setMarkers)
+    }
+
+    const removeStopoverFeatures = (key) => {
+        removeOldRoutePointWithTheSameKey(key)
+        removeOldMarkerWithTheSameKey(key)
+        removeOldOriginRoutePointWithTheSameKey(key)
+    }
+
+    const updateOriginRoutePointWithTransportOption = (keyPrefix, option) => {
         setOriginRoutePoints((prevRoutePoints) => {
             const prevValue = prevRoutePoints.get(keyPrefix)
-            console.log(`previous value: ${JSON.stringify(prevValue)} for keyPrefix: ${keyPrefix}`)
             const updatedValue = {
                 ...prevValue,
                 transportOption: option
@@ -140,23 +146,32 @@ const HomePage = () => {
     }
 
     useEffect(() => {
-
         originRoutePoints.forEach((originRoutePoint, key) => {
-            console.log(`origin route point: ${JSON.stringify(originRoutePoint)}`)
             if (originRoutePoint.coordinates && originRoutePoint.transportOption) {
-                let newRoutePoint = createRoutePoint(originRoutePoint.coordinates, originRoutePoint.transportOption)
 
-                const isDuplicate = routePoints.some((point) => (
-                    point.coordinates === newRoutePoint.coordinates &&
-                    point.transportOption === newRoutePoint.transportOption
-                ))
+                let newRoutePoint = createRoutePoint(originRoutePoint.coordinates, originRoutePoint.transportOption);
 
-                console.log(`is duplicate ? ${isDuplicate}`)
-//fixme - change duplicate detection for stopovers !!
-                if (!isDuplicate) {
-                    setRoutePointsToRemove(routePointsToRemove.set(key, newRoutePoint))
-                    setRoutePoints((prevRoutePoints) => [...prevRoutePoints, newRoutePoint])
-                }
+                setRoutePoints((prevRoutePoints) => {
+                    const newRoutePoints = new Map(prevRoutePoints)
+
+                    if (newRoutePoints.has(key)) {
+                        const prevValue = newRoutePoints.get(key)
+                        const updatedValue = {
+                            ...prevValue,
+                            coordinates: newRoutePoint.coordinates,
+                            transportOption: newRoutePoint.transportOption
+                        }
+                        newRoutePoints.set(key, updatedValue)
+                    } else {
+                        newRoutePoints.set(key, {
+                            coordinates: newRoutePoint.coordinates,
+                            transportOption: newRoutePoint.transportOption
+                        })
+                    }
+
+                    return newRoutePoints
+                })
+
             } else {
                 removeOldRoutePointWithTheSameKey(key)
             }
@@ -172,7 +187,6 @@ const HomePage = () => {
             }
         })
     }, [showSearchHistory])
-
 
     return (<div className="full-height-container">
         <Sidebar
@@ -207,8 +221,9 @@ const HomePage = () => {
 
                 <StopoverContainer
                     handleSearch={(searchTerm, keyPrefix) => handleSearch(searchTerm, keyPrefix)}
-                    setStopoverRoutePointsToRemove={(stopover) => setStopoverRoutePointsToRemove(stopover)}
-                    updateOriginTransportOption={(keyPrefix, option) => updateOriginTransportOption(keyPrefix, option)}
+                    removeStopoverFeatures={(stopoverId) => removeStopoverFeatures(stopoverId)}
+                    removeAllStopoversFeatures={removeAllStopoversFeatures}
+                    updateOriginTransportOption={(keyPrefix, option) => updateOriginRoutePointWithTransportOption(keyPrefix, option)}
                 />
 
                 <SearchBox placeholder={"Search destination"} onSearch={(searchTerm) => handleSearch(searchTerm, "end")}
@@ -216,12 +231,12 @@ const HomePage = () => {
 
                 <Typography style={{marginTop: '20px'}} variant="h2">Select Transport Option:</Typography>
                 <TransportOptions handleOptionChange={(option) => {
-                    updateOriginTransportOption("start", option)
-                    updateOriginTransportOption("end", option)
+                    updateOriginRoutePointWithTransportOption("start", option)
+                    updateOriginRoutePointWithTransportOption("end", option)
                 }} isStopoverOption={false}/>
             </div>)}
         </div>
-        <OLMap marker={marker} newRoutePoints={routePoints} onMarker2NameUpdate={updateMarker2Name}/>
+        <OLMap newMarkers={markers} newRoutePoints={routePoints} onMarker2NameUpdate={updateMarker2Name}/>
     </div>)
 }
 

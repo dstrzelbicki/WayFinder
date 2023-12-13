@@ -4,10 +4,14 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import TransportOptions from "../TransportOptions/TransportOptions";
 import {faMinusCircle, faPlusCircle, faRightLeft} from "@fortawesome/free-solid-svg-icons";
 
-function StopoverContainer({handleSearch, setStopoverRoutePointsToRemove, updateOriginTransportOption}) {
+function StopoverContainer({
+                               handleSearch,
+                               removeStopoverFeatures,
+                               removeAllStopoversFeatures,
+                               updateOriginTransportOption
+                           }) {
 
     const STOPOVER_LIMIT = 3
-    // fixme - could be Map()
     const [stopovers, setStopovers] = useState([])
     const [isStopoverToAdd, setIsStopoverToAdd] = useState(false)
     const [stopoverSearchTerm, setStopoverSearchTerm] = useState(null)
@@ -35,18 +39,20 @@ function StopoverContainer({handleSearch, setStopoverRoutePointsToRemove, update
     const handleRemoveStopover = (stopover) => {
         removeStopover(stopover.id)
         setUpdatedStopoverId(stopover.id)
-        setStopoverRoutePointsToRemove([stopover])
+        removeStopoverFeatures(stopover.id)
     }
 
     const removeAllStopovers = () => {
-        console.log(`stopovers to remove: ${JSON.stringify(stopovers)}`)
-        setStopoverRoutePointsToRemove(stopovers)
+        removeAllStopoversFeatures()
         setStopovers([])
     }
 
     const setShowAddStopStatus = (stopoverId) => {
         setStopovers((prevStopovers) => {
-            return prevStopovers.map((stopover) => stopover.id === stopoverId ? {...stopover, showAddStop: false} : stopover)
+            return prevStopovers.map((stopover) => stopover.id === stopoverId ? {
+                ...stopover,
+                showAddStop: false
+            } : stopover)
         })
     }
 
@@ -77,13 +83,19 @@ function StopoverContainer({handleSearch, setStopoverRoutePointsToRemove, update
 
     const updateStopoverWithSearchTerm = (searchTerm, stopoverId) => {
         setStopovers((prevStopovers) => {
-            return prevStopovers.map((stopover) => stopover.id === stopoverId ? {...stopover, searchTerm: searchTerm} : stopover)
+            return prevStopovers.map((stopover) => stopover.id === stopoverId ? {
+                ...stopover,
+                searchTerm: searchTerm
+            } : stopover)
         })
     }
 
     const updateStopoverWithTransportOption = (option, stopoverId) => {
         setStopovers((prevStopovers) => {
-            return prevStopovers.map((stopover) => stopover.id === stopoverId ? {...stopover, transportOption: option} : stopover)
+            return prevStopovers.map((stopover) => stopover.id === stopoverId ? {
+                ...stopover,
+                transportOption: option
+            } : stopover)
         })
         updateOriginTransportOption(stopoverId, option)
     }
@@ -99,7 +111,8 @@ function StopoverContainer({handleSearch, setStopoverRoutePointsToRemove, update
     }, [updatedStopoverId])
 
     return (<>
-            <button className="add-stop-component" onClick={setInitialStopoverState}><FontAwesomeIcon icon={isStopoverToAdd ? faPlusCircle : faMinusCircle}/></button>
+            <button className="add-stop-component" onClick={setInitialStopoverState}><FontAwesomeIcon
+                icon={isStopoverToAdd ? faPlusCircle : faMinusCircle}/></button>
             {stopovers.map((stopover) =>
                 <div>
                     <div className="search-box-container">
@@ -108,10 +121,13 @@ function StopoverContainer({handleSearch, setStopoverRoutePointsToRemove, update
                             updateStopoverWithSearchTerm(searchTerm, stopover.id)
                         }} marker2Name={stopoverSearchTerm}/>
                     </div>
-                    <button className="add-stop-component" onClick={stopover.showAddStop ? () => handleAddNewStopover(stopover) : () => handleRemoveStopover(stopover)}>
+                    <button className="add-stop-component"
+                            onClick={stopover.showAddStop ? () => handleAddNewStopover(stopover) : () => handleRemoveStopover(stopover)}>
                         <FontAwesomeIcon icon={stopover.showAddStop ? faPlusCircle : faMinusCircle}/>
                     </button>
-                    <TransportOptions handleOptionChange={(option) => updateStopoverWithTransportOption(option, stopover.id)} isStopoverOption={true}/>
+                    <TransportOptions
+                        handleOptionChange={(option) => updateStopoverWithTransportOption(option, stopover.id)}
+                        isStopoverOption={true}/>
                     <FontAwesomeIcon className="add-stop-component" icon={faRightLeft} rotation={90}/>
                 </div>
             )}
