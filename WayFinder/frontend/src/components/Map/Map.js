@@ -154,19 +154,43 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
     }
 
     const route = async () => {
-        if (newRoutePoints.length < 2) {
+        removeRouteFeatures()
+
+        const keysArray = Array.from(newRoutePoints.keys())
+
+        const startIndex = keysArray.findIndex((key) => key === 'start')
+        const endIndex = keysArray.findIndex((key) => key === 'end')
+
+        console.log(`${startIndex} and ${endIndex}`)
+
+        if (startIndex === -1 || endIndex === -1) {
             handleShowMessage()
             return
         }
 
-        removeRouteFeatures()
+        const arrayFromMap = Array.from(newRoutePoints.values())
 
-        const reversedCoordinates = Array.from(newRoutePoints.values()).map((point) => [point.coordinates[1], point.coordinates[0]])
+        const reversedCoordinates = arrayFromMap.map((point) => ({
+            ...point,
+            coordinates: [point.coordinates[1], point.coordinates[0]]
+        }))
+
+        const startElement = reversedCoordinates[startIndex]
+        const endElement = reversedCoordinates[endIndex]
+
+        const reorderedRoutePoints = [
+            startElement,
+            ...reversedCoordinates.filter((point) => point !== startElement && point !== endElement),
+            endElement
+        ]
+
+        console.log(`what is this: ${JSON.stringify(reorderedRoutePoints)}`)
 
         const promises = []
-        Array.from(newRoutePoints.values()).forEach((point, index) => {
-            if (index + 1 < reversedCoordinates.length) {
-                promises.push(routemap([reversedCoordinates[index], reversedCoordinates[index + 1]], point.transportOption))
+        reorderedRoutePoints.forEach((point, index) => {
+            if (index + 1 < reorderedRoutePoints.length) {
+                console.log(`reorderedRoutePoints: ${[reorderedRoutePoints[index].coordinates, reorderedRoutePoints[index + 1].coordinates]} transport Option: ${point.transportOption}`)
+                promises.push(routemap([reorderedRoutePoints[index].coordinates, reorderedRoutePoints[index + 1].coordinates], point.transportOption))
             }
         })
 
@@ -451,7 +475,7 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
         <div>
             <Snackbar open={showMessage} autoHideDuration={4000} onClose={handleCloseMessage}>
                 <MuiAlert onClose={handleCloseMessage} severity="error" sx={{width: '100%'}}>
-                    Transport need to be selected.
+                    Specify your location and final destination.
                 </MuiAlert>
             </Snackbar>
         </div>
