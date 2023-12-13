@@ -75,7 +75,8 @@ const SearchBox = ({placeholder, onSearch, marker2Name}) => {
 
     useEffect(() => {
         if (marker2Name) {
-            handleSelectItem(marker2Name)}
+            handleSelectItem(marker2Name)
+        }
     }, [marker2Name])
 
     useEffect(() => {
@@ -97,17 +98,18 @@ const SearchBox = ({placeholder, onSearch, marker2Name}) => {
                 onKeyDown={handleKeyPress}
             />
         </form>
-        {isDropdownVisible && Array.isArray(searchResults) && searchValue.length > 0 && (<ul className="dropdown-list">
-            {searchResults.map((item, index) => (<li
-                key={index}
-                className={`dropdown-item ${item === selectedItem ? "selected" : ""}`}
-                onClick={() => {
-                    onSearch(item)
-                    handleSelectItem(item)
-                }}>
-                {item}
-            </li>))}
-        </ul>)}
+        {isDropdownVisible && Array.isArray(searchResults) && searchValue.length > 0 &&
+            (<ul className="dropdown-list">
+                {searchResults.map((item, index) =>
+                    (<li key={index}
+                         className={`dropdown-item ${item === selectedItem ? "selected" : ""}`}
+                         onClick={() => {
+                             onSearch(item)
+                             handleSelectItem(item)
+                         }}>
+                        {item}
+                    </li>))}
+            </ul>)}
     </div>)
 }
 
