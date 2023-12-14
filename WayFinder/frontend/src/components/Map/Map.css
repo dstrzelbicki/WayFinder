@@ -32,6 +32,28 @@ body {
   z-index: 1001;
 }
 
+.map-button-fav-route {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  z-index: 1000;
+  background-color: #0096FF;
+  padding: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.popup-error {
+  background-color: #F8D7DA;
+  color: #721C24;
+}
+
 .popup-card-button {
   background-color: #0096FF;
   color: white;
@@ -47,7 +69,16 @@ body {
   position: absolute;
   top: 10px;
   right: 10px;
-  color: grey;
+  color: #FFFFFF;
+  background-color: #F4364C;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
 }
 
 .popup-card .popupcard-close {
@@ -111,7 +142,7 @@ body {
   bottom: 60px;
   left: 10px;
   z-index: 1000;
-  background-color: cornflowerblue;
+  background-color: #0096FF;
   padding: 5px;
   border: 1px solid #ccc;
   cursor: pointer;

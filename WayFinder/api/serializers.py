@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import validate_email
-from .models import Route, SearchedLocation
+from .models import Route, FavRoute, SearchedLocation
 
 UserModel = get_user_model()
 
@@ -87,6 +87,21 @@ class RouteSerializer(serializers.ModelSerializer):
             'distance',
             'duration',
             'created_at',
+            'user',
+        ]
+
+
+class FavRouteSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = FavRoute
+        fields = [
+            'id',
+            'name',
+            'data',
             'user',
         ]
 

@@ -42,6 +42,9 @@ module.exports = {
     minimize: true,
   },
   devServer: {
+    // headers: {
+    //   'Content-Security-Policy': "default-src 'self';"
+    // },
     static: {
       directory: path.join(__dirname, "static"),
     },

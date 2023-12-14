@@ -160,3 +160,11 @@ export function apiPasswordReset(uidb64, token, password, callback) {
   }
   requestToBackend("POST", "/password-reset", callback, data)
 }
+
+export function apiPostFavRoute(routeName, favRouteData, callback) {
+  const data = {
+    name: routeName,
+    data: favRouteData
+  }
+  requestToBackend("POST", "/fav-route", callback, data)
+}

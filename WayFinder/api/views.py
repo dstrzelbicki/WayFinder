@@ -18,7 +18,7 @@ from django.forms import ValidationError
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import (UserRegisterSerializer, UserLoginSerializer,
+from .serializers import (FavRouteSerializer, UserRegisterSerializer, UserLoginSerializer,
                           UserSerializer, UserChangePasswordSerializer, RouteSerializer,
                           SearchedLocationSerializer)
 from rest_framework import permissions, status
@@ -447,3 +447,24 @@ class UseRecoveryCode(APIView):
             return Response({'token': token.key, 'detail': "Recovery successful"}, status=status.HTTP_200_OK)
         else:
             return Response({"detail": "Invalid or already used recovery code."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FavRouteView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (JWTAuthentication,)
+
+    # def get(self, request):
+    #     user = request.user
+    #     fav_routes = user.favroute_set.all()
+    #     if not fav_routes:
+    #         return Response({"message": "No favourite routes found"},
+    #                         status=status.HTTP_404_NOT_FOUND)
+    #     serializer = FavRouteSerializer(fav_routes, many=True)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = FavRouteSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

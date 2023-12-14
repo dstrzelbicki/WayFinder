@@ -17,10 +17,11 @@ import {getCenter} from "ol/extent";
 import {Attribution} from "ol/control";
 import {DEVICE_PIXEL_RATIO} from "ol/has";
 import {apiPostRoute} from "../../lookup/backendLookup"
-import {faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faTimes, faHeart} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import {apiPostFavRoute} from "../../lookup/backendLookup";
 
 // this popup card appears when user clicks on a map, card displays name of location
 // and coordinates and renders a button by which user can select location as marker2
@@ -41,12 +42,80 @@ const PopupCard = ({data, onSelect, setIsPopupOpen}) => {
     </div>)
 }
 
+const FavRoutePopup = ({setIsFavRoutePopupOpen, favRouteData}) => {
+    const [routeName, setRouteName] = useState("")
+    const [invalidName, setInvalidName] = useState(false)
+    const [isPopupVisible, setPopupVisible] = useState(false)
+    const [popupMessage, setPopupMessage] = useState("")
+
+    const handleSubmit = (event) => {
+        event.preventDefault()
+
+        apiPostFavRoute(routeName, favRouteData, (response, status) => {
+            if (status === 201) {
+                setIsFavRoutePopupOpen(false)
+            } else {
+                setPopupMessage("An error occurred, try again later")
+                setPopupVisible(true)
+                setTimeout(() => {
+                    setPopupVisible(false)
+                }, 3000)
+            }
+        })
+    }
+
+    const handleNameChange = (event) => {
+        if (sanitizeName(event.target.value)) {
+            setRouteName(event.target.value)
+        } else {
+            setInvalidName(true)
+        }
+    }
+
+    const sanitizeName = (name) => {
+        // allow only alphanumeric characters, underscores, and hyphens
+        const regex = /^[a-zA-Z0-9_-]*$/
+        return name.match(regex) ? name : null
+    }
+
+    return (<>
+        {isPopupVisible &&
+                <div className="popup-error">
+                    {popupMessage}
+                </div>
+        }
+        <div className="popup-card">
+            <button className="close-button" onClick={() => setIsFavRoutePopupOpen(false)}>
+                <FontAwesomeIcon icon={faTimes}/>
+            </button>
+            <h4>Add route to favourites</h4>
+            <form className="form" onSubmit={handleSubmit}>
+                <label>
+                    Save as:&nbsp;
+                    <input
+                        type="text"
+                        name="name"
+                        value={routeName}
+                        onChange={handleNameChange}
+                    />
+                </label>
+                <button className="btn btn-primary" type="submit"><FontAwesomeIcon icon={faHeart} /></button>
+            </form>
+            {invalidName && <p className="error-message">
+                Name can only contain alphanumeric characters, underscores, and hyphens</p>}
+        </div>
+    </>)
+}
+
 const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
     const mapRef = useRef()
     const [map, setMap] = useState(null)
     const [popupData, setPopupData] = useState(null)
     const [trafficLayerGroup, setTrafficLayerGroup] = useState(null)
     const [isPopupCardOpen, setIsPopupCardOpen] = useState(true)
+    const [isFavRoutePopupOpen, setIsFavRoutePopupOpen] = useState(false)
+    const [routeDrawn, setRoutDrawn] = useState(false)
+    const [favRouteData, setFavRouteData] = useState(null)
     const [showMessage, setShowMessage] = useState(false)
 
     const TOMTOM_API_KEY = 'yaFyr0Achz6WGOGfk3r1PUIpMV7On6JE'
@@ -218,6 +287,7 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
         })
 
         const routeData = await Promise.all(promises)
+        setFavRouteData(routeData)
         drawRoutes(routeData)
 
         apiPostRoute((response, status) => console.log(response, status))
@@ -272,6 +342,8 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
         }
 
         animateZoomAtLocation(routeSource)
+
+        setRoutDrawn(true)
     }
 
     function createRouteLayerFeatures(transformedCoordinates, data) {
@@ -506,6 +578,10 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
         <div id="instructionContainer" className="instructionContainer"></div>
         <button className="route-button" onClick={route}>Trace route</button>
         <button className="map-button" onClick={toggleTraffic}>{trafficHint}</button>
+        {routeDrawn && <button
+                        className="map-button-fav-route"
+                        onClick={() => setIsFavRoutePopupOpen(true)}
+                        >Add route to favourites</button>}
         {trafficHint === "Hide traffic" &&
             <button className="traffic-info-button" onClick={trafficInfoToggle}>Traffic information</button>}
         {trafficInfo && (<div className="traffic-card">
@@ -519,6 +595,10 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
             </div>
             <button className="btn btn-primary" onClick={trafficInfoToggle}>Close</button>
         </div>)}
+        {isFavRoutePopupOpen && (<FavRoutePopup
+                                    setIsFavRoutePopupOpen={setIsFavRoutePopupOpen}
+                                    favRouteData={favRouteData}
+                                />)}
         {isPopupCardOpen && popupData && (<PopupCard data={popupData} onSelect={(data) => {
             handlePopupCard(data)
         }} setIsPopupOpen={setIsPopupCardOpen}/>)}

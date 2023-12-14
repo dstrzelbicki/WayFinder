@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.db.models import JSONField
 import secrets
 
 
@@ -74,6 +75,20 @@ class Route(models.Model):
 
     def __str__(self):
         return f"{self.start_location_name} to {self.end_location_name}"
+
+
+class FavRoute(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    data = JSONField()
+    user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Favourite route'
+        verbose_name_plural = 'Favourite routes'
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 class SearchedLocation(models.Model):
