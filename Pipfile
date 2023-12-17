@@ -20,6 +20,7 @@ django-otp = "*"
 pyotp = "*"
 djangorestframework-simplejwt = "*"
 django-csp = "*"
+cryptography = "*"
 
 [dev-packages]
 

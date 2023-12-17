@@ -42,9 +42,6 @@ module.exports = {
     minimize: true,
   },
   devServer: {
-    // headers: {
-    //   'Content-Security-Policy': "default-src 'self';"
-    // },
     static: {
       directory: path.join(__dirname, "static"),
     },
@@ -63,6 +60,32 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "public", "index.html"),
+      cspPlugin: {
+        enabled: true,
+        policy: {
+          'default-src': "'self'",
+          'script-src': [
+            "'self'",
+            'https://ajax.googleapis.com',
+          ],
+          'style-src': [
+            "'self'",
+            'https://fonts.googleapis.com',
+          ],
+          'font-src': "'self' https://fonts.gstatic.com",
+          'img-src': "'self' data:",
+          'connect-src': "'self' 'http://127.0.0.1:8000'",
+          'frame-ancestors': "'none'",
+        },
+        hashEnabled: {
+          'style-src': true,
+          'script-src': true,
+        },
+        nonceEnabled: {
+          'style-src': false,
+          'script-src': false,
+        },
+      },
     }),
   ],
 };
