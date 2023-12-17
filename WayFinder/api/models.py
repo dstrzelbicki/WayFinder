@@ -1,28 +1,61 @@
+import environ
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db.models import JSONField
 import secrets
+from cryptography.fernet import Fernet
 
+env = environ.Env()
+environ.Env.read_env()
+fernet = Fernet(env('DATA_ENCRYPTION_KEY'))
+
+def encrypt_value(value):
+    if value:
+        return fernet.encrypt(value.encode()).decode()
+    return None
+
+def decrypt_value(value):
+    if value:
+        return fernet.decrypt(value.encode()).decode()
+    return None
+
+class EncryptedCharField(models.CharField):
+    def from_db_value(self, value, expression, connection, context):
+        return decrypt_value(value) if value else value
+
+    def to_python(self, value):
+        if isinstance(value, bytes):
+            return decrypt_value(value.decode())
+        return value
+
+    def get_prep_value(self, value):
+        return encrypt_value(value) if value else value
+
+class EncryptedEmailField(models.EmailField):
+    def from_db_value(self, value, expression, connection, context):
+        return decrypt_value(value) if value else value
+
+    def to_python(self, value):
+        if isinstance(value, bytes):
+            return decrypt_value(value.decode())
+        return value
+
+    def get_prep_value(self, value):
+        return encrypt_value(value) if value else value
 
 class AppUserManager(BaseUserManager):
-    def create_user(self, email, username, password=None): # def create_user(self, email, username, first_name, last_name, password=None):
+    def create_user(self, email, username, password=None):
         if not email:
             raise ValueError('An email is required.')
         if not password:
             raise ValueError('A password is required.')
         if not username:
             raise ValueError('A username is required.')
-        # if not first_name:
-        #     raise ValueError('A first name is required.')
-        # if not last_name:
-        #     raise ValueError('A last name is required.')
         email = self.normalize_email(email)
         user = self.model(
             email=email,
             username=username)
-            # first_name=first_name,
-            # last_name=last_name)
         user.set_password(password)
         user.save()
         return user
@@ -37,10 +70,8 @@ class AppUserManager(BaseUserManager):
 
 class AppUser(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True) # changed this field's name to 'id' because its needed for the JWT token creation in UserLogin view
-    email = models.EmailField(max_length=50, unique=True)
-    username = models.CharField(max_length=50, unique=True)
-    # first_name = models.CharField(max_length=50, blank=False)
-    # last_name = models.CharField(max_length=50, blank=False)
+    email = EncryptedEmailField(max_length=50, unique=True)
+    username = EncryptedCharField(max_length=50, unique=True)
     is_active = models.BooleanField(default=True)
     # is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
