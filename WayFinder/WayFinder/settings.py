@@ -211,6 +211,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'api.auth.EncryptedEmailBackend',
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 

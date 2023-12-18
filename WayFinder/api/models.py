@@ -1,3 +1,4 @@
+import hashlib
 import environ
 from django.db import models
 from django.contrib.auth.base_user import BaseUserManager
@@ -21,7 +22,7 @@ def decrypt_value(value):
     return None
 
 class EncryptedCharField(models.CharField):
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection):
         return decrypt_value(value) if value else value
 
     def to_python(self, value):
@@ -33,7 +34,7 @@ class EncryptedCharField(models.CharField):
         return encrypt_value(value) if value else value
 
 class EncryptedEmailField(models.EmailField):
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection):
         return decrypt_value(value) if value else value
 
     def to_python(self, value):
@@ -70,8 +71,10 @@ class AppUserManager(BaseUserManager):
 
 class AppUser(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True) # changed this field's name to 'id' because its needed for the JWT token creation in UserLogin view
-    email = EncryptedEmailField(max_length=50, unique=True)
-    username = EncryptedCharField(max_length=50, unique=True)
+    email = EncryptedEmailField(max_length=250, unique=True)
+    email_hash = models.CharField(max_length=64, unique=True)
+    username = EncryptedCharField(max_length=250, unique=True)
+    username_hash = models.CharField(max_length=64, unique=True)
     is_active = models.BooleanField(default=True)
     # is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
@@ -81,6 +84,15 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     objects = AppUserManager()
+
+    def save(self, *args, **kwargs):
+        if self.email:
+            self.email_hash = hashlib.sha256(self.email.encode()).hexdigest()
+
+        if self.username:
+            self.username_hash = hashlib.sha256(self.username.encode()).hexdigest()
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.username

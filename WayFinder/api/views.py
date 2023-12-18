@@ -1,5 +1,8 @@
+import hashlib
+import environ
+from cryptography.fernet import Fernet
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -13,7 +16,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.crypto import get_random_string
-from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model, authenticate
+from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model
 from django.forms import ValidationError
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -44,9 +47,14 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 token_generator = PasswordResetTokenGenerator()
+
 now_utc = datetime.now(timezone.utc)
+
 User = get_user_model()
 
+env = environ.Env()
+environ.Env.read_env()
+fernet = Fernet(env('DATA_ENCRYPTION_KEY'))
 
 class OTPForm(forms.Form):
     otp = forms.RegexField(regex=r'^\d{6}$', error_messages={'invalid': 'OTP must be 6 digits'})
@@ -116,7 +124,8 @@ class UserLogin(APIView):
             return Response({"message": e.messages}, status=status.HTTP_400_BAD_REQUEST)
 
         # check for rate limiting
-        user = User.objects.filter(email=data.get('email')).first()
+        email_hash = hashlib.sha256(data.get('email').encode()).hexdigest()
+        user = User.objects.filter(email_hash=email_hash).first()
         if user:
             if user.failed_login_attempts >= 5 and \
                     (now_utc - user.last_failed_login) < timedelta(minutes=60):
@@ -249,8 +258,9 @@ class ForgottenPassword(APIView):
             return Response({"message": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
 
         # check if the user with the provided email exists
+        email_hash = hashlib.sha256(email.encode()).hexdigest()
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email_hash=email_hash)
         except User.DoesNotExist:
             return JsonResponse({'message': 'User does not exist'}, status=404)
 
@@ -428,7 +438,8 @@ class UseRecoveryCode(APIView):
         except ValidationError:
             return Response({"detail": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.filter(email=data.get('email')).first()
+        email_hash = hashlib.sha256(email.encode()).hexdigest()
+        user = User.objects.filter(email_hash=email_hash).first()
         if not user:
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
