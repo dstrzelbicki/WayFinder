@@ -168,3 +168,7 @@ export function apiPostFavRoute(routeName, favRouteData, callback) {
   }
   requestToBackend("POST", "/fav-route", callback, data)
 }
+
+export function apiGetFavRoutes(callback) {
+  requestToBackend("GET", "/fav-route", callback)
+}

@@ -21,6 +21,8 @@ pyotp = "*"
 djangorestframework-simplejwt = "*"
 django-csp = "*"
 cryptography = "*"
+azure-keyvault-secrets = "*"
+azure-identity = "*"
 
 [dev-packages]
 

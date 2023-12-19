@@ -48,7 +48,7 @@
     border: 1px solid black;
     border-radius: 10px;
     padding: 0px;
-    margin-bottom: 10px;
+    margin-bottom: 25px;
 }
 
 .full-width-link {
@@ -248,6 +248,12 @@ tr th {
 tr td {
     border: 1px solid #CCCCCC;
     padding: 10px;
+}
+
+.fav-route-record:hover {
+    background-color: #DACFBD;
+    border-radius: 20px;
+    cursor: pointer;
 }
 
 table {

@@ -1,21 +1,14 @@
 import hashlib
-import environ
-from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import HttpResponse
-from django.shortcuts import redirect
-from django.contrib.auth.views import LoginView
 from django.utils.encoding import force_str, force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.contrib.auth.tokens import default_token_generator
 from django.views import View
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.crypto import get_random_string
 from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model
 from django.forms import ValidationError
 from rest_framework.authentication import SessionAuthentication
@@ -33,7 +26,6 @@ from django_ratelimit.exceptions import Ratelimited
 from functools import wraps
 from .models import Route, RecoveryCode, SearchedLocation
 from rest_framework.authtoken.models import Token
-from rest_framework.authentication import TokenAuthentication
 import pyotp
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from rest_framework.views import APIView
@@ -52,9 +44,6 @@ now_utc = datetime.now(timezone.utc)
 
 User = get_user_model()
 
-env = environ.Env()
-environ.Env.read_env()
-fernet = Fernet(env('DATA_ENCRYPTION_KEY'))
 
 class OTPForm(forms.Form):
     otp = forms.RegexField(regex=r'^\d{6}$', error_messages={'invalid': 'OTP must be 6 digits'})
@@ -464,14 +453,14 @@ class FavRouteView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
 
-    # def get(self, request):
-    #     user = request.user
-    #     fav_routes = user.favroute_set.all()
-    #     if not fav_routes:
-    #         return Response({"message": "No favourite routes found"},
-    #                         status=status.HTTP_404_NOT_FOUND)
-    #     serializer = FavRouteSerializer(fav_routes, many=True)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request):
+        user = request.user
+        fav_routes = user.favroute_set.all()
+        if not fav_routes:
+            return Response({"message": "No favourite routes found"},
+                            status=status.HTTP_404_NOT_FOUND)
+        serializer = FavRouteSerializer(fav_routes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = FavRouteSerializer(data=request.data, context={'request': request})

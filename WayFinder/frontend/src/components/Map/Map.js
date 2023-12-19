@@ -187,13 +187,24 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
     }, [])
 
     useEffect(() => {
-        // get user location and zoom in
-        navigator.geolocation.getCurrentPosition((position) => {
-            const userLocation = [position.coords.longitude, position.coords.latitude]
-            zoomToLocation(userLocation)
-        }, (error) => {
-            console.error("Error getting user's location:", error)
-        })
+        const isFavRouteSet = sessionStorage.getItem("favRouteSet")
+
+        if (isFavRouteSet) {
+            if (map) {
+                const favRouteData = JSON.parse(sessionStorage.getItem("favRoute"))
+                sessionStorage.removeItem("favRouteSet")
+                sessionStorage.removeItem("favRouteData")
+                drawRoutes(favRouteData)
+            }
+        } else {
+            // get user location and zoom in
+            navigator.geolocation.getCurrentPosition((position) => {
+                const userLocation = [position.coords.longitude, position.coords.latitude]
+                zoomToLocation(userLocation)
+            }, (error) => {
+                console.error("Error getting user's location:", error)
+            })
+        }
     }, [map])
 
     // add a new function to handle zooming to a specific location
