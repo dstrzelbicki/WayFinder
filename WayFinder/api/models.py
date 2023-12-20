@@ -6,10 +6,24 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db.models import JSONField
 import secrets
 from cryptography.fernet import Fernet
+from azure.identity import ClientSecretCredential
+from azure.keyvault.secrets import SecretClient
 
 env = environ.Env()
 environ.Env.read_env()
-fernet = Fernet(env('DATA_ENCRYPTION_KEY'))
+
+tenant_id = env('AZURE_TENANT_ID')
+client_id = env('AZURE_CLIENT_ID')
+client_secret = env('AZURE_CLIENT_SECRET')
+key_vault_name = env('AZURE_KEY_VAULT_NAME')
+
+credential = ClientSecretCredential(tenant_id, client_id, client_secret)
+key_vault_uri = f'https://{key_vault_name}.vault.azure.net/'
+client = SecretClient(vault_url=key_vault_uri, credential=credential)
+secret_name ='DATA-ENCRYPTION-KEY'
+retrieved_secret = client.get_secret(secret_name)
+fernet_key = retrieved_secret.value
+fernet = Fernet(fernet_key)
 
 def encrypt_value(value):
     if value:
