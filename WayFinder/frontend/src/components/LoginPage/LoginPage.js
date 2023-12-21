@@ -39,6 +39,7 @@ export default function LoginPage() {
       .then(function (res) {
         if (res.status === 200) {
           if (res.data.requires_otp) {
+            setLoginError(false)
             // 2FA is required, prompt the user for OTP
             setRequiresOtp(true)
           } else {

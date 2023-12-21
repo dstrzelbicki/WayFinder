@@ -2,6 +2,7 @@ import hashlib
 from django.conf import settings
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.db import IntegrityError
 from django.http import HttpResponse
 from django.utils.encoding import force_str, force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -33,12 +34,15 @@ from django.middleware.csrf import rotate_token
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.utils import timezone
+import logging
 
 token_generator = PasswordResetTokenGenerator()
 
 current_time = timezone.now()
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 class OTPForm(forms.Form):
@@ -52,11 +56,15 @@ class UserRegister(APIView):
         try:
             clean_data = custom_validation(request.data)
         except ValidationError as e:
-            print(e.messages[0])
-            return Response({"message": e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(f'Validation error: {e.messages}')
+            return Response({'message': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
         serializer = UserRegisterSerializer(data=clean_data)
         if serializer.is_valid():
-            user = serializer.save()
+            try:
+                user = serializer.save()
+            except IntegrityError:
+                logger.error(f'Integrity error during user registration: {e}')
+                return Response({'message': 'Username or email already used'}, status=status.HTTP_409_CONFLICT)
 
             subject = 'Welcome to WayFinder'
             message = 'Thank you for registering on WayFinder!'
@@ -71,7 +79,8 @@ class UserRegister(APIView):
             )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        logger.error('Invalid request data')
+        return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLogin(APIView):
@@ -98,12 +107,14 @@ class UserLogin(APIView):
         try:
             validate_email(data.get('email'))
         except ValidationError:
+            logger.error(f'Invalid email format: {email}')
             return Response({"message": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             validate_password(data.get('password'))
         except ValidationError as e:
-            return Response({"message": e.messages}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(f'Invalid password: {e.messages}')
+            return Response({"message": "Invalid password"}, status=status.HTTP_400_BAD_REQUEST)
 
         # check for failed login attempts
         email_hash = hashlib.sha256(data.get('email').encode()).hexdigest()
@@ -111,7 +122,7 @@ class UserLogin(APIView):
         if user:
             if user.failed_login_attempts >= 10 and \
                     (current_time - user.last_failed_login) < timedelta(minutes=60):
-                return Response({"message": "Too many failed login attempts, please wait."},
+                return Response({"message": "Too many failed login attempts, please wait"},
                                 status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         serializer = UserLoginSerializer(data=data)
@@ -125,11 +136,11 @@ class UserLogin(APIView):
                 if totp_device:
                     otp = data.get('otp')
                     if not otp:
-                        return Response({"message": "OTP required for 2FA.", "requires_otp": True}, status=status.HTTP_200_OK)
+                        return Response({"message": "OTP required for 2FA", "requires_otp": True}, status=status.HTTP_200_OK)
 
                     totp = pyotp.TOTP(totp_device.key, digits=6)
                     if not totp.verify(otp.strip()):
-                        return Response({"message": "Invalid OTP."}, status=status.HTTP_401_UNAUTHORIZED)
+                        return Response({"message": "Invalid OTP"}, status=status.HTTP_401_UNAUTHORIZED)
                 rotate_token(request)
                 login(request, user)
                 # reset failed login attempts
@@ -148,7 +159,7 @@ class UserLogin(APIView):
                 user.failed_login_attempts += 1
                 user.last_failed_login = current_time
                 user.save()
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLogout(APIView):
@@ -174,7 +185,8 @@ class UserView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        logger.error(f'Invalid request data: {serializer.errors}')
+        return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserChangePassword(APIView):
@@ -188,9 +200,11 @@ class UserChangePassword(APIView):
                 serializer.update(request.user, serializer.validated_data)
                 update_session_auth_hash(request, request.user)
                 return Response(status=status.HTTP_204_NO_CONTENT)
+            logger.error(f'Invalid request data: {serializer.errors}')
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as e:
-            return Response({'detail': e}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(f'Invalid request data: {e.messages}')
+            return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SearchedLocationView(APIView):
@@ -200,7 +214,7 @@ class SearchedLocationView(APIView):
     def get(self, request):
         locations = SearchedLocation.objects.filter(user=request.user)
         if not locations:
-            return Response({"message": "No locations found"},
+            return Response({'message': 'No locations found'},
                             status=status.HTTP_404_NOT_FOUND)
         serializer = SearchedLocationSerializer(locations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -210,7 +224,8 @@ class SearchedLocationView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        logger.error(f'Invalid request data: {serializer.errors}')
+        return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RouteView(APIView):
@@ -227,7 +242,8 @@ class RouteView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        logger.error(f'Invalid request data: {serializer.errors}')
+        return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ForgottenPassword(APIView):
@@ -240,13 +256,15 @@ class ForgottenPassword(APIView):
         try:
             validate_email(email)
         except ValidationError:
-            return Response({"message": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error(f'Invalid email format: {email}')
+            return Response({'message': 'Invalid email format'}, status=status.HTTP_400_BAD_REQUEST)
 
         # check if the user with the provided email exists
         email_hash = hashlib.sha256(email.encode()).hexdigest()
         try:
             user = User.objects.get(email_hash=email_hash)
         except User.DoesNotExist:
+            logger.error(f'User does not exist: {email}')
             return JsonResponse({'message': 'User does not exist'}, status=404)
 
         # generate a reset token
@@ -263,7 +281,8 @@ class ForgottenPassword(APIView):
         try:
             send_mail(subject, message, from_email, recipient_list, fail_silently=False)
         except Exception as e:
-            return JsonResponse({'message': str(e)}, status=500)
+            logger.error(f'Error while sending email: {e}')
+            return JsonResponse({'message': 'Error while sending email'}, status=500)
 
         return JsonResponse({'message': 'Email sent successfully'}, status=200)
 
@@ -281,13 +300,15 @@ class ResetPassword(APIView):
         try:
             validate_password(password)
         except ValidationError as e:
-            return HttpResponse(e.messages, status=422)
+            logger.error(f'Invalid password: {e.messages}')
+            return HttpResponse('Invalid password', status=422)
 
         # decode uidb64 and get the user
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = get_user_model().objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist):
+            logger.error(f'Invalid uidb64: {uidb64}')
             user = None
 
         # check if the user exists and the token is valid
@@ -327,6 +348,7 @@ class VerifyTOTP(APIView):
     def post(self, request):
         form = OTPForm(request.data)
         if not form.is_valid():
+            logger.error(f'Invalid OTP: {form.errors}')
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
         user = request.user
@@ -334,7 +356,7 @@ class VerifyTOTP(APIView):
         action = request.data.get('action')
 
         if action not in ['enable', 'disable']:
-            return Response({"detail": "Invalid action. Use 'enable' or 'disable'."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Invalid action. Use 'enable' or 'disable'"}, status=status.HTTP_400_BAD_REQUEST)
 
         # for enabling 2FA, look for an unconfirmed device; for disabling, look for a confirmed device
         confirmed_status = True if action == 'disable' else False
@@ -342,14 +364,14 @@ class VerifyTOTP(APIView):
 
         if not totp_device:
             device_status = "confirmed" if confirmed_status else "unconfirmed"
-            return Response({"detail": f"TOTP device not set up or not {device_status}."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"TOTP device not set up or not {device_status}"}, status=status.HTTP_400_BAD_REQUEST)
 
         # initialize a TOTP object with the stored base32 key
         totp = pyotp.TOTP(totp_device.key, digits=6)
 
         # manually verify the OTP
         if not totp.verify(otp.strip()):
-            return Response({"detail": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
 
         if action == 'enable':
             # generating recovery codes
@@ -381,9 +403,9 @@ class VerifyTOTP(APIView):
         user.save()
 
         if action == 'disable':
-            return Response({"detail": "TOTP device confirmed."})
+            return Response({"detail": "TOTP device confirmed"})
         else:
-            return Response({"detail": "TOTP device confirmed.", "recovery_codes": recovery_codes})
+            return Response({"detail": "TOTP device confirmed", "recovery_codes": recovery_codes})
 
 
 class DisableTOTP(APIView):
@@ -395,19 +417,19 @@ class DisableTOTP(APIView):
 
         # check if the user has 2FA enabled
         if not user.is_2fa_enabled:
-            return Response({"detail": "2FA is not enabled for this user."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)
 
         # fetch the confirmed TOTP device for the user
         totp_device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
         if not totp_device:
-            return Response({"detail": "Confirmed TOTP device not found."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)
 
         # disable 2FA for the user and delete the TOTP device
         user.is_2fa_enabled = False
         user.save()
         totp_device.delete()
 
-        return Response({"detail": "2FA has been disabled."})
+        return Response({"detail": "2FA has been disabled"})
 
 
 class UseRecoveryCode(APIView):
@@ -421,16 +443,17 @@ class UseRecoveryCode(APIView):
         try:
             validate_email(email)
         except ValidationError:
+            logger.error(f'Invalid email format: {email}')
             return Response({"detail": "Invalid email format"}, status=status.HTTP_400_BAD_REQUEST)
 
         email_hash = hashlib.sha256(email.encode()).hexdigest()
         user = User.objects.filter(email_hash=email_hash).first()
         if not user:
-            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
         code = data.get('recovery_code', '').strip()
         if not code.isalnum():
-            return Response({"detail": "Invalid recovery code format."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Invalid recovery code"}, status=status.HTTP_400_BAD_REQUEST)
 
         recovery_code = RecoveryCode.objects.filter(code=code, user=user, used=False).first()
 
@@ -442,7 +465,7 @@ class UseRecoveryCode(APIView):
             token, created = Token.objects.get_or_create(user=user)
             return Response({'token': token.key, 'detail': "Recovery successful"}, status=status.HTTP_200_OK)
         else:
-            return Response({"detail": "Invalid or already used recovery code."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Invalid or already used recovery code"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FavRouteView(APIView):
@@ -463,4 +486,5 @@ class FavRouteView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        logger.error(f'Invalid request data: {serializer.errors}')
+        return Response({"message": "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)

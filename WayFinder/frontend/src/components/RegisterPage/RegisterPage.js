@@ -14,7 +14,6 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMatchError, setPasswordMatchError] = useState(false);
   const [passwordComplexityError, setPasswordComplexityError] = useState(false);
-  const [loginError, setLoginError] = useState(false);
   const [existingEmailError, setExistingEmailError] = useState(false);
   const [invalidEmailFormat, setInvalidEmailFormat] = useState(false);
   const [invalidUsernameFormat, setInvalidUsernameFormat] = useState(false);
@@ -87,15 +86,15 @@ export default function RegisterPage() {
       if (response.status === 201) {
         navigate('/')
         alert("Successful registration! Now you can log in to your account.");
-      } else {
-        setLoginError(true);
-      }
-    } catch (error) {
-      if (error.response.data.message == "choose another email") {
+      } else if (response.status === 409) {
         setExistingEmailError(true)
       }
-      setLoginError(true);
-      console.log("Error registering user");
+    } catch (error) {
+      if (error.response.status === 409) {
+        setExistingEmailError(true)
+      } else {
+        console.log("Error registering user")
+      }
     }
   }
 
@@ -158,7 +157,7 @@ export default function RegisterPage() {
               required
             />
             {invalidUsernameFormat && <p className="error-message">Username can only contain alphanumeric characters, underscores, and hyphens</p>}
-            {existingEmailError && <p className="error-message">User associated with this email already exists</p>}
+            {existingEmailError && <p className="error-message">Username or email already used</p>}
             {passwordMatchError && <p className="error-message">Passwords do not match</p>}
             {passwordComplexityError && <p className="error-message">
                                           Password must include at least one number,
