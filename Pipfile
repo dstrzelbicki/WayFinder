@@ -23,6 +23,7 @@ django-csp = "*"
 cryptography = "*"
 azure-keyvault-secrets = "*"
 azure-identity = "*"
+freezegun = "*"
 
 [dev-packages]
 

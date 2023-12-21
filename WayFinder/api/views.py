@@ -5,7 +5,6 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.http import HttpResponse
 from django.utils.encoding import force_str, force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.views import View
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -20,16 +19,12 @@ from .serializers import (FavRouteSerializer, UserRegisterSerializer, UserLoginS
 from rest_framework import permissions, status
 from .validations import custom_validation
 from django.contrib.auth.password_validation import validate_password
-from datetime import datetime, timedelta, timezone
-from django_ratelimit.decorators import ratelimit as django_ratelimit
-from django_ratelimit.exceptions import Ratelimited
-from functools import wraps
+from datetime import timedelta, timezone
+from django.core.cache import cache
 from .models import Route, RecoveryCode, SearchedLocation
 from rest_framework.authtoken.models import Token
 import pyotp
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django import forms
@@ -37,31 +32,17 @@ from django.core.validators import validate_email
 from django.middleware.csrf import rotate_token
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.utils import timezone
 
 token_generator = PasswordResetTokenGenerator()
 
-now_utc = datetime.now(timezone.utc)
+current_time = timezone.now()
 
 User = get_user_model()
 
 
 class OTPForm(forms.Form):
     otp = forms.RegexField(regex=r'^\d{6}$', error_messages={'invalid': 'OTP must be 6 digits'})
-
-
-def custom_ratelimit(key=None, rate=None, method=None, block=False):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(request, *args, **kwargs):
-            if hasattr(request, 'META'):
-                return django_ratelimit(key=key, rate=rate, method=method,
-                                        block=block)(func)(request, *args, **kwargs)
-            else:
-                return func(request, *args, **kwargs)
-
-        return wrapper
-
-    return decorator
 
 
 class UserRegister(APIView):
@@ -97,10 +78,22 @@ class UserLogin(APIView):
     permission_classes = (permissions.AllowAny,)
     authentication_classes = (SessionAuthentication,)
 
-    @custom_ratelimit(key='ip', rate='5/m', block=True)
+    RATE_LIMIT = 5
+    RATE_LIMIT_TIMEOUT = 60
+
     def post(self, request):
         data = request.data
         ip = request.META.get('REMOTE_ADDR')
+        email = data.get('email')
+
+        # generate a unique key for rate limiting based on IP and email
+        rate_limit_key = f'login_attempt_{hashlib.sha256((ip + email).encode()).hexdigest()}'
+
+        current_attempts = cache.get(rate_limit_key, 0)
+        # check for rate limiting
+        if current_attempts >= UserLogin.RATE_LIMIT:
+            return Response({"message": "Too many login attempts, please try again later"},
+                            status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         try:
             validate_email(data.get('email'))
@@ -112,12 +105,12 @@ class UserLogin(APIView):
         except ValidationError as e:
             return Response({"message": e.messages}, status=status.HTTP_400_BAD_REQUEST)
 
-        # check for rate limiting
+        # check for failed login attempts
         email_hash = hashlib.sha256(data.get('email').encode()).hexdigest()
         user = User.objects.filter(email_hash=email_hash).first()
         if user:
-            if user.failed_login_attempts >= 5 and \
-                    (now_utc - user.last_failed_login) < timedelta(minutes=60):
+            if user.failed_login_attempts >= 10 and \
+                    (current_time - user.last_failed_login) < timedelta(minutes=60):
                 return Response({"message": "Too many failed login attempts, please wait."},
                                 status=status.HTTP_429_TOO_MANY_REQUESTS)
 
@@ -127,6 +120,7 @@ class UserLogin(APIView):
                                 email=data['email'],
                                 password=data['password'])
             if user and user.is_authenticated:
+                cache.set(rate_limit_key, 0, UserLogin.RATE_LIMIT_TIMEOUT)
                 totp_device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
                 if totp_device:
                     otp = data.get('otp')
@@ -149,10 +143,12 @@ class UserLogin(APIView):
                 }, status=status.HTTP_200_OK)
             else:
                 # increment failed login attempts
+                user = User.objects.filter(email_hash=email_hash).first()
+                cache.set(rate_limit_key, current_attempts + 1, UserLogin.RATE_LIMIT_TIMEOUT)
                 user.failed_login_attempts += 1
-                user.last_failed_login = datetime.now()
+                user.last_failed_login = current_time
                 user.save()
-        return Response(serializer.errors, status=status.HTTP_400)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLogout(APIView):
