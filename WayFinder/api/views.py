@@ -11,7 +11,6 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model
 from django.forms import ValidationError
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import (FavRouteSerializer, UserRegisterSerializer, UserLoginSerializer,
@@ -26,7 +25,6 @@ from .models import Route, RecoveryCode, SearchedLocation
 from rest_framework.authtoken.models import Token
 import pyotp
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django import forms
 from django.core.validators import validate_email
@@ -85,7 +83,6 @@ class UserRegister(APIView):
 
 class UserLogin(APIView):
     permission_classes = (permissions.AllowAny,)
-    authentication_classes = (SessionAuthentication,)
 
     RATE_LIMIT = 5
     RATE_LIMIT_TIMEOUT = 60
@@ -164,7 +161,6 @@ class UserLogin(APIView):
 
 class UserLogout(APIView):
     permission_classes = (permissions.AllowAny,)
-    authentication_classes = ()
 
     def post(self, request):
         logout(request)
@@ -248,7 +244,6 @@ class RouteView(APIView):
 
 class ForgottenPassword(APIView):
     permission_classes = (permissions.AllowAny,)
-    authentication_classes = (SessionAuthentication,)
 
     def post(self, request):
         email = request.data.get('email')
@@ -289,7 +284,6 @@ class ForgottenPassword(APIView):
 
 class ResetPassword(APIView):
     permission_classes = (permissions.AllowAny,)
-    authentication_classes = (SessionAuthentication,)
 
     def post(self, request):
         token = request.data.get('token')
@@ -322,7 +316,7 @@ class ResetPassword(APIView):
 
 
 class SetupTOTP(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (JWTAuthentication,)
 
     def get(self, request):
@@ -342,7 +336,7 @@ class SetupTOTP(APIView):
 
 
 class VerifyTOTP(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (JWTAuthentication,)
 
     def post(self, request):
@@ -409,7 +403,7 @@ class VerifyTOTP(APIView):
 
 
 class DisableTOTP(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (JWTAuthentication,)
 
     def post(self, request):
@@ -434,7 +428,6 @@ class DisableTOTP(APIView):
 
 class UseRecoveryCode(APIView):
     permission_classes = (permissions.AllowAny,)
-    authentication_classes = (SessionAuthentication,)
 
     def post(self, request):
         data = request.data
