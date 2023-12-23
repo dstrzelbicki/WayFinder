@@ -86,7 +86,7 @@ class UserRegister(APIView):
         if serializer.is_valid():
             try:
                 user = serializer.save()
-            except IntegrityError:
+            except IntegrityError as e:
                 logger.error(f'Integrity error during user registration: {e}')
                 return Response({'message': 'Username or email already used'}, status=status.HTTP_409_CONFLICT)
 
