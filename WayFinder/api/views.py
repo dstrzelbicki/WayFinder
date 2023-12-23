@@ -31,6 +31,7 @@ from django.core.validators import validate_email
 from django.middleware.csrf import rotate_token
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from django.utils import timezone
 import logging
 
@@ -42,6 +43,30 @@ User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
+class Anon5dThrottle(AnonRateThrottle):
+    rate = '5/day'
+
+class Anon10hThrottle(AnonRateThrottle):
+    rate = '10/hour'
+
+class Anon5hThrottle(AnonRateThrottle):
+    rate = '5/hour'
+
+class User5per10mThrottle(UserRateThrottle):
+    rate = '5/10m'
+
+class User3hThrottle(UserRateThrottle):
+    rate = '3/hour'
+
+class User5hThrottle(UserRateThrottle):
+    rate = '5/hour'
+
+class User3dThrottle(UserRateThrottle):
+    rate = '3/day'
+
+class User10hThrottle(UserRateThrottle):
+    rate = '10/hour'
+
 
 class OTPForm(forms.Form):
     otp = forms.RegexField(regex=r'^\d{6}$', error_messages={'invalid': 'OTP must be 6 digits'})
@@ -49,6 +74,7 @@ class OTPForm(forms.Form):
 
 class UserRegister(APIView):
     permission_classes = (permissions.AllowAny,)
+    throttle_classes = [Anon10hThrottle]
 
     def post(self, request):
         try:
@@ -83,6 +109,7 @@ class UserRegister(APIView):
 
 class UserLogin(APIView):
     permission_classes = (permissions.AllowAny,)
+    throttle_classes = [Anon10hThrottle]
 
     RATE_LIMIT = 5
     RATE_LIMIT_TIMEOUT = 60
@@ -171,6 +198,11 @@ class UserView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
 
+    def get_throttles(self):
+        if self.request.method.lower() == 'put':
+            return [User10hThrottle()]
+        return []
+
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
@@ -188,6 +220,7 @@ class UserView(APIView):
 class UserChangePassword(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (JWTAuthentication,)
+    throttle_classes = [User5hThrottle]
 
     def put(self, request):
         try:
@@ -244,6 +277,7 @@ class RouteView(APIView):
 
 class ForgottenPassword(APIView):
     permission_classes = (permissions.AllowAny,)
+    throttle_classes = [Anon5dThrottle]
 
     def post(self, request):
         email = request.data.get('email')
@@ -284,6 +318,7 @@ class ForgottenPassword(APIView):
 
 class ResetPassword(APIView):
     permission_classes = (permissions.AllowAny,)
+    throttle_classes = [User3dThrottle]
 
     def post(self, request):
         token = request.data.get('token')
@@ -338,6 +373,7 @@ class SetupTOTP(APIView):
 class VerifyTOTP(APIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (JWTAuthentication,)
+    throttle_classes = [User5per10mThrottle]
 
     def post(self, request):
         form = OTPForm(request.data)
@@ -405,6 +441,7 @@ class VerifyTOTP(APIView):
 class DisableTOTP(APIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (JWTAuthentication,)
+    throttle_classes = [User3hThrottle]
 
     def post(self, request):
         user = request.user
@@ -428,6 +465,7 @@ class DisableTOTP(APIView):
 
 class UseRecoveryCode(APIView):
     permission_classes = (permissions.AllowAny,)
+    throttle_classes = [Anon5hThrottle]
 
     def post(self, request):
         data = request.data
