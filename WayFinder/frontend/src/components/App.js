@@ -19,13 +19,14 @@ export default class App extends Component {
         //<div>
         <Router>
           <Routes>
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgotten-password" element={<ForgottenPasswordPage />} />
             <Route path="/reset-password/:uidb64/:token" element={<ResetPassword />} />
             <Route path="/recovery-code" element={<RecoveryCodePage />} />
             <Route path="/user-dashboard/:content" element={<UserDashboard />} />
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/" element={<HomePage />} />
           </Routes>
         </Router>
       //</div>

@@ -11,8 +11,8 @@ const Sidebar = ({ isNotCollapsed, toggleSidebar, onSearchHistoryClick }) => {
   const handleLogout = async () => {
     try {
       await client.post("/api/logout"); // Send a POST request to the logout endpoint
-      sessionStorage.removeItem("isLoggedIn");
-      navigate("/"); // Navigate to the login page
+      localStorage.clear()
+      navigate("/login"); // Navigate to the login page
     } catch (error) {
       console.log(error);
       // Handle any error that occurred during the logout process

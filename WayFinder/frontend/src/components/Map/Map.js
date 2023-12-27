@@ -189,21 +189,27 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
     useEffect(() => {
         const isFavRouteSet = sessionStorage.getItem("favRouteSet")
 
-        if (isFavRouteSet) {
-            if (map) {
+        if (map) {
+            if (isFavRouteSet) {
                 const favRouteData = JSON.parse(sessionStorage.getItem("favRoute"))
                 sessionStorage.removeItem("favRouteSet")
                 sessionStorage.removeItem("favRouteData")
                 drawRoutes(favRouteData)
+            } else {
+                if (localStorage.getItem("userLocation")) {
+                    const userLocation = JSON.parse(localStorage.getItem("userLocation"))
+                    zoomToLocation(userLocation)
+                } else {
+                    // get user location and zoom in
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const userLocation = [position.coords.longitude, position.coords.latitude]
+                        localStorage.setItem("userLocation", JSON.stringify(userLocation))
+                        zoomToLocation(userLocation)
+                    }, (error) => {
+                        console.error("Error getting user's location:", error)
+                    })
+                }
             }
-        } else {
-            // get user location and zoom in
-            navigator.geolocation.getCurrentPosition((position) => {
-                const userLocation = [position.coords.longitude, position.coords.latitude]
-                zoomToLocation(userLocation)
-            }, (error) => {
-                console.error("Error getting user's location:", error)
-            })
         }
     }, [map])
 

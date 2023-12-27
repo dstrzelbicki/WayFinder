@@ -11,9 +11,9 @@ import {useNavigate} from "react-router-dom"
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome"
 import {faTimes} from "@fortawesome/free-solid-svg-icons"
 
-const UserContext = createContext()
+export const UserContext = createContext()
 
-const Profile = ({currentUser}) => {
+export const Profile = ({currentUser}) => {
     const [username, setUsername] = useState(currentUser.username)
     const [email, setEmail] = useState(currentUser.email)
     const [oldPassword, setOldPassword] = useState("")
@@ -107,7 +107,7 @@ const Profile = ({currentUser}) => {
             }
             {isEditing ? (
                 !isPasswordEditing ? (
-                    <form onSubmit={handleDataSubmit}>
+                    <form onSubmit={handleDataSubmit} aria-label="Data editing">
                         <h3>Data editing</h3>
                         <label>
                             Username:
@@ -120,7 +120,7 @@ const Profile = ({currentUser}) => {
                         </label>
                         <input type="submit" value="Save data" />
                     </form>) : (
-                        <form onSubmit={handlePasswordSubmit}>
+                        <form onSubmit={handlePasswordSubmit} aria-label="Password editing">
                             <h3>Password editing</h3>
                             <label>
                                 Old password:
@@ -160,7 +160,7 @@ const Profile = ({currentUser}) => {
     )
 }
 
-const Routes = () => {
+export const Routes = () => {
     const [routes, setRoutes] = useState([])
     const [loaded, setLoaded] = useState(false)
     const navigate = useNavigate()
@@ -204,7 +204,7 @@ const Routes = () => {
     )
 }
 
-const History = () => {
+export const History = () => {
     const [routes, setRoutes] = useState([])
     const [loaded, setLoaded] = useState(false)
 
@@ -247,7 +247,7 @@ const History = () => {
     )
 }
 
-const DisableTOTP = ({ onUpdate }) => {
+export const DisableTOTP = ({ onUpdate }) => {
     const [otp, setOtp] = useState("")
     const [isPopupVisible, setPopupVisible] = useState(false)
     const [popupMessage, setPopupMessage] = useState("")
@@ -319,7 +319,7 @@ const DisableTOTP = ({ onUpdate }) => {
     )
 }
 
-const SetupTOTP = ({ onUpdate }) => {
+export const SetupTOTP = ({ onUpdate }) => {
     const [provisioningUrl, setProvisioningUrl] = useState("")
     const [recoveryCodes, setRecoveryCodes] = useState([])
     const [otp, setOtp] = useState("")
@@ -421,7 +421,7 @@ const SetupTOTP = ({ onUpdate }) => {
     )
 }
 
-const Settings = () => {
+export const Settings = () => {
     const { currentUser, setCurrentUser } = useContext(UserContext)
 
     const handleUpdate = (is2faEnabled) => {

@@ -44,9 +44,9 @@ export default function LoginPage() {
             setRequiresOtp(true)
           } else {
             // Login successful
-            sessionStorage.setItem("isLoggedIn", "true")
-            sessionStorage.setItem("accessToken", res.data.access)
-            sessionStorage.setItem("refreshToken", res.data.refresh)
+            localStorage.setItem("isLoggedIn", "true")
+            localStorage.setItem("accessToken", res.data.access)
+            localStorage.setItem("refreshToken", res.data.refresh)
             setLoggedIn(true)
             navigate("/home")
           }
@@ -71,7 +71,7 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
     if (isLoggedIn) {
       navigate("/home");
     }

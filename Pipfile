@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 asgiref = "==3.6.0"
-django = "==4.2.1"
+django = "*"
 django-environ = "==0.10.0"
 djangorestframework = "==3.14.0"
 gunicorn = "==20.1.0"
@@ -24,6 +24,8 @@ cryptography = "*"
 azure-keyvault-secrets = "*"
 azure-identity = "*"
 freezegun = "*"
+safety = "*"
+bandit = "*"
 
 [dev-packages]
 

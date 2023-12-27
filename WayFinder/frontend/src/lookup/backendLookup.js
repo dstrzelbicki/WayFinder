@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const requestToBackend = (method, endpoint, callback, data) => {
   const url = `${process.env.REACT_APP_BASE_URL}/api${endpoint}`
-  const accessToken = sessionStorage.getItem('accessToken')
+  const accessToken = localStorage.getItem('accessToken')
 
   const headers = {
     'Content-Type': 'application/json',
@@ -29,7 +29,7 @@ const requestToBackend = (method, endpoint, callback, data) => {
 
       if (status === 401) {
         // handle expired access token
-        const refreshToken = sessionStorage.getItem('refreshToken')
+        const refreshToken = localStorage.getItem('refreshToken')
         if (refreshToken) {
           refreshAccessToken(refreshToken, method, endpoint, callback, data)
         } else {
@@ -44,7 +44,7 @@ const requestToBackend = (method, endpoint, callback, data) => {
   })
 }
 
-function refreshAccessToken(refreshToken, originalMethod, originalEndpoint, originalCallback, originalData) {
+const refreshAccessToken = (refreshToken, originalMethod, originalEndpoint, originalCallback, originalData) => {
   const refreshUrl = `${process.env.REACT_APP_BASE_URL}/api/token/refresh/`
   fetch(refreshUrl, {
     method: 'POST',
@@ -60,8 +60,8 @@ function refreshAccessToken(refreshToken, originalMethod, originalEndpoint, orig
     throw new Error('Failed to refresh access token')
   })
   .then(data => {
-    sessionStorage.setItem('refreshToken', data.refresh)
-    sessionStorage.setItem('accessToken', data.access)
+    localStorage.setItem('refreshToken', data.refresh)
+    localStorage.setItem('accessToken', data.access)
     // retry the original request with the new access token
     requestToBackend(originalMethod, originalEndpoint, originalCallback, originalData)
   })
@@ -70,18 +70,16 @@ function refreshAccessToken(refreshToken, originalMethod, originalEndpoint, orig
   })
 }
 
-function redirectToLogin() {
-  sessionStorage.removeItem("accessToken")
-  sessionStorage.removeItem("refreshToken")
-  window.location.href = "/login?showLoginRequired=true"
+const redirectToLogin = () => {
+  localStorage.removeItem("accessToken")
+  localStorage.removeItem("refreshToken")
+  window.location.href = "/login"
 }
 
 export function apiProfileDataChange(user, callback) {
   const data = {
     username: user.username,
     email: user.email,
-    // first_name: user.first_name,
-    // last_name: user.last_name
   }
   requestToBackend("PUT", "/user", callback, data)
 }
