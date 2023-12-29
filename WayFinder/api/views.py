@@ -25,7 +25,6 @@ from .models import Route, RecoveryCode, SearchedLocation
 from rest_framework.authtoken.models import Token
 import pyotp
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from rest_framework import status
 from django import forms
 from django.core.validators import validate_email
 from django.middleware.csrf import rotate_token
