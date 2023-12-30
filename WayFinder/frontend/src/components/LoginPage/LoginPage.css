@@ -110,6 +110,19 @@ button[type="submit"]:hover {
   color: #0056b3;
 }
 
+.about-wayfinder-link {
+  display: block;
+  font-size: 1.2rem;
+  color: #007bff;
+  text-decoration: none;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.about-wayfinder-link:hover {
+  color: #0056b3;
+}
+
 .error-message {
   color: red;
   margin-top: 10px;

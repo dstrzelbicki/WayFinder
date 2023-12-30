@@ -1,0 +1,13 @@
+.about-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.about-box {
+  padding: 20px;
+  border: 1px solid #ccc;
+  max-width: 400px;
+  text-align: center;
+}
