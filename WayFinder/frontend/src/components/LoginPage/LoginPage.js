@@ -65,7 +65,7 @@ export default function LoginPage() {
     navigate("/register");
   }
 
-  function navigateToRegisterPage() {
+  function navigateToAboutApp() {
     navigate("/about-app");
   }
 
@@ -137,11 +137,21 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-        {!requiresOtp ?
-            <Link to="/forgotten-password" className="forgot-password-link">Forgotten Password?</Link> :
-            <button className="btn btn-primary" onClick={navigateToRecoveryCodePage}>
-              Lost access to OTP device?
-            </button>
+        {!requiresOtp ? (
+          <div>
+            <Link to="/forgotten-password" className="forgot-password-link">
+              Forgotten Password?
+            </Link>
+            <br />
+            <Link to="/about-app" className="about-wayfinder-link">
+              About WayFinder
+            </Link>
+          </div>
+        ) : (
+          <button className="btn btn-primary" onClick={navigateToRecoveryCodePage}>
+            Lost access to OTP device?
+          </button>
+        )
         }
         {loginError && <p className="error-message">Invalid email or password</p>}
       </div>
