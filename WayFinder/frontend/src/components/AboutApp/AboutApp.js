@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
+import { Link } from "react-router-dom";
 import "./AboutApp.css";
 
 const AboutApp = () => {
@@ -12,13 +12,13 @@ const AboutApp = () => {
       <div className="about-box">
         <h2>About WayFinder</h2>
         <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-          incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-          nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+          WayFinder is an application, used for navigation, which, in addition to the basic functionality
+          for determining the route, offers the possibility of combining several different forms of transport
+          into a single route with the flexibility to modify it. Thanks to this feature, users can plan their
+          trips more efficiently and optimally, using different forms of transportation depending on their
+          needs and requirements. Thanks to this, travelers can, avoid using several different apps or services
+          to find the right route, and still enjoy flexible planning.
         </p>
-        {/* You can add more text or customize the content as needed */}
-
-        {/* Back to Login button */}
         <Link to="/login" className="back-to-login">
           Back to Login
         </Link>
