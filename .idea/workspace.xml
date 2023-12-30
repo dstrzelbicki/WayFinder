@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d48ede59-ecca-407f-9d1b-fba401fd98ff" name="Changes" comment="merge dev">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WayFinder/frontend/src/components/Map/Map.js" beforeDir="false" afterPath="$PROJECT_DIR$/WayFinder/frontend/src/components/Map/Map.js" afterDir="false" />
+    <list default="true" id="d48ede59-ecca-407f-9d1b-fba401fd98ff" name="Changes" comment="styling update">
+      <change beforePath="$PROJECT_DIR$/WayFinder/frontend/src/components/AboutApp/AboutApp.js" beforeDir="false" afterPath="$PROJECT_DIR$/WayFinder/frontend/src/components/AboutApp/AboutApp.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,9 +15,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="JavaScript File" />
-        <option value="CSS File" />
         <option value="HTML File" />
+        <option value="CSS File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -36,7 +35,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="dev" />
+        <entry key="$PROJECT_DIR$" value="map-zoom-and-location" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -188,6 +187,11 @@
       <workItem from="1686252077220" duration="896000" />
       <workItem from="1686335901869" duration="1819000" />
       <workItem from="1686859089185" duration="15951000" />
+      <workItem from="1700897351883" duration="941000" />
+      <workItem from="1700916564693" duration="616000" />
+      <workItem from="1701606775675" duration="2221000" />
+      <workItem from="1703751026550" duration="4680000" />
+      <workItem from="1703938269203" duration="6749000" />
     </task>
     <task id="LOCAL-00001" summary="login and register pages added">
       <created>1683760053434</created>
@@ -231,7 +235,47 @@
       <option name="project" value="LOCAL" />
       <updated>1686172063046</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Route zoom and speed update">
+      <option name="closed" value="true" />
+      <created>1700858617688</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1700858617689</updated>
+    </task>
+    <task id="LOCAL-00008" summary="about app routing added">
+      <option name="closed" value="true" />
+      <created>1703942414523</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1703942414523</updated>
+    </task>
+    <task id="LOCAL-00009" summary="about app link added">
+      <option name="closed" value="true" />
+      <created>1703947859054</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1703947859054</updated>
+    </task>
+    <task id="LOCAL-00010" summary="working routing and Page with placeholder added">
+      <option name="closed" value="true" />
+      <created>1703948435746</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1703948435746</updated>
+    </task>
+    <task id="LOCAL-00011" summary="styling update">
+      <option name="closed" value="true" />
+      <created>1703949590370</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1703949590370</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -268,7 +312,12 @@
     <MESSAGE value="merge fixes" />
     <MESSAGE value="merge fixes 2" />
     <MESSAGE value="merge dev" />
-    <option name="LAST_COMMIT_MESSAGE" value="merge dev" />
+    <MESSAGE value="Route zoom and speed update" />
+    <MESSAGE value="about app routing added" />
+    <MESSAGE value="about app link added" />
+    <MESSAGE value="working routing and Page with placeholder added" />
+    <MESSAGE value="styling update" />
+    <option name="LAST_COMMIT_MESSAGE" value="styling update" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/WayFinder$manage.coverage" NAME="manage Coverage Results" MODIFIED="1683404811109" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/WayFinder" />

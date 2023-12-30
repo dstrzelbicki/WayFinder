@@ -8,6 +8,7 @@ import { createRoot } from "react-dom/client"
 import {BrowserRouter as Router, Routes, Route, HashRouter} from "react-router-dom"
 import UserDashboard from "./UserDashboard/UserDashboard"
 import ResetPassword from "./ResetPasswordPage/ResetPassword"
+import AboutApp from "./AboutApp/AboutApp"
 
 export default class App extends Component {
   constructor(props) {
@@ -26,6 +27,7 @@ export default class App extends Component {
             <Route path="/reset-password/:uidb64/:token" element={<ResetPassword />} />
             <Route path="/recovery-code" element={<RecoveryCodePage />} />
             <Route path="/user-dashboard/:content" element={<UserDashboard />} />
+            <Route path="/about-app" element={<AboutApp />} />
             <Route path="/" element={<HomePage />} />
           </Routes>
         </Router>

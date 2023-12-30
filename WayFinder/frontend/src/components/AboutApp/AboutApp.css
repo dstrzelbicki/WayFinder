@@ -1,0 +1,27 @@
+.about-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.about-box {
+  padding: 20px;
+  border: 1px solid #ccc;
+  max-width: 400px;
+  text-align: center;
+  background-color: #fff;
+}
+
+.back-to-login {
+  display: inline-block;
+  font-size: 1.2rem;
+  color: #007bff;
+  text-decoration: none;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.back-to-login:hover {
+  color: #0056b3;
+}
