@@ -4,6 +4,10 @@ import "./AboutApp.css";
 
 const AboutApp = () => {
   return (
+      <div
+      className="LoginPage"
+      style={{ backgroundImage: `url(${require("../../assets/img/worldmap.png")})` }}
+      >
     <div className="about-container">
       <div className="about-box">
         <h2>About WayFinder</h2>
@@ -15,11 +19,12 @@ const AboutApp = () => {
         {/* You can add more text or customize the content as needed */}
 
         {/* Back to Login button */}
-        <Link to="/login" className="btn btn-secondary">
+        <Link to="/login" className="back-to-login">
           Back to Login
         </Link>
       </div>
     </div>
+      </div>
   );
 };
 
