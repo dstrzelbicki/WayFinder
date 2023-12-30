@@ -65,6 +65,10 @@ export default function LoginPage() {
     navigate("/register");
   }
 
+  function navigateToRegisterPage() {
+    navigate("/about-app");
+  }
+
   const navigateToRecoveryCodePage = () => {
     sessionStorage.setItem("email", email)
     navigate("/recovery-code")
