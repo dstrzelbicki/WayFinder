@@ -346,7 +346,10 @@ class ResetPassword(APIView):
             user.save()
             return HttpResponse('Password reset successful', status=204)
         else:
-            return HttpResponse('Invalid or expired token', status=400)
+            if user:
+                return HttpResponse('Invalid or expired token', status=400)
+            else:
+                return HttpResponse('User not found', status=404)
 
 
 class SetupTOTP(APIView):

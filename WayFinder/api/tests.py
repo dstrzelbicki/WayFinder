@@ -1,20 +1,27 @@
 import hashlib
 from time import sleep
 from django.urls import reverse
-from .views import DisableTOTP, VerifyTOTP, UserLogin, FavRouteView, UseRecoveryCode
-from .models import AppUser, RecoveryCode
-from django.test import TestCase, Client
+from .views import (DisableTOTP, VerifyTOTP, UserLogin,
+    FavRouteView, UseRecoveryCode, SetupTOTP, ResetPassword,
+    ForgottenPassword, RouteView)
+from .models import AppUser, RecoveryCode, Route
+from django.test import RequestFactory, TestCase, Client
 from django.urls import reverse
 from django.core.cache import cache
 from rest_framework_simplejwt.tokens import AccessToken
 from django.test import TestCase
 from rest_framework.test import APIClient
 from .models import FavRoute
-from .serializers import FavRouteSerializer
+from .serializers import FavRouteSerializer, RouteSerializer
 from rest_framework import status
 from unittest.mock import patch
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from rest_framework.throttling import UserRateThrottle
+from django.core import mail
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from rest_framework.test import force_authenticate
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 
 class NoThrottle(UserRateThrottle):
@@ -309,3 +316,145 @@ class VerifyTOTPTests(TestCase):
         response = self.client.post(self.url, {'otp': '123456', 'action': 'disable'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn('recovery_codes', response.data)
+
+
+class SetupTOTPTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = AppUser.objects.create_user(
+            username='userSetup', email='userSetup@example.com', password='O9247MVc3608471#'
+        )
+        self.url = reverse('setup_totp')
+        self.original_throttle_classes = SetupTOTP.throttle_classes
+        SetupTOTP.throttle_classes = [NoThrottle]
+
+    def _generate_token(self, user):
+        return str(AccessToken.for_user(user))
+
+    def test_get_provisioning_url(self):
+        token = self._generate_token(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('provisioning_url', response.data)
+
+
+class ResetPasswordTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = AppUser.objects.create_user(
+            username='userReset', email='userReset@example.com', password='O9247MVc3608471#'
+        )
+        self.user_id = self.user.id
+        self.uidb64 = urlsafe_base64_encode(force_bytes(self.user.id))
+        self.view = ResetPassword.as_view()
+        self.url = reverse('password_reset')
+        self.original_throttle_classes = ResetPassword.throttle_classes
+        ResetPassword.throttle_classes = [NoThrottle]
+
+    @patch.object(PasswordResetTokenGenerator, 'check_token', return_value=True)
+    def test_reset_password(self, mock_check_token):
+        request = self.factory.post(self.url, {
+            'token': 'testtoken',
+            'password': 'p94u7nTc567O471)',
+            'uidb64': self.uidb64
+        })
+        force_authenticate(request, user=self.user)
+
+        response = self.view(request)
+
+        self.assertEqual(response.status_code, 204)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('p94u7nTc567O471)'))
+
+    def test_reset_password_invalid_token(self):
+        request = self.factory.post(self.url, {
+            'token': 'invalidtoken',
+            'password': 'p94u7nTc567O471)',
+            'uidb64': self.uidb64
+        })
+        force_authenticate(request, user=self.user)
+
+        response = self.view(request)
+
+        self.assertEqual(response.status_code, 400)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.check_password('p94u7nTc567O471)'))
+
+
+class ForgottenPasswordTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = AppUser.objects.create_user(
+            username='userForgotten', email='userForgotten@example.com', password='O9247MVc3608471#'
+        )
+        self.view = ForgottenPassword.as_view()
+        self.url = reverse('forgotten_password')
+        self.original_throttle_classes = ForgottenPassword.throttle_classes
+        ForgottenPassword.throttle_classes = [NoThrottle]
+
+    def test_forgotten_password(self):
+        request = self.factory.post(self.url, {
+            'email': 'userForgotten@example.com',
+        })
+        response = self.view(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_forgotten_password_no_email(self):
+        request = self.factory.post(self.url, {
+            'email': '',
+        })
+        response = self.view(request)
+        self.assertEqual(response.status_code, 400)
+
+    def test_forgotten_password_nonexistent_user(self):
+        request = self.factory.post(self.url, {
+            'email': 'nonexistent@example.com',
+        })
+        response = self.view(request)
+        self.assertEqual(response.status_code, 404)
+
+
+class RouteViewTests(TestCase):
+    def setUp(self):
+        self.user = AppUser.objects.create_user(
+            username="testuser", email="test@example.com", password="O9247MVc3608471#"
+        )
+        self.client = APIClient()
+        self.token = self._generate_token(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + self.token)
+        self.url = reverse("route")
+        self.original_throttle_classes = RouteView.throttle_classes
+        RouteView.throttle_classes = [NoThrottle]
+
+    def _generate_token(self, user):
+        access = AccessToken.for_user(user)
+        return str(access)
+
+    def test_get_routes(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data,
+            RouteSerializer(Route.objects.filter(user=self.user), many=True).data,
+        )
+
+    def test_post_valid_route(self):
+        response = self.client.post(
+            self.url, {
+                "start_location_name" : "location1",
+                "start_location_lat" : 0,
+                "start_location_lng" : 0,
+                "end_location_name" : "location2",
+                "end_location_lat" : 0,
+                "end_location_lng" : 0,
+                "distance" : 0,
+                "duration" : 0
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(Route.objects.filter(start_location_name="location1").exists())
+
+    def test_post_invalid_route(self):
+        response = self.client.post(self.url, {"invalid_field": "Invalid"})
+        self.assertEqual(response.status_code, 400)
