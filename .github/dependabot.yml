@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # configuration for React app
+  - package-ecosystem: "npm"
+    directory: "/WayFinder/frontend"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "react"
+  # configuration for Django app
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "django"
