@@ -13,6 +13,22 @@ jest.mock("../../services/mapServices", () => ({
 }))
 
 describe("OLMap", () => {
+
+  beforeAll(() => {
+    const mockGeolocation = {
+      getCurrentPosition: jest.fn()
+        .mockImplementation((callback) => Promise.resolve(callback({
+          coords: {
+            latitude: 51.1,
+            longitude: 45.3
+          }
+        }))),
+      watchPosition: jest.fn()
+    }
+
+    global.navigator.geolocation = mockGeolocation
+  })
+
   test("renders correctly", () => {
     const mockMarkerUpdate = jest.fn()
 

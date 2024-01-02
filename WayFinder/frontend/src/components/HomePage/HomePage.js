@@ -57,9 +57,7 @@ const HomePage = () => {
             localStorage.setItem("searchHistory", JSON.stringify(searchHistory))
 
             let locationData = {name: searchTerm, lat: lat, lng: lon}
-            apiPostSearchedLocation(locationData, (response, status) => {
-                console.log(response, status)
-            })
+            apiPostSearchedLocation(locationData, (response, status) => {})
 
         } else {
             updateOriginRoutePointWithCoordinates(keyPrefix, null)
@@ -183,7 +181,7 @@ const HomePage = () => {
             if (status === 200) {
                 setSearchHistory(response)
             } else {
-                console.log(response, status)
+                console.log("Unable to fetch search history")
             }
         })
     }, [showSearchHistory])

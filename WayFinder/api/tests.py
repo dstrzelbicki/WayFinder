@@ -3,8 +3,8 @@ from time import sleep
 from django.urls import reverse
 from .views import (DisableTOTP, VerifyTOTP, UserLogin,
     FavRouteView, UseRecoveryCode, SetupTOTP, ResetPassword,
-    ForgottenPassword, RouteView)
-from .models import AppUser, RecoveryCode, Route
+    ForgottenPassword, RouteView, SearchedLocationView)
+from .models import AppUser, RecoveryCode, Route, SearchedLocation
 from django.test import RequestFactory, TestCase, Client
 from django.urls import reverse
 from django.core.cache import cache
@@ -12,7 +12,8 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.test import TestCase
 from rest_framework.test import APIClient
 from .models import FavRoute
-from .serializers import FavRouteSerializer, RouteSerializer
+from .serializers import (FavRouteSerializer, UserSerializer,
+                          RouteSerializer, SearchedLocationSerializer)
 from rest_framework import status
 from unittest.mock import patch
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -458,3 +459,50 @@ class RouteViewTests(TestCase):
     def test_post_invalid_route(self):
         response = self.client.post(self.url, {"invalid_field": "Invalid"})
         self.assertEqual(response.status_code, 400)
+
+
+class SearchedLocationViewTests(TestCase):
+    def setUp(self):
+        self.user = AppUser.objects.create_user(
+            username="testlocation", email="testlocation@example.com", password="O9247MVc3608471#"
+        )
+        self.client = APIClient()
+        self.token = self._generate_token(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + self.token)
+        self.url = reverse("location")
+        self.original_throttle_classes = SearchedLocationView.throttle_classes
+        SearchedLocationView.throttle_classes = [NoThrottle]
+
+    def _generate_token(self, user):
+        access = AccessToken.for_user(user)
+        return str(access)
+
+    def test_get_searched_locations(self):
+        SearchedLocation.objects.create(user=self.user, name="location1", lat=0, lng=0)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data,
+            SearchedLocationSerializer(SearchedLocation.objects.filter(user=self.user), many=True).data,
+        )
+
+    def test_get_no_searched_locations(self):
+        user2 = AppUser.objects.create_user(
+            username="testuser2", email="test2@example.com", password="O9247MVc3608471#"
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + self._generate_token(user2)
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_post_valid_searched_location(self):
+        response = self.client.post(
+            self.url, {
+                "name" : "location1",
+                "lat" : 0,
+                "lng" : 0,
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(SearchedLocation.objects.filter(name="location1").exists())

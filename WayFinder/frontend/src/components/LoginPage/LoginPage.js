@@ -57,7 +57,6 @@ export default function LoginPage() {
       })
       .catch(function (error) {
         setLoginError(true)
-        console.log(error.response)
       })
   }
 

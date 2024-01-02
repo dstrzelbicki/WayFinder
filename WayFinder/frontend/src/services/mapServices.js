@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const API_KEY = 'b716933a82ae4ee08317542b1ed2664c'
+const API_KEY = process.env.REACT_APP_GEOAPIFY_API_KEY
 const geoApifyBaseUrl = "https://api.geoapify.com"
 
 export const geocode = async (searchTerm) => {

@@ -22,7 +22,7 @@ const SearchBox = ({placeholder, onSearch, marker2Name}) => {
                 const results = await addressAutocomplete(searchValue);
                 setSearchResults(results);
             } catch (error) {
-                console.log(error);
+                console.log("Error fetching address autocomplete");
             }
         };
 

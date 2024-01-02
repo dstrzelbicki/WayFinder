@@ -56,6 +56,8 @@ module.exports = {
       "process.env": {
         NODE_ENV: JSON.stringify("development"),
         "REACT_APP_BASE_URL": JSON.stringify(process.env.REACT_APP_BASE_URL),
+        "REACT_APP_GEOAPIFY_API_KEY": JSON.stringify(process.env.REACT_APP_GEOAPIFY_API_KEY),
+        "REACT_APP_TOMTOM_API_KEY": JSON.stringify(process.env.REACT_APP_TOMTOM_API_KEY),
       },
     }),
     new HtmlWebpackPlugin({

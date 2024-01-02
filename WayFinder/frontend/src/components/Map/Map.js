@@ -118,14 +118,14 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
     const [favRouteData, setFavRouteData] = useState(null)
     const [showMessage, setShowMessage] = useState(false)
 
-    const TOMTOM_API_KEY = 'yaFyr0Achz6WGOGfk3r1PUIpMV7On6JE'
-    const API_KEY = 'b716933a82ae4ee08317542b1ed2664c'
+    const TOMTOM_API_KEY = process.env.REACT_APP_TOMTOM_API_KEY
+    const API_KEY = process.env.REACT_APP_GEOAPIFY_API_KEY
     const [trafficHint, setTrafficHint] = useState("Show traffic")
     const [trafficInfo, setTrafficInfo] = useState(false)
 
     const isRetina = DEVICE_PIXEL_RATIO > 1;
-    const baseUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=" + API_KEY;
-    const retinaUrl = "https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}@2x.png?apiKey=" + API_KEY;
+    const baseUrl = `https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${API_KEY}`
+    const retinaUrl = `https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}@2x.png?apiKey=${API_KEY}`
 
     const routeLayerName = 'route-layer'
     const turnByTurnLayerName = 'turn-by-turn-layer'
@@ -206,7 +206,7 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
                         localStorage.setItem("userLocation", JSON.stringify(userLocation))
                         zoomToLocation(userLocation)
                     }, (error) => {
-                        console.error("Error getting user's location:", error)
+                        console.error("Error getting user's location")
                     })
                 }
             }
@@ -307,7 +307,7 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
         setFavRouteData(routeData)
         drawRoutes(routeData)
 
-        apiPostRoute((response, status) => console.log(response, status))
+        apiPostRoute((response, status) => console.log(status))
 
         const sessionStorageKeys = ["start", "mid", "end"]
         sessionStorageKeys.forEach((key) => {

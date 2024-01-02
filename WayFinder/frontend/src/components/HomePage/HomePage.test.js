@@ -26,6 +26,22 @@ global.localStorage = {
 }
 
 describe("HomePage", () => {
+
+  beforeAll(() => {
+    const mockGeolocation = {
+      getCurrentPosition: jest.fn()
+        .mockImplementation((callback) => Promise.resolve(callback({
+          coords: {
+            latitude: 51.1,
+            longitude: 45.3
+          }
+        }))),
+      watchPosition: jest.fn()
+    }
+
+    global.navigator.geolocation = mockGeolocation
+  })
+
   beforeEach(() => {
     mockLocalStorageData = {}
   })
@@ -47,8 +63,8 @@ describe("HomePage", () => {
       </BrowserRouter>
     )
 
-    fireEvent.change(screen.getByPlaceholderText("Search first location"), {target: {value: "Location"}})
-    fireEvent.keyDown(screen.getByPlaceholderText("Search first location"), {key: "Enter", code: "Enter"})
+    fireEvent.change(screen.getByPlaceholderText("Your location"), {target: {value: "Location"}})
+    fireEvent.keyDown(screen.getByPlaceholderText("Your location"), {key: "Enter", code: "Enter"})
 
     await waitFor(() => expect(geocode).toHaveBeenCalledWith("Location"))
   })
