@@ -73,8 +73,8 @@ const FavRoutePopup = ({setIsFavRoutePopupOpen, favRouteData}) => {
     }
 
     const sanitizeName = (name) => {
-        // allow only alphanumeric characters, underscores, and hyphens
-        const regex = /^[a-zA-Z0-9_-]*$/
+        // allow only alphanumeric characters, underscores, hyphens and whitespaces
+        const regex = /^[a-zA-Z0-9_-\s]*$/
         return name.match(regex) ? name : null
     }
 
