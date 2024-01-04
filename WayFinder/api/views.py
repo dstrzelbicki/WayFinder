@@ -51,9 +51,6 @@ class Anon10hThrottle(AnonRateThrottle):
 class Anon5hThrottle(AnonRateThrottle):
     rate = '5/hour'
 
-class User5per10mThrottle(UserRateThrottle):
-    rate = '5/10m'
-
 class User3hThrottle(UserRateThrottle):
     rate = '3/hour'
 
@@ -375,7 +372,7 @@ class SetupTOTP(APIView):
 class VerifyTOTP(APIView):
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (JWTAuthentication,)
-    throttle_classes = [User5per10mThrottle]
+    throttle_classes = [User10hThrottle]
 
     def post(self, request):
         form = OTPForm(request.data)

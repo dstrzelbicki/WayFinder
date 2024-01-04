@@ -1,6 +1,7 @@
 .full-height-container {
     position: relative;
     height: 100vh;
+    background-color: #F3E7D3;
 }
 
 .search-location-container,
