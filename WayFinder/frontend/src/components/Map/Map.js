@@ -117,6 +117,11 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
     const [routeDrawn, setRoutDrawn] = useState(false)
     const [favRouteData, setFavRouteData] = useState(null)
     const [showMessage, setShowMessage] = useState(false)
+    const [routeInfo, setRouteInfo] = useState({
+        distance: 0,
+        time: 0,
+        mode: "",
+      });
 
     const TOMTOM_API_KEY = process.env.REACT_APP_TOMTOM_API_KEY
     const API_KEY = process.env.REACT_APP_GEOAPIFY_API_KEY
@@ -331,6 +336,22 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
 
     function drawRoutes(routeDataArray) {
 
+        const totalDistance = routeDataArray.reduce((sum, routeData) => {
+            return sum + routeData.features[0].properties.distance;
+          }, 0);
+        
+        const totalDuration = routeDataArray.reduce((sum, routeData) => {
+            return sum + routeData.features[0].properties.time;
+          }, 0);
+
+        const totalMode = routeDataArray.map(routeData => routeData.properties.mode).join(', ');
+
+        const routeInfo = {
+            distance: convertMetersToKilometers(totalDistance) + ' km',
+            time: convertSecToHours(totalDuration),
+            mode: totalMode,
+          };
+
         const routeFeatures = routeDataArray.map((data, index) => {
             const coordinates = data.features[0].geometry.coordinates[0]
             const transformedCoordinates = coordinates.map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'))
@@ -361,6 +382,9 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
         animateZoomAtLocation(routeSource)
 
         setRoutDrawn(true)
+        const lastRouteData = routeDataArray[routeDataArray.length - 1];
+        setRouteInfo(routeInfo);
+        
     }
 
     function createRouteLayerFeatures(transformedCoordinates, data) {
@@ -557,11 +581,15 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
     function convertSecToHours(seconds) {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
-        return hours + "h" + minutes + "m"
+        if(hours > 0) {
+            return `${hours} godz. ${minutes > 0 ? `${minutes} min` : ""}`;
+        } else {
+            return `${minutes} min`;
+        }
     }
 
     function convertMetersToKilometers(meters) {
-        return meters / 1000
+        return (Math.round(meters / 100) / 10).toFixed(1);
     }
 
     const trafficInfoToggle = () => {
@@ -582,6 +610,17 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
         addMarkerFeature(marker)
         onMarker2NameUpdate(data.address)
     }
+    const RouteInfoBox = ({ routeInfo }) => {
+        return (
+          <div className="route-info-box">
+            <h3>Route Information</h3>
+            <p>Distance: {routeInfo.distance}</p>
+            <p>Time: {routeInfo.time}</p>
+            <p>Mode: {routeInfo.mode}</p>
+          </div>
+        );
+      };
+      
 
     return (<div ref={mapRef} className="map-container" id="map-container">
         <div>
@@ -598,7 +637,7 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
         {routeDrawn && <button
                         className="map-button-fav-route"
                         onClick={() => setIsFavRoutePopupOpen(true)}
-                        >Add route to favourites</button>}
+                        >Add route to favourites</button> && <RouteInfoBox routeInfo={routeInfo} />}
         {trafficHint === "Hide traffic" &&
             <button className="traffic-info-button" onClick={trafficInfoToggle}>Traffic information</button>}
         {trafficInfo && (<div className="traffic-card">
