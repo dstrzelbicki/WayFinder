@@ -637,7 +637,8 @@ const OLMap = ({newMarkers, newRoutePoints, onMarker2NameUpdate}) => {
         {routeDrawn && <button
                         className="map-button-fav-route"
                         onClick={() => setIsFavRoutePopupOpen(true)}
-                        >Add route to favourites</button> && <RouteInfoBox routeInfo={routeInfo} />}
+                        >Add route to favourites</button>}
+        {routeDrawn && <RouteInfoBox routeInfo={routeInfo}/>}
         {trafficHint === "Hide traffic" &&
             <button className="traffic-info-button" onClick={trafficInfoToggle}>Traffic information</button>}
         {trafficInfo && (<div className="traffic-card">
