@@ -1,18 +1,18 @@
 from pathlib import Path
 from datetime import timedelta
-import environ
+import environ, os
 
 env = environ.Env()
 environ.Env.read_env()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = env("SECRET_KEY")
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['wayfinder.projektstudencki.pl']
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -23,25 +23,17 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-    'http://192.168.1.5:3000',
+    'https://wayfinder.projektstudencki.pl',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-    'http://192.168.1.5:3000',
+    'https://wayfinder.projektstudencki.pl',
 ]
 
-CSRF_COOKIE_DOMAIN = '.localhost'
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
+CSRF_COOKIE_DOMAIN = '.wayfinder.projektstudencki.pl'
+CSRF_TRUSTED_ORIGINS = ['https://wayfinder.projektstudencki.pl']
 
 SESSION_COOKIE_SAMESITE = 'Strict'
 
@@ -225,8 +217,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 
-STATIC_URL = 'static/'
-STATIC_ROOT = '/static/'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 
