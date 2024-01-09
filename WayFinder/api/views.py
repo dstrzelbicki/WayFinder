@@ -298,7 +298,7 @@ class ForgottenPassword(APIView):
 
         # prepare the email content
         subject = 'WayFinder - Password Reset'
-        message = f'Click the link to reset your password: http://localhost:3000/reset-password/{uidb64}/{token}'
+        message = f'Click the link to reset your password: https://wayfinder.projektstudencki.pl//reset-password/{uidb64}/{token}'
         from_email = 'wayfinder.no.response@gmail.com'
         recipient_list = [email]
 
