@@ -31,6 +31,8 @@
 
 .search-history-list {
     margin-top: 20px;
+    max-height: 700px;
+    overflow-y: auto;
 }
 
 .search-history-item {
