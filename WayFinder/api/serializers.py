@@ -17,7 +17,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'password']
 
     def validate_password(self, value):
-        # validate the password against Django's built-in validators as well as your custom validators
+        # validate the password against Django's built-in validators as well as custom validators
         validate_password(value, self.instance)
         return value
 

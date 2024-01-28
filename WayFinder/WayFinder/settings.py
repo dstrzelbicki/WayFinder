@@ -35,6 +35,9 @@ CORS_ORIGIN_WHITELIST = [
 CSRF_COOKIE_DOMAIN = '.wayfinder.projektstudencki.pl'
 CSRF_TRUSTED_ORIGINS = ['https://wayfinder.projektstudencki.pl']
 
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 60
+
 SESSION_COOKIE_SAMESITE = 'Strict'
 
 CSRF_COOKIE_SAMESITE = 'Strict'
@@ -110,6 +113,16 @@ DATABASES = {
         'PASSWORD': env("DB_PASSWORD"),
         'HOST': env("DB_HOST"),
         'PORT': env("DB_PORT"),
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
 }
 

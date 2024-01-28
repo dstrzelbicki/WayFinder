@@ -1,43 +1,44 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from django.contrib.auth import get_user_model
+
 UserModel = get_user_model()
 
 
 def custom_validation(data):
-    email = data['email'].strip()
-    username = data['username'].strip()
-    password = data['password'].strip()
+    email = data["email"].strip()
+    username = data["username"].strip()
+    password = data["password"].strip()
     ##
     if not email or UserModel.objects.filter(email=email).exists():
-        raise ValidationError('choose another email')
+        raise ValidationError("choose another email")
     ##
     if not password or len(password) < 8:
-        raise ValidationError('choose another password, min 8 characters')
+        raise ValidationError("choose another password, min 8 characters")
     ##
     if not username:
-        raise ValidationError('choose another username')
+        raise ValidationError("choose another username")
     return data
 
 
 def validate_email(data):
-    email = data['email'].strip()
+    email = data["email"].strip()
     if not email:
-        raise ValidationError('an email is needed')
+        raise ValidationError("an email is needed")
     return True
 
 
 def validate_username(data):
-    username = data['username'].strip()
+    username = data["username"].strip()
     if not username:
-        raise ValidationError('choose another username')
+        raise ValidationError("choose another username")
     return True
 
 
 def validate_password(data):
-    password = data['password'].strip()
+    password = data["password"].strip()
     if not password:
-        raise ValidationError('a password is needed')
+        raise ValidationError("a password is needed")
     return True
 
 
@@ -46,42 +47,51 @@ class UppercaseValidator:
         if not any(char.isupper() for char in password):
             raise ValidationError(
                 _("The password must contain at least 1 uppercase letter, A-Z."),
-                code='password_no_upper',
+                code="password_no_upper",
             )
 
     def get_help_text(self):
         return _("Your password must contain at least 1 uppercase letter, A-Z.")
+
 
 class LowercaseValidator:
     def validate(self, password, user=None):
         if not any(char.islower() for char in password):
             raise ValidationError(
                 _("The password must contain at least 1 lowercase letter, a-z."),
-                code='password_no_lower',
+                code="password_no_lower",
             )
 
     def get_help_text(self):
         return _("Your password must contain at least 1 lowercase letter, a-z.")
 
+
 class SpecialCharacterValidator:
     def validate(self, password, user=None):
-        if not any(char in set('!@#$%^&*()-_=+[]{};:"\'|\\,.<>?/~`') for char in password):
+        if not any(
+            char in set("!@#$%^&*()-_=+[]{};:\"'|\\,.<>?/~`") for char in password
+        ):
             raise ValidationError(
-                _("The password must contain at least 1 special character: " +
-                  "!@#$%^&*()-_=+[]{};:\"'|\\,.<>?/~`"),
-                code='password_no_special',
+                _(
+                    "The password must contain at least 1 special character: "
+                    + "!@#$%^&*()-_=+[]{};:\"'|\\,.<>?/~`"
+                ),
+                code="password_no_special",
             )
 
     def get_help_text(self):
-        return _("Your password must contain at least 1 special character: " +
-                 "!@#$%^&*()-_=+[]{};:\"'|\\,.<>?/~`")
+        return _(
+            "Your password must contain at least 1 special character: "
+            + "!@#$%^&*()-_=+[]{};:\"'|\\,.<>?/~`"
+        )
+
 
 class NumericValidator:
     def validate(self, password, user=None):
         if not any(char.isdigit() for char in password):
             raise ValidationError(
                 _("The password must contain at least 1 digit, 0-9."),
-                code='password_no_number',
+                code="password_no_number",
             )
 
     def get_help_text(self):

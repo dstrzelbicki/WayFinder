@@ -40,8 +40,8 @@ export default function RegisterPage() {
   function validatePasswordComplexity(password) {
     // ensure password length is 10 or more characters
     // includes at least one number, one lowercase and one uppercase letter, and one special character
-    const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{10,}$/;
-    return regex.test(password);
+    const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{10,}$/
+    return regex.test(password)
   }
 
   async function register(e) {
